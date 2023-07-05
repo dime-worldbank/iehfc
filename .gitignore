@@ -47,6 +47,8 @@
 # R
 !/**/*.R
 !/**/*.Rmd
+# Temporary
+!/**/*.Rproj
 
 # LaTeX
 !/**/*.tex
