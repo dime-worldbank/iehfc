@@ -1,0 +1,18 @@
+/* Get a fancy font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+
+h3 {
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+body {
+    font-family: 'Atkinson Hyperlegible', serif;
+    font-size: 16px;
+}
+
+code {
+    font-family: 'Fira Code', monospace;
+}
