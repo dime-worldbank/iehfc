@@ -2,13 +2,15 @@
 
   library(shiny)
   library(bslib)
+  library(DT)
   
-  parameter_sidebar <- layout_sidebar(
+  upload_tab <- layout_sidebar(
+      fillable = FALSE,
       sidebar = sidebar(
           width = "30%",
           card(
               fileInput(
-                  "hfc_data",
+                  "hfc_file",
                   label = "Upload HFC Data",
                   accept = "csv",
                   placeholder = "mydata.csv"
@@ -25,11 +27,24 @@
                   choiceValues = list(
                       "duplicates", "outliers", "enumerator", "admin", "unit", "programming"
                   ),
-                  selected = c("duplicates", "outliers")
+                  selected = c("duplicates")
               )
           )
       ),
-      textOutput("selected_checks")
+      card(
+          full_screen = TRUE,
+          height = 170,
+          card_header("Duplicate Variable Identification"),
+          card_body(
+              layout_column_wrap(
+                  width = 1/3,
+                  "", "ID Variable",
+                  uiOutput("duplicate_id_select"),
+                  "", "Additional Variables",
+                  uiOutput("duplicate_extra_vars_select")
+              )
+          )
+      )
   )
   
   page_navbar(
@@ -40,12 +55,18 @@
       ),
       nav_panel(
           "Upload Data",
-          parameter_sidebar
+          upload_tab
       ),
       nav_panel(
           "iehfc Outputs",
           navset_tab(
-              nav_panel("Duplicates", "Hello duplicates"),
+              nav_panel(
+                  title = "Duplicates",
+                  card(
+                      DTOutput("duplicate_table"),
+                      uiOutput("duplicate_table_dl")
+                  )
+              ),
               nav_panel("Outliers", "Hello outliers"),
               nav_panel("Enumerator", "Hello enumerator"),
               nav_panel("Admin Level", "Hello admin level"),
