@@ -17,6 +17,60 @@
           return(ds)
       })
       
+      output$hfc_ds_display <- renderDT(
+          hfc_dataset(), fillContainer = TRUE
+      )
+      
+      output$hfc_ds_names_display <- renderPrint({
+          print_matrix <- function(vctr, col_num = 1) {
+              matrix <- vctr %>%
+                  `[`(
+                      1:(col_num * ceiling(length(.) / col_num))
+                  ) %>% # To get the right number of elements for the matrix
+                  matrix(ncol = col_num, byrow = TRUE)
+              matrix[is.na(matrix)] <- ""
+              write.table(
+                  format(matrix, justify = "right"),
+                  row.names = FALSE, col.names = FALSE, quote = FALSE
+              )
+          }
+          
+          hfc_ds_names <- hfc_dataset() %>%
+              names() %>%
+              print_matrix(col_num = 4)
+      })
+      
+      output$upload_tab_nodata <- renderUI({
+          "No data"
+      })
+      
+      output$upload_tab_data <- renderUI({
+          layout_column_wrap(
+              heigth = "85vh",
+              width = 1,
+              card(
+                  card_header("Explore Dataset"),
+                  DTOutput(
+                      "hfc_ds_display"
+                  )
+              ),
+              card(
+                  card_header("Explore Dataset Names"),
+                  verbatimTextOutput(
+                      "hfc_ds_names_display"
+                  )
+              )
+          )
+      })
+      
+      output$upload_tab_body <- renderUI({
+          if(is.null(hfc_file())) {
+              return(uiOutput("upload_tab_nodata"))
+          } else {
+              return(uiOutput("upload_tab_data"))
+          }
+      })
+      
       output$upload_tab <- renderUI({
           layout_sidebar(
               height = "90vh",
@@ -31,13 +85,13 @@
                       )
                   )
               ),
-              "Hello upload"
+              uiOutput("upload_tab_body")
           )
       })
       
       ## Setup Tab ----
       
-        # Check Selection
+        ### Check Selection
       
       output$check_select <- renderUI({
           checkboxGroupInput(
@@ -50,6 +104,22 @@
                   "duplicates", "outliers", "enumerator", "admin", "unit", "programming"
               ),
               selected = c("duplicates")
+          )
+      })
+      
+        ### Duplicate Parameter Selection
+      
+      output$duplicate_id_select <- renderUI({
+          selectInput(
+              "duplicate_id_select_var", label = NULL,
+              choices = names(hfc_dataset())
+          )
+      })
+      
+      output$duplicate_extra_vars_select <- renderUI({
+          selectInput(
+              "duplicate_extra_vars_select_var", label = NULL, choices = names(hfc_dataset()),
+              multiple = TRUE
           )
       })
       
@@ -68,6 +138,7 @@
                   )
               ),
               card(
+                  height = "30vh", fill = FALSE,
                   full_screen = TRUE,
                   card_header("Duplicate Variable Identification"),
                   card_body(
@@ -94,24 +165,6 @@
       ## Output Tab ----
       
         ### Duplicate Outputs ----
-      
-      # Duplicate Parameter Selection
-      
-      output$duplicate_id_select <- renderUI({
-          selectInput(
-              "duplicate_id_select_var", label = NULL,
-              choices = names(hfc_dataset())
-          )
-      })
-      
-      output$duplicate_extra_vars_select <- renderUI({
-          selectInput(
-              "duplicate_extra_vars_select_var", label = NULL, choices = names(hfc_dataset()),
-              multiple = TRUE
-          )
-      })
-      
-      # Duplicate Output Creation
       
       duplicate_id_var <- reactive({
           input$duplicate_id_select_var
