@@ -6,7 +6,7 @@
   
   iehfc_server <- function(input, output) {
       
-      ## HFC Dataset
+      ## Upload Tab ----
       
       hfc_file <- reactive({
           input$hfc_file
@@ -17,10 +17,87 @@
           return(ds)
       })
       
+      output$upload_tab <- renderUI({
+          layout_sidebar(
+              height = "90vh",
+              sidebar = sidebar(
+                  width = "30%",
+                  card(
+                      fileInput(
+                          "hfc_file",
+                          label = "Upload HFC Data",
+                          accept = "csv",
+                          placeholder = "mydata.csv"
+                      )
+                  )
+              ),
+              "Hello upload"
+          )
+      })
+      
+      ## Setup Tab ----
+      
+        # Check Selection
+      
+      output$check_select <- renderUI({
+          checkboxGroupInput(
+              "check_select", "Select High-Frequency Checks",
+              choiceNames = list(
+                  "Duplicates", "Outliers", "Enumerator-Level", "Administrative Unit-Level",
+                  "Unit of Observation-Level", "Survey Programming"
+              ),
+              choiceValues = list(
+                  "duplicates", "outliers", "enumerator", "admin", "unit", "programming"
+              ),
+              selected = c("duplicates")
+          )
+      })
+      
+      output$setup_tab_nodata <- renderUI({
+          "Please upload your data in the \"Upload Data\" Tab."
+      })
+      
+      output$setup_tab_data <- renderUI({
+          layout_sidebar(
+              height = "90vh",
+              sidebar = sidebar(
+                  width = "30%",
+                  card(
+                      card_header("Data Quality Checks"),
+                      uiOutput("check_select")
+                  )
+              ),
+              card(
+                  full_screen = TRUE,
+                  card_header("Duplicate Variable Identification"),
+                  card_body(
+                      layout_column_wrap(
+                          width = 1/3,
+                          "", "ID Variable",
+                          uiOutput("duplicate_id_select"),
+                          "", "Additional Variables",
+                          uiOutput("duplicate_extra_vars_select")
+                      )
+                  )
+              )
+          )
+      })
+      
+      output$setup_tab <- renderUI({
+          if(is.null(hfc_file())) {
+              return(uiOutput("setup_tab_nodata"))
+          } else {
+              return(uiOutput("setup_tab_data"))
+          }
+      })
+      
+      ## Output Tab ----
+      
+        ### Duplicate Outputs ----
+      
       # Duplicate Parameter Selection
       
       output$duplicate_id_select <- renderUI({
-          validate(need(hfc_file(), "Please upload dataset in sidebar"))
           selectInput(
               "duplicate_id_select_var", label = NULL,
               choices = names(hfc_dataset())
@@ -28,7 +105,6 @@
       })
       
       output$duplicate_extra_vars_select <- renderUI({
-          validate(need(hfc_file(), "Please upload dataset in sidebar"))
           selectInput(
               "duplicate_extra_vars_select_var", label = NULL, choices = names(hfc_dataset()),
               multiple = TRUE
@@ -58,7 +134,6 @@
       })
       
       output$duplicate_table <- renderDT({
-          validate(need(hfc_file(), "Please upload dataset in sidebar"))
           duplicate_dataset()
       })
       
@@ -72,6 +147,37 @@
       output$duplicate_table_dl <- renderUI({
           req(hfc_file())
           downloadButton("duplicate_table_for_dl", label = "Download Table")
+      })
+      
+      output$duplicate_output <- renderUI({
+          card(
+              height = "85vh",
+              DTOutput("duplicate_table"),
+              uiOutput("duplicate_table_dl")
+          )
+      })
+      
+      output$output_tab_nodata <- renderUI({
+          "Please upload your data in the \"Upload Data\" Tab."
+      })
+      
+      output$output_tab_data <- renderUI({
+          navset_tab(
+              nav_panel("Duplicates", uiOutput("duplicate_output")),
+              nav_panel("Outliers", "Hello outliers"),
+              nav_panel("Enumerator", "Hello enumerator"),
+              nav_panel("Admin Level", "Hello admin level"),
+              nav_panel("Tracking", "Hello tracking"),
+              nav_panel("Programming", "Hello programming")
+          )
+      })
+      
+      output$output_tab <- renderUI({
+          if(is.null(hfc_file())) {
+              return(uiOutput("output_tab_nodata"))
+          } else {
+              return(uiOutput("output_tab_data"))
+          }
       })
   }
   

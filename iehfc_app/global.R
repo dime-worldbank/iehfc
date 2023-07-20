@@ -4,10 +4,7 @@
 
   ## 1. Load Packages ----
   
-  library(shiny)
-  library(bslib)
-  library(dplyr)
-  library(ggplot2)
-  library(janitor)
-  library(data.table)
+  if(!require(pacman)) install.packages("pacman")
+  
+  pacman::p_load(shiny, bslib, dplyr, tidyr, purrr, ggplot2, janitor, data.table, DT)
   
