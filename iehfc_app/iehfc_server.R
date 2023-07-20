@@ -3,6 +3,7 @@
   library(shiny)
   library(bslib)
   library(DT)
+  library(bsicons)
   
   iehfc_server <- function(input, output) {
       
@@ -41,7 +42,7 @@
       })
       
       output$upload_tab_nodata <- renderUI({
-          "No data"
+          "Please upload your dataset using the sidebar on the left."
       })
       
       output$upload_tab_data <- renderUI({
@@ -91,7 +92,7 @@
       
       ## Setup Tab ----
       
-        ### Check Selection
+        ### Check Selection ----
       
       output$check_select <- renderUI({
           checkboxGroupInput(
@@ -101,13 +102,17 @@
                   "Unit of Observation-Level", "Survey Programming"
               ),
               choiceValues = list(
-                  "duplicates", "outliers", "enumerator", "admin", "unit", "programming"
+                  "duplicate", "outlier", "enumerator", "admin", "unit", "programming"
               ),
-              selected = c("duplicates")
+              selected = c("duplicate")
           )
       })
       
-        ### Duplicate Parameter Selection
+      selected_checks <- reactive({
+          input$check_select
+      })
+      
+        ### Duplicate Check Setup ----
       
       output$duplicate_id_select <- renderUI({
           selectInput(
@@ -118,13 +123,113 @@
       
       output$duplicate_extra_vars_select <- renderUI({
           selectInput(
-              "duplicate_extra_vars_select_var", label = NULL, choices = names(hfc_dataset()),
+              "duplicate_extra_vars_select_var", label = NULL,
+              choices = hfc_dataset() %>%
+                  names() %>%
+                  subset(. != duplicate_id_var()), # Remove the variable already selected as id var from the selection
               multiple = TRUE
           )
       })
       
+      output$duplicate_setup <- renderUI(
+          card(
+              height = "30vh", fill = FALSE,
+              full_screen = TRUE,
+              card_header(
+                  "Duplicate Check Setup"
+              ),
+              card_body(
+                  "This is where the explanatory text for how to use this check will go. Imagine that this will be able to be collapsed or expanded using a \"?\" button in the top right of the card."
+              ),
+              card_body(
+                  layout_column_wrap(
+                      width = 1/3,
+                      "",
+                      tooltip(
+                          span("ID Variable", bsicons::bs_icon("question-circle-fill")),
+                          "Extra information on how this parameter works",
+                          placement = "left"
+                      ),
+                      uiOutput("duplicate_id_select"),
+                      "",
+                      tooltip(
+                          span("Additional Variables", bsicons::bs_icon("question-circle-fill")),
+                          "Extra information on how this parameter works",
+                          placement = "left"
+                      ),
+                      uiOutput("duplicate_extra_vars_select")
+                  )
+              )
+          )
+      )
+      
+        ### Outlier Check Setup ----
+      
+      output$outlier_setup <- renderUI(
+          card(
+              card_header("Outlier Check Setup")
+          )
+      )
+      
+        ### Enumerator Check Setup ----
+      
+      output$enumerator_setup <- renderUI(
+          card(
+              card_header("Enumerator Check Setup")
+          )
+      )
+      
+        ### Administrative Unit Check Setup ----
+      
+      output$admin_setup <- renderUI(
+          card(
+              card_header("Administrative Unit Check Setup")
+          )
+      )
+      
+        ### Unit of Observation Check Setup ----
+      
+      output$unit_setup <- renderUI(
+          card(
+              card_header("Unit of Observation Check Setup")
+          )
+      )
+      
+        ### Survey Programming Check Setup ----
+      
+      output$programming_setup <- renderUI(
+          card(
+              card_header("Survey Programming Check Setup")
+          )
+      )
+      
+        ### Setup Tab Setup ----
+      
       output$setup_tab_nodata <- renderUI({
           "Please upload your data in the \"Upload Data\" Tab."
+      })
+      
+      setup_check_list <- reactive({
+          if(length(selected_checks()) == 0) { # No checks selected
+              "Please select the high-frequency check(s) you would like to perform from the list in the sidebar."
+          } else {
+              selected_checks() %>%
+                  purrr::map(
+                      ~ uiOutput(paste0(.x, "_setup")) # Takes the name of the selected check and converts it to the corresponding card
+                  )
+          }
+      })
+      
+      output$setup_tab_body <- renderUI({
+          layout_column_wrap(
+              height = "90vh",
+              width = 1,
+              setup_check_list()
+          )
+      })
+      
+      output$setup_run_hfcs_button <- renderUI({
+          actionButton("run_hfcs", "RUN HFCS")
       })
       
       output$setup_tab_data <- renderUI({
@@ -135,22 +240,12 @@
                   card(
                       card_header("Data Quality Checks"),
                       uiOutput("check_select")
+                  ),
+                  card(
+                      uiOutput("setup_run_hfcs_button")
                   )
               ),
-              card(
-                  height = "30vh", fill = FALSE,
-                  full_screen = TRUE,
-                  card_header("Duplicate Variable Identification"),
-                  card_body(
-                      layout_column_wrap(
-                          width = 1/3,
-                          "", "ID Variable",
-                          uiOutput("duplicate_id_select"),
-                          "", "Additional Variables",
-                          uiOutput("duplicate_extra_vars_select")
-                      )
-                  )
-              )
+              uiOutput("setup_tab_body")
           )
       })
       
@@ -163,6 +258,10 @@
       })
       
       ## Output Tab ----
+      
+      show_outputs <- reactive({
+          input$run_hfcs
+      })
       
         ### Duplicate Outputs ----
       
@@ -186,9 +285,9 @@
               )
       })
       
-      output$duplicate_table <- renderDT({
-          duplicate_dataset()
-      })
+      output$duplicate_table <- renderDT(
+          duplicate_dataset(), fillContainer = TRUE
+      )
       
       output$duplicate_table_for_dl <- downloadHandler(
           filename = "duplicate_table.csv",
@@ -198,7 +297,6 @@
       )
       
       output$duplicate_table_dl <- renderUI({
-          req(hfc_file())
           downloadButton("duplicate_table_for_dl", label = "Download Table")
       })
       
@@ -210,8 +308,14 @@
           )
       })
       
+        ### Output Tab Setup ----
+      
       output$output_tab_nodata <- renderUI({
           "Please upload your data in the \"Upload Data\" Tab."
+      })
+      
+      output$output_tab_norun <- renderUI({
+          "Please click on the \"Run HFCs\" button in the \"Check Selection and Setup\" tab to display outputs."
       })
       
       output$output_tab_data <- renderUI({
@@ -228,6 +332,8 @@
       output$output_tab <- renderUI({
           if(is.null(hfc_file())) {
               return(uiOutput("output_tab_nodata"))
+          } else if(is.null(show_outputs()) | show_outputs() == 0) {
+              return(uiOutput("output_tab_norun"))
           } else {
               return(uiOutput("output_tab_data"))
           }
