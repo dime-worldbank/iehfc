@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+
+h1 {
+  font-family: 'Atkinson Hyperlegible', serif;
+}
+
+h2 {
+  font-family: 'Atkinson Hyperlegible', serif;
+}
+
+h3 {
+  font-family: 'Atkinson Hyperlegible', serif;
+}
+
+body {
+  font-family: 'Atkinson Hyperlegible', serif;
+}
+
+code {
+  font-family: 'Fira Code', monospace;
+}
