@@ -6,7 +6,10 @@
   
   page_navbar(
       title = "iehfc",
-      nav_panel("Introduction", "Hello introduction"),
+      nav_panel(
+          "Introduction",
+          includeMarkdown("intro.Rmd")
+      ),
       nav_panel(
           "Upload Data",
           uiOutput("upload_tab")
@@ -16,7 +19,7 @@
           uiOutput("setup_tab")
       ),
       nav_panel(
-          "iehfc Outputs",
+          "Outputs",
           uiOutput("output_tab")
       ),
       nav_spacer(),
@@ -29,9 +32,9 @@
       nav_item(
           tags$a("Github", href = "https://www.github.com")
       ),
-      theme = bs_theme(
-          base_font = font_google("Atkinson Hyperlegible"),
-          code_font = font_google("Fira Code")
+      theme = bs_theme() %>%
+      bs_add_rules(
+          sass::sass_file("www/custom.css")
       )
   )
   

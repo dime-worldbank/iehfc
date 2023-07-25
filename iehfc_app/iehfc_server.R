@@ -50,13 +50,25 @@
               heigth = "85vh",
               width = 1,
               card(
-                  card_header("Explore Dataset"),
+                  card_header(
+                      span("Explore Dataset", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "Use this section to make sure that your dataset is displaying as expected, or if you need to refer back to it while setting up your checks in the next tab.",
+                              placement = "auto"
+                          )
+                  ),
                   DTOutput(
                       "hfc_ds_display"
                   )
               ),
               card(
-                  card_header("Explore Dataset Names"),
+                  card_header(
+                      span("Explore Dataset Names", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "You can refer back to these variable names while setting the parameters for your checks in the next tab.",
+                          placement = "auto"
+                      )
+                  ),
                   verbatimTextOutput(
                       "hfc_ds_names_display"
                   )
@@ -74,15 +86,23 @@
       
       output$upload_tab <- renderUI({
           layout_sidebar(
-              height = "90vh",
+              height = "88vh",
               sidebar = sidebar(
                   width = "30%",
                   card(
                       fileInput(
                           "hfc_file",
-                          label = "Upload HFC Data",
-                          accept = "csv",
+                          label = span("Upload HFC Data", bsicons::bs_icon("question-circle-fill")) %>%
+                              tooltip(
+                                  "This is where you upload the dataset on which you want to run data quality checks. In the next version of this application, there will be error checks at this point to make sure that the dataset is in the right format/encoding",
+                                  placement = "auto"
+                              ),
+                          accept = ".csv",
                           placeholder = "mydata.csv"
+                      ),
+                      span(
+                          "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
+                          style = "color: red; font-size: 12px;"
                       )
                   )
               ),
@@ -136,27 +156,28 @@
               height = "30vh", fill = FALSE,
               full_screen = TRUE,
               card_header(
-                  "Duplicate Check Setup"
-              ),
-              card_body(
-                  "This is where the explanatory text for how to use this check will go. Imagine that this will be able to be collapsed or expanded using a \"?\" button in the top right of the card."
+                  span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "The duplicate check requires you to provide (1) the variable you want to check for duplicates and (2) any additional variable you want to include in the output table",
+                          placement = "auto"
+                      )
               ),
               card_body(
                   layout_column_wrap(
                       width = 1/3,
                       "",
-                      tooltip(
-                          span("ID Variable", bsicons::bs_icon("question-circle-fill")),
-                          "Extra information on how this parameter works",
-                          placement = "left"
-                      ),
+                      span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "This is the variable that you want to check for duplicates (usually a uniquely identified ID)",
+                              placement = "left"
+                          ),
                       uiOutput("duplicate_id_select"),
                       "",
-                      tooltip(
-                          span("Additional Variables", bsicons::bs_icon("question-circle-fill")),
-                          "Extra information on how this parameter works",
-                          placement = "left"
-                      ),
+                      span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "These are additional variables that you may find useful in addressing duplicate observations in your data",
+                              placement = "left"
+                          ),
                       uiOutput("duplicate_extra_vars_select")
                   )
               )
@@ -229,7 +250,12 @@
       })
       
       output$setup_run_hfcs_button <- renderUI({
-          actionButton("run_hfcs", "RUN HFCS")
+          actionButton(
+              "run_hfcs",
+              "RUN HFCS",
+              icon("paper-plane"),
+              class = "btn btn-outline-primary btn-lg"
+          )
       })
       
       output$setup_tab_data <- renderUI({
@@ -238,7 +264,13 @@
               sidebar = sidebar(
                   width = "30%",
                   card(
-                      card_header("Data Quality Checks"),
+                      card_header(
+                          span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
+                              tooltip(
+                                  "This is where you choose which data quality checks to run. For each check that you select, a corresponding box will appear on the right. You will need to make sure that the parameters within the box are correct before proceeding. Once you are done, click on the \"Run HFCs\" button below.",
+                                  placement = "auto"
+                              )
+                      ),
                       uiOutput("check_select")
                   ),
                   card(
@@ -258,10 +290,6 @@
       })
       
       ## Output Tab ----
-      
-      show_outputs <- reactive({
-          input$run_hfcs
-      })
       
         ### Duplicate Outputs ----
       
@@ -283,7 +311,8 @@
                       c(duplicate_id_var(), duplicate_extra_vars())
                   )
               )
-      })
+      }) %>%
+      bindEvent(input$run_hfcs)
       
       output$duplicate_table <- renderDT(
           duplicate_dataset(), fillContainer = TRUE
@@ -302,7 +331,6 @@
       
       output$duplicate_output <- renderUI({
           card(
-              height = "85vh",
               DTOutput("duplicate_table"),
               uiOutput("duplicate_table_dl")
           )
@@ -332,7 +360,7 @@
       output$output_tab <- renderUI({
           if(is.null(hfc_file())) {
               return(uiOutput("output_tab_nodata"))
-          } else if(is.null(show_outputs()) | show_outputs() == 0) {
+          } else if(input$run_hfcs == 0) {
               return(uiOutput("output_tab_norun"))
           } else {
               return(uiOutput("output_tab_data"))

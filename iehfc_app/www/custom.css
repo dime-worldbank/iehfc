@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
 
 h3 {
-    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-family: 'Atkinson Hyperlegible', serif;
     font-size: 24px;
     font-weight: bold;
 }
@@ -15,4 +15,15 @@ body {
 
 code {
     font-family: 'Fira Code', monospace;
+}
+
+#setup_run_hfcs_button {
+    color: #fff;
+    background-color: #337ab7;
+    border-color: #2e6da4;
+}
+#setup_run_hfcs_button:hover {
+    color: #337ab7;
+    background-color: #fff;
+    border-color: #2e6da4;
 }
