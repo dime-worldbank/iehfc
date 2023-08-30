@@ -1,25 +1,44 @@
+#########################################
+#### User interface for IEHFC app ####
+#########################################
 
+# libraries
 
   library(shiny)
   library(bslib)
   library(DT)
+  library(shinyjs)
+
+# read source scripts
+
+source("scripts/introduction_tab.R")
+
+
   
-  page_navbar(
+navbarPage(
       title = "iehfc",
-      nav_panel(
+      
+      # Initialize shinyjs
+      useShinyjs(),
+      
+      tabPanel(
           "Introduction",
-          includeMarkdown("intro.Rmd")
+          introduction_tab 
+         # includeMarkdown("intro.Rmd")
       ),
-      nav_panel(
+      tabPanel(
           "Upload Data",
+          id = "upload_tab",  # Give an ID for reference
           uiOutput("upload_tab")
       ),
-      nav_panel(
+      tabPanel(
           "Check Selection and Setup",
+          id = "setup_tab",  # Give an ID for reference
           uiOutput("setup_tab")
       ),
-      nav_panel(
+      tabPanel(
           "Outputs",
+          id = "output_tab",  # Give an ID for reference
           uiOutput("output_tab")
       ),
       nav_spacer(),
@@ -37,4 +56,6 @@
           sass::sass_file("www/custom.css")
       )
   )
+  
+  
   
