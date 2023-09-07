@@ -4,8 +4,14 @@
   library(bslib)
   library(DT)
   library(bsicons)
+  library(shinydashboard)
   
-  iehfc_server <- function(input, output) {
+  iehfc_server <- function(input, output, session) {
+      
+      observeEvent(input$gotoTab, {
+          # Use JavaScript to navigate to the selected tab
+          shinyjs::runjs(sprintf("$('.nav-item a:contains(%s)').tab('show')", input$gotoTab))
+      })
       
       ## Upload Tab ----
       
@@ -102,7 +108,7 @@
                       ),
                       span(
                           "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
-                          style = "color: red; font-size: 12px;"
+                          style = "color: blue; font-size: 12px;"
                       )
                   )
               ),
@@ -134,24 +140,38 @@
       
         ### Duplicate Check Setup ----
       
+      current_duplicate_id_var <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
+      current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
+      
+      # Observe any change in 'duplicate_id_select_var' and update current_duplicate_id_var
+      observe({
+          current_duplicate_id_var(input$duplicate_id_select_var)
+      })
+      
+      # Observe any change in 'duplicate_extra_vars_select_var' and update current_duplicate_extra_vars
+      observe({
+          current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
+      })
+      
       output$duplicate_id_select <- renderUI({
-          selectInput(
-              "duplicate_id_select_var", label = NULL,
-              choices = names(hfc_dataset())
-          )
+          selectizeInput("duplicate_id_select_var", label = NULL, 
+                         choices = names(hfc_dataset()), 
+                         selected = current_duplicate_id_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$duplicate_extra_vars_select <- renderUI({
-          selectInput(
-              "duplicate_extra_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  names() %>%
-                  subset(. != duplicate_id_var()), # Remove the variable already selected as id var from the selection
-              multiple = TRUE
-          )
+          selectizeInput("duplicate_extra_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             names() %>%
+                             subset(. != duplicate_id_var()), 
+                         selected = current_duplicate_extra_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
-      output$duplicate_setup <- renderUI(
+      
+      output$duplicate_setup <- renderUI({
           card(
               height = "30vh", fill = FALSE,
               full_screen = TRUE,
@@ -163,26 +183,24 @@
                       )
               ),
               card_body(
-                  layout_column_wrap(
-                      width = 1/3,
-                      "",
-                      span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                          tooltip(
-                              "This is the variable that you want to check for duplicates (usually a uniquely identified ID)",
-                              placement = "left"
-                          ),
-                      uiOutput("duplicate_id_select"),
-                      "",
-                      span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                          tooltip(
-                              "These are additional variables that you may find useful in addressing duplicate observations in your data",
-                              placement = "left"
-                          ),
-                      uiOutput("duplicate_extra_vars_select")
+                  fluidRow(
+                      column(6, 
+                             span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("This is the variable that you want to check for duplicates (usually a uniquely identified ID)", 
+                                         placement = "right"),
+                             uiOutput("duplicate_id_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6,
+                             span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("These are additional variables that you may find useful in addressing duplicate observations in your data", 
+                                         placement = "right"),
+                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
                   )
               )
           )
-      )
+      })
+      
       
         ### Outlier Check Setup ----
       
@@ -256,6 +274,12 @@
               icon("paper-plane"),
               class = "btn btn-outline-primary btn-lg"
           )
+      })
+      
+      # take you to output tab
+      
+      observeEvent(input$run_hfcs, {
+          updateNavbarPage(session, "tabs", selected = "output_tab")
       })
       
       output$setup_tab_data <- renderUI({
