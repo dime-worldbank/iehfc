@@ -11,11 +11,9 @@
 
 # read source scripts
 
-source("scripts/introduction_tab.R")
+  source("ui_scripts/introduction_tab.R")
 
-
-  
-navbarPage(
+  navbarPage(
       title = "iehfc",
       
       # Initialize shinyjs
@@ -24,7 +22,7 @@ navbarPage(
       tabPanel(
           "Introduction",
           introduction_tab 
-         # includeMarkdown("intro.Rmd")
+          # includeMarkdown("intro.Rmd")
       ),
       tabPanel(
           "Upload Data",
@@ -52,9 +50,9 @@ navbarPage(
           tags$a("Github", href = "https://www.github.com")
       ),
       theme = bs_theme() %>%
-      bs_add_rules(
-          sass::sass_file("www/custom.css")
-      )
+          bs_add_rules(
+              sass::sass_file("www/custom.css")
+          )
   )
   
   

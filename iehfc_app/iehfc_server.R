@@ -8,10 +8,17 @@
   
   iehfc_server <- function(input, output, session) {
       
-      observeEvent(input$gotoTab, {
-          # Use JavaScript to navigate to the selected tab
-          shinyjs::runjs(sprintf("$('.nav-item a:contains(%s)').tab('show')", input$gotoTab))
-      })
+      source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
+      source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
+      
+      observeEvent(
+          input$gotoTab, {
+              # Use JavaScript to navigate to the selected tab
+              shinyjs::runjs(
+                  sprintf("$('.nav-item a:contains(%s)').tab('show')", input$gotoTab)
+              )
+          }
+      )
       
       ## Upload Tab ----
       
@@ -155,7 +162,8 @@
       
       output$duplicate_id_select <- renderUI({
           selectizeInput("duplicate_id_select_var", label = NULL, 
-                         choices = names(hfc_dataset()), 
+                         choices = hfc_dataset() %>%
+                             names,
                          selected = current_duplicate_id_var(),
                          options = list('dropdownParent' = 'body'))
       })
@@ -163,13 +171,14 @@
       output$duplicate_extra_vars_select <- renderUI({
           selectizeInput("duplicate_extra_vars_select_var", label = NULL,
                          choices = hfc_dataset() %>%
-                             names() %>%
-                             subset(. != duplicate_id_var()), 
+                             select(
+                                 -all_of(duplicate_id_var()) # Everything but the ID variable
+                             ) %>%
+                             names(), 
                          selected = current_duplicate_extra_vars(),
                          multiple = TRUE,
                          options = list('dropdownParent' = 'body'))
       })
-      
       
       output$duplicate_setup <- renderUI({
           card(
@@ -201,14 +210,136 @@
           )
       })
       
-      
         ### Outlier Check Setup ----
       
-      output$outlier_setup <- renderUI(
+      current_indiv_outlier_vars <- reactiveVal() # For storing current state of 'indiv_outlier_vars_select_var'
+      current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
+      current_outlier_id_var     <- reactiveVal() # For storing current state of 'outlier_id_select_var'
+      current_outlier_extra_vars <- reactiveVal() # For storing current state of 'outlier_extra_vars_select_var'
+      
+      # Observe any change in 'indiv_outlier_vars_select_var' and update current_indiv_outlier_vars
+      observe({
+          current_indiv_outlier_vars(input$indiv_outlier_vars_select_var)
+      })
+      
+      # Observe any change in 'group_outlier_vars_select_var' and update current_group_outlier_vars
+      observe({
+          current_group_outlier_vars(input$group_outlier_vars_select_var)
+      })
+      
+      # Observe any change in 'indiv_outlier_vars_select_var' and update current_outlier_id_var
+      observe({
+          current_outlier_id_var(input$outlier_id_select_var)
+      })
+      
+      # Observe any change in 'indiv_outlier_vars_select_var' and update current_outlier_id_var
+      observe({
+          current_outlier_extra_vars(input$outlier_extra_vars_select_var)
+      })
+      
+      output$indiv_outlier_vars_select <- renderUI({
+          selectizeInput("indiv_outlier_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(outlier_id_var()) # Everything but the ID variable
+                             ) %>%
+                             names(), 
+                         selected = current_indiv_outlier_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$group_outlier_vars_select <- renderUI({
+          selectizeInput("group_outlier_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(duplicate_id_var()) # Everything but the ID variable
+                             ) %>%
+                             names() %>%
+                             tibble(var = .) %>%
+                             filter(
+                                 str_detect(var, "_[a-zA-z]{0,1}[0-9]+$") # All variables with e.g form "_1", "_01", or "_p1"
+                             ) %>%
+                             mutate(
+                                 group = str_replace(var, "_{0,1}[0-9]+$", "") # Extract common portion of variable names
+                             ) %>%
+                             group_by(group) %>%
+                             filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
+                             select(group) %>%
+                             distinct() %>%
+                             pull(), 
+                         selected = current_group_outlier_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$outlier_id_select <- renderUI({
+          selectizeInput("outlier_id_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names(), 
+                         selected = current_outlier_id_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$outlier_extra_vars_select <- renderUI({
+          selectizeInput("outlier_extra_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(duplicate_id_var()), # Everything but the ID variable or outlier variables
+                                 -any_of(indiv_outlier_vars()),
+                                 -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
+                             ) %>%
+                             names(), 
+                         selected = current_outlier_extra_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$outlier_setup <- renderUI({
           card(
-              card_header("Outlier Check Setup")
+              height = "30vh", fill = FALSE,
+              full_screen = TRUE,
+              card_header(
+                  span("Outlier Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Placeholder",
+                          placement = "auto"
+                      )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6,
+                             span("Individual Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Placeholder", 
+                                         placement = "right"),
+                             uiOutput("indiv_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6,
+                             span("Grouped Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Placeholder", 
+                                         placement = "right"),
+                             uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6, 
+                             span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("This is the dataset's ID variable", 
+                                         placement = "right"),
+                             uiOutput("outlier_id_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6,
+                             span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("These are additional variables that you may find useful in addressing outliers in your data", 
+                                         placement = "right"),
+                             uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              )
           )
-      )
+      })
       
         ### Enumerator Check Setup ----
       
@@ -317,30 +448,18 @@
       
         ### Duplicate Outputs ----
       
-      duplicate_id_var <- reactive({
-          input$duplicate_id_select_var
-      })
+# See server_scripts/duplicates.R for details on outputs creation
       
-      duplicate_extra_vars <- reactive({
-          input$duplicate_extra_vars_select_var
-      })
-      
-      duplicate_dataset <- reactive({
-          hfc_dataset() %>%
-              group_by(!!sym(duplicate_id_var())) %>%
-              filter(n() > 1) %>%
-              ungroup() %>%
-              select(
-                  all_of(
-                      c(duplicate_id_var(), duplicate_extra_vars())
-                  )
+      output$duplicate_output <- renderUI({
+          if("duplicate" %in% selected_checks()) {
+              card(
+                  DTOutput("duplicate_table"),
+                  uiOutput("duplicate_table_dl")
               )
-      }) %>%
-      bindEvent(input$run_hfcs)
-      
-      output$duplicate_table <- renderDT(
-          duplicate_dataset(), fillContainer = TRUE
-      )
+          } else {
+              "If you would like to see Duplicate Checks, please select \"Duplicates\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+          }
+      })
       
       output$duplicate_table_for_dl <- downloadHandler(
           filename = "duplicate_table.csv",
@@ -353,11 +472,30 @@
           downloadButton("duplicate_table_for_dl", label = "Download Table")
       })
       
-      output$duplicate_output <- renderUI({
-          card(
-              DTOutput("duplicate_table"),
-              uiOutput("duplicate_table_dl")
-          )
+        ### Outlier Outputs ----
+      
+# See server_scripts/outliers.R for details on outputs creation
+      
+      output$outlier_output <- renderUI({
+          if("outlier" %in% selected_checks()) {
+              card(
+                  DTOutput("outlier_table"),
+                  uiOutput("outlier_table_dl")
+              )
+          } else {
+              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+          }
+      })
+      
+      output$outlier_table_for_dl <- downloadHandler(
+          filename = "outlier_table.csv",
+          content = function(file) {
+              write.csv(outlier_dataset(), file, row.names = FALSE)
+          }
+      )
+      
+      output$outlier_table_dl <- renderUI({
+          downloadButton("outlier_table_for_dl", label = "Download Table")
       })
       
         ### Output Tab Setup ----
@@ -373,7 +511,7 @@
       output$output_tab_data <- renderUI({
           navset_tab(
               nav_panel("Duplicates", uiOutput("duplicate_output")),
-              nav_panel("Outliers", "Hello outliers"),
+              nav_panel("Outliers", uiOutput("outlier_output")),
               nav_panel("Enumerator", "Hello enumerator"),
               nav_panel("Admin Level", "Hello admin level"),
               nav_panel("Tracking", "Hello tracking"),

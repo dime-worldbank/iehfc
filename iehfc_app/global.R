@@ -6,7 +6,10 @@
 
   if(!require(pacman)) install.packages("pacman")
 
-  pacman::p_load(shiny, dplyr, tidyr, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons, shinydashboard, shinyjs, markdown)
+  pacman::p_load(
+      shiny, dplyr, tidyr, stringr, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
+      shinydashboard, shinyjs, markdown
+  )
 
   remotes::install_github(repo = "rstudio/bslib", quiet = TRUE, upgrade = "never")
 
