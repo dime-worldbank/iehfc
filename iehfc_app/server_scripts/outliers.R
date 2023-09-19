@@ -84,7 +84,8 @@
   
   outlier_dataset <- reactive({
       bind_rows(indiv_outlier_dataset(), group_outlier_dataset())
-  })
+  }) %>%
+  bindEvent(input$run_hfcs)
   
   output$outlier_table <- renderDT(
       outlier_dataset(), fillContainer = TRUE

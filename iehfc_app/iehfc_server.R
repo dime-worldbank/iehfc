@@ -10,6 +10,7 @@
       
       source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
       source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
+      source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
       
       observeEvent(
           input$gotoTab, {
@@ -147,6 +148,10 @@
       
         ### Duplicate Check Setup ----
       
+      # Duplicate data quality checks:
+          # Duplicate IDs
+          # Additional variables for reference
+      
       current_duplicate_id_var <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
       current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
       
@@ -211,6 +216,11 @@
       })
       
         ### Outlier Check Setup ----
+      
+      # Outlier data quality checks:
+          # "Individual" outlier checks -- check individual variable for outliers
+          # "Group" outlier checks -- check group of variables (e.g. income for every household member) for outliers
+          # Additional variables for reference
       
       current_indiv_outlier_vars <- reactiveVal() # For storing current state of 'indiv_outlier_vars_select_var'
       current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
@@ -343,11 +353,131 @@
       
         ### Enumerator Check Setup ----
       
-      output$enumerator_setup <- renderUI(
+      # Enumerator data quality checks:
+          # Number of surveys per enumerator
+          # Average variable value per enumerator
+          # Number of surveys per day per enumerator (requires submission date variable)
+          # Average survey time per enumerator (requires survey duration)
+          # Average time per module per enumerator (requires module time)
+      
+      current_enumerator_var          <- reactiveVal() # For storing current state of 'enumerator_var_select_var'
+      current_enumerator_ave_vars     <- reactiveVal() # For storing current state of 'enumerator_ave_vars_select_var'
+      current_enumerator_date_var     <- reactiveVal() # For storing current state of 'enumerator_date_var_select_var'
+      current_enumerator_complete_var <- reactiveVal() # For storing current state of 'enumerator_complete_var_select_var'
+      
+      # Observe any change in 'enumerator_var_select_var' and update current_enumerator_var
+      observe({
+          current_enumerator_var(input$enumerator_var_select_var)
+      })
+      
+      # Observe any change in 'enumerator_ave_vars_select_var' and update current_enumerator_ave_vars
+      observe({
+          current_enumerator_ave_vars(input$enumerator_ave_vars_select_var)
+      })
+      
+      # Observe any change in 'enumerator_date_var_select_var' and update current_enumerator_date_var
+      observe({
+          current_enumerator_date_var(input$enumerator_date_var_select_var)
+      })
+      
+      # Observe any change in 'enumerator_complete_var_select_var' and update current_enumerator_complete_var
+      observe({
+          current_enumerator_complete_var(input$enumerator_complete_var_select_var)
+      })
+      
+      output$enumerator_var_select <- renderUI({
+          selectizeInput("enumerator_var_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names(), 
+                         selected = current_enumerator_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$enumerator_ave_vars_select <- renderUI({
+          selectizeInput("enumerator_ave_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(enumerator_var())
+                             ) %>%
+                             names(), 
+                         selected = current_enumerator_ave_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$enumerator_date_var_select <- renderUI({
+          selectizeInput("enumerator_date_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(enumerator_var())
+                                 ) %>%
+                                 names()
+                         ),
+                         selected = current_enumerator_date_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$enumerator_complete_var_select <- renderUI({
+          selectizeInput("enumerator_complete_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(enumerator_var())
+                                 ) %>%
+                                 names()
+                         ), 
+                         selected = current_enumerator_complete_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$enumerator_setup <- renderUI({
           card(
-              card_header("Enumerator Check Setup")
+              height = "30vh", fill = FALSE,
+              full_screen = TRUE,
+              card_header(
+                  span("Enumerator Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Placeholder",
+                          placement = "auto"
+                      )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6,
+                             span("Enumerator Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Placeholder", 
+                                         placement = "right"),
+                             uiOutput("enumerator_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6,
+                             span("Enumerator Average Value Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Placeholder", 
+                                         placement = "right"),
+                             uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6, 
+                             span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("This could be the date at which the survey was completed, or the the date at which the survey was submitted.", 
+                                         placement = "right"),
+                             uiOutput("enumerator_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6, 
+                             span("Submission Complete Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.", 
+                                         placement = "right"),
+                             uiOutput("enumerator_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              )
           )
-      )
+      })
       
         ### Administrative Unit Check Setup ----
       
@@ -454,7 +584,8 @@
           if("duplicate" %in% selected_checks()) {
               card(
                   DTOutput("duplicate_table"),
-                  uiOutput("duplicate_table_dl")
+                  uiOutput("duplicate_table_dl"),
+                  full_screen = TRUE
               )
           } else {
               "If you would like to see Duplicate Checks, please select \"Duplicates\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
@@ -480,7 +611,8 @@
           if("outlier" %in% selected_checks()) {
               card(
                   DTOutput("outlier_table"),
-                  uiOutput("outlier_table_dl")
+                  uiOutput("outlier_table_dl"),
+                  full_screen = TRUE
               )
           } else {
               "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
@@ -498,6 +630,97 @@
           downloadButton("outlier_table_for_dl", label = "Download Table")
       })
       
+        ### Enumerator Outputs ----
+      
+      output$enumerator_subs_table_output <- renderUI({
+          card(
+              card_header(
+                  span("Submissions by Enumerator", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Shows the total number of submissions per enumerator and (if a date variable was provided) the number of submissions per enumerator per day.",
+                          placement = "auto"
+                      )
+              ),
+              DTOutput("enumerator_subs_table"),
+              uiOutput("enumerator_subs_table_dl"),
+              full_screen = TRUE
+          )
+      })
+      
+      output$enumerator_subs_plot_output <- renderUI({
+          card(
+              plotlyOutput("enumerator_daily_subs_plot_rendered")
+          )
+      })
+      
+      output$enumerator_ave_vars_table_output <- renderUI({
+          card(
+              card_header(
+                  span("Variables' Average Value by Enumerator", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Shows the average value of key variables per enumerator.",
+                          placement = "auto"
+                      )
+              ),
+              DTOutput("enumerator_ave_vars_table"),
+              uiOutput("enumerator_ave_vars_table_dl"),
+              full_screen = TRUE
+          )
+      })
+      
+      enumerator_output_components <- reactive({
+          case_when(
+              enumerator_date_var() != "" & length(enumerator_ave_vars()) > 0 ~ list(
+                  c("enumerator_subs_table_output", "enumerator_subs_plot_output", "enumerator_ave_vars_table_output")
+              ),
+              enumerator_date_var() != "" ~ list(
+                  c("enumerator_subs_table_output", "enumerator_subs_plot_output")
+              ),
+              length(enumerator_ave_vars()) > 0 ~ list(
+                  c("enumerator_subs_table_output", "enumerator_ave_vars_table_output")
+              ),
+              TRUE ~ list("enumerator_subs_table_output")
+          ) %>%
+          unlist()
+      })
+      
+      output$enumerator_output <- renderUI({
+          if("enumerator" %in% selected_checks()) {
+              layout_column_wrap(
+                  height = "90vh",
+                  width = 1,
+                  enumerator_output_components() %>%
+                   purrr::map(
+                       ~ uiOutput(.x)
+                   )
+              )
+          } else {
+              "If you would like to see Enumerator-Level Checks, please select \"Enumerator-Level\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+          }
+      })
+      
+      output$enumerator_subs_table_for_dl <- downloadHandler(
+          filename = "enumerator_subs_table.csv",
+          content = function(file) {
+              write.csv(enumerator_subs_dataset(), file, row.names = FALSE)
+          }
+      )
+      
+      output$enumerator_subs_table_dl <- renderUI({
+          downloadButton("enumerator_subs_table_for_dl", label = "Download Table")
+      })
+      
+      output$enumerator_ave_vars_table_for_dl <- downloadHandler(
+          filename = "enumerator_ave_vars_table.csv",
+          content = function(file) {
+              write.csv(enumerator_ave_vars_dataset(), file, row.names = FALSE)
+          }
+      )
+      
+      output$enumerator_ave_vars_table_dl <- renderUI({
+          downloadButton("enumerator_ave_vars_table_for_dl", label = "Download Table")
+      })
+      
         ### Output Tab Setup ----
       
       output$output_tab_nodata <- renderUI({
@@ -512,7 +735,7 @@
           navset_tab(
               nav_panel("Duplicates", uiOutput("duplicate_output")),
               nav_panel("Outliers", uiOutput("outlier_output")),
-              nav_panel("Enumerator", "Hello enumerator"),
+              nav_panel("Enumerator", uiOutput("enumerator_output")),
               nav_panel("Admin Level", "Hello admin level"),
               nav_panel("Tracking", "Hello tracking"),
               nav_panel("Programming", "Hello programming")
