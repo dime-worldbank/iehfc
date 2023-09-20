@@ -8,7 +8,7 @@
 
   pacman::p_load(
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot
   )
 
   remotes::install_github(repo = "rstudio/bslib", quiet = TRUE, upgrade = "never")
