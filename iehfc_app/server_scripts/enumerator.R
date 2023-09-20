@@ -37,7 +37,16 @@
               ) %>%
               ungroup()
       } else {
-          tibble() %>% mutate(!!enumerator_var() := NA)
+          tibble() %>% # So that it merges without error, but does not add information
+              mutate(
+                  !!enumerator_var() := case_when(
+                      class(hfc_dataset()[[enumerator_var()]]) == "character" ~ list(NA_character_),
+                      class(hfc_dataset()[[enumerator_var()]]) == "integer"   ~ list(NA_integer_),
+                      class(hfc_dataset()[[enumerator_var()]]) == "numeric"   ~ list(NA_real_),
+                      TRUE                                                    ~ list(NA)
+                  ) %>%
+                  unlist()
+              )
       }
   }) %>%
   bindEvent(input$run_hfcs)
@@ -64,7 +73,16 @@
                   values_from = num_submissions
               )
       } else {
-          tibble() %>% mutate(!!enumerator_var() := NA)
+          tibble() %>% # So that it merges without error, but does not add information
+              mutate(
+                  !!enumerator_var() := case_when(
+                      class(hfc_dataset()[[enumerator_var()]]) == "character" ~ list(NA_character_),
+                      class(hfc_dataset()[[enumerator_var()]]) == "integer"   ~ list(NA_integer_),
+                      class(hfc_dataset()[[enumerator_var()]]) == "numeric"   ~ list(NA_real_),
+                      TRUE                                                    ~ list(NA)
+                  ) %>%
+                  unlist()
+              )
       }
   }) %>%
   bindEvent(input$run_hfcs)
@@ -92,22 +110,37 @@
               cumul_submissions = cumsum(
                   ifelse(is.na(num_submissions), 0, num_submissions) # Need to do this because cumsum() doesn't have an 'na.rm' argument
               )
-          )
+          ) %>%
+          ungroup()
+      
+      # Set up highlighting individual enumerators
       
       enumerator_daily_subs_ggplot <- plot_data %>%
           mutate(
               !!enumerator_var() := factor(!!sym(enumerator_var()))
           ) %>%
           group_by(!!sym(enumerator_var())) %>%
+          highlight_key(
+              as.formula(
+                  paste0("~", enumerator_var())
+              )
+          ) %>%
           ggplot() +
           geom_line(
               aes(x = date_var_formatted, y = cumul_submissions, color = !!sym(enumerator_var()))
           ) +
+          labs(
+              x = "Date",
+              y = "Cumulative # of Submissions"
+          ) +
+          theme_minimal() +
           theme(
               legend.position = "none"
           )
       
-      ggplotly(enumerator_daily_subs_ggplot, tooltip = c("color", "x"))
+      enumerator_daily_subs_ggplotly <- ggplotly(enumerator_daily_subs_ggplot, tooltip = c("color", "y"))
+      
+      highlight(enumerator_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
         
   })
   

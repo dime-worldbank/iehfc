@@ -11,6 +11,7 @@
       source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
       source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
       source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
+      source("iehfc_app/server_scripts/admin.R",      local = TRUE)
       
       observeEvent(
           input$gotoTab, {
@@ -481,17 +482,136 @@
       
         ### Administrative Unit Check Setup ----
       
-      output$admin_setup <- renderUI(
+      # Administrative-unit data quality checks:
+      # Number of surveys per administrative unit
+      # Number of surveys per day per administrative unit (requires submission date variable)
+      # (Eventually) Progress (requires principal sample dataset)
+      
+      current_admin_var          <- reactiveVal() # For storing current state of 'admin_var_select_var'
+      current_admin_super_vars    <- reactiveVal() # For storing current state of 'admin_super_vars_select_var'
+      current_admin_date_var     <- reactiveVal() # For storing current state of 'admin_date_var_select_var'
+      current_admin_complete_var <- reactiveVal() # For storing current state of 'admin_complete_var_select_var'
+      
+      # Observe any change in 'admin_var_select_var' and update current_admin_var
+      observe({
+          current_admin_var(input$admin_var_select_var)
+      })
+      
+      # Observe any change in 'admin_var_select_var' and update current_admin_var
+      observe({
+          current_admin_super_vars(input$admin_super_vars_select_var)
+      })
+      
+      # Observe any change in 'admin_date_var_select_var' and update current_admin_date_var
+      observe({
+          current_admin_date_var(input$admin_date_var_select_var)
+      })
+      
+      # Observe any change in 'admin_complete_var_select_var' and update current_admin_complete_var
+      observe({
+          current_admin_complete_var(input$admin_complete_var_select_var)
+      })
+      
+      output$admin_var_select <- renderUI({
+          selectizeInput("admin_var_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names(), 
+                         selected = current_admin_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$admin_super_vars_select <- renderUI({
+          selectizeInput("admin_super_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(admin_var())
+                             ) %>%
+                             names(), 
+                         selected = current_admin_super_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$admin_date_var_select <- renderUI({
+          selectizeInput("admin_date_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(admin_var())
+                                 ) %>%
+                                 names()
+                         ),
+                         selected = current_admin_date_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$admin_complete_var_select <- renderUI({
+          selectizeInput("admin_complete_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(admin_var())
+                                 ) %>%
+                                 names()
+                         ), 
+                         selected = current_admin_complete_var(),
+                         options = list('dropdownParent' = 'body'))
+      })
+      
+      output$admin_setup <- renderUI({
           card(
-              card_header("Administrative Unit Check Setup")
+              height = "30vh", fill = FALSE,
+              full_screen = TRUE,
+              card_header(
+                  span("Administrative Unit-Level Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Placeholder",
+                          placement = "auto"
+                      )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6,
+                             span("Administrative Unit Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Placeholder", 
+                                         placement = "right"),
+                             uiOutput("admin_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6,
+                             span("Higher-Level Administrative Unit Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Placeholder", 
+                                         placement = "right"),
+                             uiOutput("admin_super_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6, 
+                             span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("This could be the date at which the survey was completed, or the the date at which the survey was submitted.", 
+                                         placement = "right"),
+                             uiOutput("admin_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6, 
+                             span("Submission Complete Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.", 
+                                         placement = "right"),
+                             uiOutput("admin_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              )
           )
-      )
+      })
       
         ### Unit of Observation Check Setup ----
       
       output$unit_setup <- renderUI(
           card(
-              card_header("Unit of Observation Check Setup")
+              card_header("Unit of Observation Check Setup"),
+              "Under construction!"
           )
       )
       
@@ -499,7 +619,8 @@
       
       output$programming_setup <- renderUI(
           card(
-              card_header("Survey Programming Check Setup")
+              card_header("Survey Programming Check Setup"),
+              "Under construction!"
           )
       )
       
@@ -649,7 +770,23 @@
       
       output$enumerator_subs_plot_output <- renderUI({
           card(
-              plotlyOutput("enumerator_daily_subs_plot_rendered")
+              card_header(
+                  span("Cumulative Submissions by Enumerator", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Placeholder",
+                          placement = "auto"
+                      )
+              ),
+              plotlyOutput("enumerator_daily_subs_plot_rendered"),
+              fluidRow(
+                  column(3,
+                      uiOutput("enumerator_subs_plot_dl_html")
+                  ),
+                  column(3,
+                      uiOutput("enumerator_subs_plot_dl_png")
+                  )
+              ),
+              full_screen = TRUE
           )
       })
       
@@ -699,6 +836,10 @@
           }
       })
       
+      output$enumerator_subs_table_dl <- renderUI({
+          downloadButton("enumerator_subs_table_for_dl", label = "Download Table")
+      })
+      
       output$enumerator_subs_table_for_dl <- downloadHandler(
           filename = "enumerator_subs_table.csv",
           content = function(file) {
@@ -706,9 +847,42 @@
           }
       )
       
-      output$enumerator_subs_table_dl <- renderUI({
-          downloadButton("enumerator_subs_table_for_dl", label = "Download Table")
+      output$enumerator_subs_plot_dl_html <- renderUI({
+          downloadButton("enumerator_subs_plot_for_dl_html", label = "Download Plot (HTML)")
       })
+      
+      output$enumerator_subs_plot_for_dl_html <- downloadHandler(
+          filename = "enumerator_subs_plot.html",
+          content = function(file) {
+              # Because this is a plotly object, using htmlWidget::savewidget()
+              htmlwidgets::saveWidget(
+                  as_widget(test_plotly),
+                  file = file,
+                  selfcontained = FALSE
+              )
+          }
+      )
+      
+      output$enumerator_subs_plot_dl_png <- renderUI({
+          downloadButton("enumerator_subs_plot_for_dl_png", label = "Download Plot (PNG)")
+      })
+      
+      output$enumerator_subs_plot_for_dl_png <- downloadHandler(
+          filename = "enumerator_subs_plot.png",
+          content = function(file) {
+              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
+              htmlwidgets::saveWidget(
+                  as_widget(test_plotly),
+                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
+                  selfcontained = FALSE
+              )
+              
+              webshot::webshot(
+                  url = paste0(tempdir(), "temp.html"),
+                  file = file
+              )
+          }
+      )
       
       output$enumerator_ave_vars_table_for_dl <- downloadHandler(
           filename = "enumerator_ave_vars_table.csv",
@@ -720,6 +894,118 @@
       output$enumerator_ave_vars_table_dl <- renderUI({
           downloadButton("enumerator_ave_vars_table_for_dl", label = "Download Table")
       })
+      
+        ### Administrative Unit-Level Outputs ----
+      
+      output$admin_subs_table_output <- renderUI({
+          card(
+              card_header(
+                  span("Submissions by Administrative Unit", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Shows the total number of submissions per administrative unit and (if a date variable was provided) the number of submissions per administrative unit per day.",
+                          placement = "auto"
+                      )
+              ),
+              DTOutput("admin_subs_table"),
+              uiOutput("admin_subs_table_dl"),
+              full_screen = TRUE
+          )
+      })
+      
+      output$admin_subs_plot_output <- renderUI({
+          card(
+              card_header(
+                  span("Cumulative Submissions by Administrative Unit", bsicons::bs_icon("question-circle-fill")) %>%
+                      tooltip(
+                          "Placeholder",
+                          placement = "auto"
+                      )
+              ),
+              plotlyOutput("admin_daily_subs_plot_rendered"),
+              fluidRow(
+                  column(4,
+                         uiOutput("admin_subs_plot_dl_html")
+                  ),
+                  column(4,
+                         uiOutput("admin_subs_plot_dl_png")
+                  )
+              ),
+              full_screen = TRUE
+          )
+      })
+      
+      admin_output_components <- reactive({
+          case_when(
+              admin_date_var() != "" ~ list(
+                  c("admin_subs_table_output", "admin_subs_plot_output")
+              ),
+              TRUE ~ list("admin_subs_table_output")
+          ) %>%
+          unlist()
+      })
+      
+      output$admin_output <- renderUI({
+          if("admin" %in% selected_checks()) {
+              layout_column_wrap(
+                  height = "90vh",
+                  width = 1,
+                  admin_output_components() %>%
+                      purrr::map(
+                          ~ uiOutput(.x)
+                      )
+              )
+          } else {
+              "If you would like to see Administrative Unit-Level Checks, please select \"Administrative Unit-Level\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+          }
+      })
+      
+      output$admin_subs_table_for_dl <- downloadHandler(
+          filename = "admin_subs_table.csv",
+          content = function(file) {
+              write.csv(admin_subs_dataset(), file, row.names = FALSE)
+          }
+      )
+      
+      output$admin_subs_table_dl <- renderUI({
+          downloadButton("admin_subs_table_for_dl", label = "Download Table")
+      })
+      
+      output$admin_subs_plot_dl_html <- renderUI({
+          downloadButton("admin_subs_plot_for_dl_html", label = "Download Plot (HTML)")
+      })
+      
+      output$admin_subs_plot_for_dl_html <- downloadHandler(
+          filename = "admin_subs_plot.html",
+          content = function(file) {
+              # Because this is a plotly object, using htmlWidget::savewidget()
+              htmlwidgets::saveWidget(
+                  as_widget(test_plotly),
+                  file = file,
+                  selfcontained = FALSE
+              )
+          }
+      )
+      
+      output$admin_subs_plot_dl_png <- renderUI({
+          downloadButton("admin_subs_plot_for_dl_png", label = "Download Plot (PNG)")
+      })
+      
+      output$admin_subs_plot_for_dl_png <- downloadHandler(
+          filename = "admin_subs_plot.png",
+          content = function(file) {
+              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
+              htmlwidgets::saveWidget(
+                  as_widget(test_plotly),
+                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
+                  selfcontained = FALSE
+              )
+              
+              webshot::webshot(
+                  url = paste0(tempdir(), "temp.html"),
+                  file = file
+              )
+          }
+      )
       
         ### Output Tab Setup ----
       
@@ -736,9 +1022,9 @@
               nav_panel("Duplicates", uiOutput("duplicate_output")),
               nav_panel("Outliers", uiOutput("outlier_output")),
               nav_panel("Enumerator", uiOutput("enumerator_output")),
-              nav_panel("Admin Level", "Hello admin level"),
-              nav_panel("Tracking", "Hello tracking"),
-              nav_panel("Programming", "Hello programming")
+              nav_panel("Admin Level", uiOutput("admin_output")),
+              nav_panel("Tracking", "Under construction!"),
+              nav_panel("Programming", "Under construction!")
           )
       })
       
