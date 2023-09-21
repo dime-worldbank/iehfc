@@ -14,7 +14,9 @@ introduction_tab <- tabItem(tabName = "introduction",
                                            p("Developed by the team of", 
                                              tags$a("DIME Analytics", href = "https://www.worldbank.org/en/research/dime/data-and-analytics"),
                                              " iehfc aims to be a one-stop solution for researchers, providing easy-to-create, customizable, and shareable high-frequency check outputs.", 
-                                             "For more information about high-frequency checks you can consult", tags$a("our wiki resource", href = "https://dimewiki.worldbank.org/High_Frequency_Checks"))
+                                             "For more information about high-frequency checks you can consult", tags$a("our wiki resource", href = "https://dimewiki.worldbank.org/High_Frequency_Checks")),
+                                           p("If you encounter any issues or have suggestions, please report them ", 
+                                             tags$a("on our GitHub issues section.", href = "https://github.com/dime-worldbank/iehfc/issues"))
                                        )
                                 ),
                                 column(width = 6,
@@ -25,14 +27,14 @@ introduction_tab <- tabItem(tabName = "introduction",
                                        div(style = "text-align:left", tags$h3("Features")),
                                        box(width = "100%", status = "success", style = "margin-bottom: 0px;",   # Reduce bottom margin here
                                            p("iehfc provides features to perform a comprehensive list of checks on your dataset, ranging from basic data integrity tests to advanced statistical checks."),
-                                           shiny::img(src = "res/features.png", style = "max-width:45%;"),
+                                           shiny::img(src = "res/features.png", style = "max-width:500px;"),
                                        )
                                 )
                             ),
                             fluidRow(
                                 column(width = 6),
                                 column(width = 6,
-                                       div(style = "text-align:left; margin-top: 0px;", tags$h3("Getting Started with iehfc")),  # Reduce top margin here
+                                       div(style = "text-align:left; margin-top: -100px;", tags$h3("Getting Started with iehfc")),  # Reduce top margin here
                                        box(width = "100%", status = "success",
                                            "Using iehfc is as simple as:",
                                            tags$ul(
