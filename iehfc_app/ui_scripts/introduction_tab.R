@@ -27,14 +27,14 @@ introduction_tab <- tabItem(tabName = "introduction",
                                        div(style = "text-align:left", tags$h3("Features")),
                                        box(width = "100%", status = "success", style = "margin-bottom: 0px;",   # Reduce bottom margin here
                                            p("iehfc provides features to perform a comprehensive list of checks on your dataset, ranging from basic data integrity tests to advanced statistical checks."),
-                                           shiny::img(src = "res/features.png", style = "max-width:500px;"),
+                                    #       shiny::img(src = "res/features.png", style = "max-width:500px;"), # here if we want a visual after feature
                                        )
                                 )
                             ),
                             fluidRow(
                                 column(width = 6),
                                 column(width = 6,
-                                       div(style = "text-align:left; margin-top: -100px;", tags$h3("Getting Started with iehfc")),  # Reduce top margin here
+                                       div(style = "text-align:left; margin-top: -190px;", tags$h3("Getting Started with iehfc")),  # Reduce top margin here
                                        box(width = "100%", status = "success",
                                            "Using iehfc is as simple as:",
                                            tags$ul(

@@ -2,6 +2,8 @@
 
   iehfc_app <- function() {
       
+      shiny::addResourcePath(prefix = "res", directoryPath = "iehfc_app/www")
+      
       extract_source <- function(filename) {
           source(filename, local = parent.frame(), chdir = TRUE)$value
       }

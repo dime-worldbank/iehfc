@@ -79,10 +79,10 @@
               card(
                   card_header(
                       span("Explore Dataset Names", bsicons::bs_icon("question-circle-fill")) %>%
-                      tooltip(
-                          "You can refer back to these variable names while setting the parameters for your checks in the next tab.",
-                          placement = "auto"
-                      )
+                          tooltip(
+                              "You can refer back to these variable names while setting the parameters for your checks in the next tab.",
+                              placement = "auto"
+                          )
                   ),
                   verbatimTextOutput(
                       "hfc_ds_names_display"
@@ -124,6 +124,7 @@
               uiOutput("upload_tab_body")
           )
       })
+      
       
       ## Setup Tab ----
       
