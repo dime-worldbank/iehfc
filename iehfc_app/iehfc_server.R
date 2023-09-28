@@ -28,9 +28,16 @@
           input$hfc_file
       })
       
-      hfc_dataset <- reactive({
+      hfc_dataset <- reactiveVal()
+      
+      observeEvent(input$hfc_file, {
           ds <- read.csv(hfc_file()$datapath, na.strings = c("", "NA"))
-          return(ds)
+          hfc_dataset(ds)
+      })
+      
+      observeEvent(input$use_test_data, {
+          ds <- read.csv("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
+          hfc_dataset(ds)
       })
       
       output$hfc_ds_display <- renderDT(
@@ -92,11 +99,20 @@
       })
       
       output$upload_tab_body <- renderUI({
-          if(is.null(hfc_file())) {
+          if(is.null(hfc_dataset())) {
               return(uiOutput("upload_tab_nodata"))
           } else {
               return(uiOutput("upload_tab_data"))
           }
+      })
+      
+      output$use_test_data_button <- renderUI({
+          actionButton(
+              "use_test_data",
+              "Use Test Data",
+              icon("table"),
+              class = "btn btn-outline-primary btn-lg"
+          )
       })
       
       output$upload_tab <- renderUI({
@@ -119,6 +135,9 @@
                           "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
                           style = "color: blue; font-size: 12px;"
                       )
+                  ),
+                  card(
+                      uiOutput("use_test_data_button")
                   )
               ),
               uiOutput("upload_tab_body")
@@ -689,7 +708,7 @@
       })
       
       output$setup_tab <- renderUI({
-          if(is.null(hfc_file())) {
+          if(is.null(hfc_dataset())) {
               return(uiOutput("setup_tab_nodata"))
           } else {
               return(uiOutput("setup_tab_data"))
@@ -1030,7 +1049,7 @@
       })
       
       output$output_tab <- renderUI({
-          if(is.null(hfc_file())) {
+          if(is.null(hfc_dataset())) {
               return(uiOutput("output_tab_nodata"))
           } else if(input$run_hfcs == 0) {
               return(uiOutput("output_tab_norun"))
