@@ -64,7 +64,7 @@
       })
       
       output$upload_tab_nodata <- renderUI({
-          "Please upload your dataset using the sidebar on the left."
+          "Please either upload your dataset using the sidebar on the left or click on the \"Use Test Data\" button."
       })
       
       output$upload_tab_data <- renderUI({
@@ -213,7 +213,7 @@
               card_header(
                   span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "The duplicate check requires you to provide (1) the variable you want to check for duplicates and (2) any additional variable you want to include in the output table",
+                          "The duplicate check requires you to provide the variable you want to check for duplicates. You can add any additional variable you want to include in the output table",
                           placement = "auto"
                       )
               ),
@@ -221,7 +221,7 @@
                   fluidRow(
                       column(6, 
                              span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This is the variable that you want to check for duplicates (usually a uniquely identified ID)", 
+                                 tooltip("This is the variable that you want to check for duplicates (usually an ID intended to be uniquely identified)", 
                                          placement = "right"),
                              uiOutput("duplicate_id_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
@@ -333,7 +333,7 @@
               card_header(
                   span("Outlier Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "Placeholder",
+                          "The outlier check requires you to provide (1) individual variables or groups of variables you want to check for outliers and (2) an ID variable to identify the observation with the outlier. You can add any additional variables you want to include in the output table",
                           placement = "auto"
                       )
               ),
@@ -341,13 +341,13 @@
                   fluidRow(
                       column(6,
                              span("Individual Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Placeholder", 
+                                 tooltip("These need to be numeric variables. Use this if you have an individual variable you'd like to check for outliers", 
                                          placement = "right"),
                              uiOutput("indiv_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Grouped Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Placeholder", 
+                                 tooltip("These need to be numeric variables. Use this if you have a set of variables you'd like to check for outliers together (e.g. inc_01, inc_02, etc.)", 
                                          placement = "right"),
                              uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -461,7 +461,7 @@
               card_header(
                   span("Enumerator Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "Placeholder",
+                          "The enumerator check requires you to provide (1) the variable that identifies enumerators and (2) variables for which you'd like to see average values for each enumerator. You can include a submission date variable and a \"submission completeness\" variable",
                           placement = "auto"
                       )
               ),
@@ -469,13 +469,13 @@
                   fluidRow(
                       column(6,
                              span("Enumerator Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Placeholder", 
+                                 tooltip("This is the variable that identifies the enumerator for each submission", 
                                          placement = "right"),
                              uiOutput("enumerator_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Enumerator Average Value Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Placeholder", 
+                                 tooltip("These need to be numeric variables. Variables for which you want the average value by enumerator", 
                                          placement = "right"),
                              uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -485,7 +485,7 @@
                   fluidRow(
                       column(6, 
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This could be the date at which the survey was completed, or the the date at which the survey was submitted.", 
+                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.", 
                                          placement = "right"),
                              uiOutput("enumerator_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
@@ -587,7 +587,7 @@
               card_header(
                   span("Administrative Unit-Level Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "Placeholder",
+                          "The administrative unit-level check requires you to provide the variable that identifies the administrative unit and (2) higher-level administrative units that would help either locate or uniquely identify the administrative level of choice. You can include a submission date variable and a \"submission completeness\" variable",
                           placement = "auto"
                       )
               ),
@@ -595,13 +595,13 @@
                   fluidRow(
                       column(6,
                              span("Administrative Unit Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Placeholder", 
+                                 tooltip("This is the variable that identifies the enumerator for each submission", 
                                          placement = "right"),
                              uiOutput("admin_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Higher-Level Administrative Unit Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Placeholder", 
+                                 tooltip("These variables could serve to either locate or uniquely identify the administrative units of interest", 
                                          placement = "right"),
                              uiOutput("admin_super_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -611,7 +611,7 @@
                   fluidRow(
                       column(6, 
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This could be the date at which the survey was completed, or the the date at which the survey was submitted.", 
+                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.", 
                                          placement = "right"),
                              uiOutput("admin_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),

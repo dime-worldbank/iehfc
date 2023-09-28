@@ -40,9 +40,9 @@
               uiOutput("output_tab")
           ),
           navbarMenu("More",
-                     tabPanel(tags$a("Guides", href = "https://www.github.com")),
-                     tabPanel(tags$a("About", href = "https://www.github.com")),
-                     tabPanel(tags$a("Github", href = "https://www.github.com"))
+                     tabPanel(tags$a("Guides", href = "https://github.com/dime-worldbank/iehfc/blob/main/README.md")),
+                     # tabPanel(tags$a("About", href = "https://www.github.com")), # Under construction
+                     tabPanel(tags$a("Github", href = "https://www.github.com/dime-worldbank/iehfc"))
           ),
           theme = bs_theme() %>%
               bs_add_rules(
