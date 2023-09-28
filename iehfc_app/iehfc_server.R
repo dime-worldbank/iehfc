@@ -29,7 +29,7 @@
       })
       
       hfc_dataset <- reactive({
-          ds <- read.csv(hfc_file()$datapath, na.strings = "")
+          ds <- read.csv(hfc_file()$datapath, na.strings = c("", "NA"))
           return(ds)
       })
       

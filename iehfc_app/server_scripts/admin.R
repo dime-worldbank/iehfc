@@ -72,6 +72,7 @@
                   num_submissions = n()
               ) %>%
               ungroup() %>%
+              arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
               pivot_wider(
                   names_from  = date_var_formatted,
                   values_from = num_submissions
@@ -98,7 +99,7 @@
               date_var_formatted = lubridate::parse_date_time(
                   !!sym(admin_date_var()), c("Y-m-d", "m/d/Y", "d/m/Y")
               ) %>%
-                  as.Date()
+              as.Date()
           ) %>%
           group_by(
               across(any_of(admin_super_vars())), !!sym(admin_var()), date_var_formatted
@@ -115,7 +116,8 @@
                   ifelse(is.na(num_submissions), 0, num_submissions) # Need to do this because cumsum() doesn't have an 'na.rm' argument
               )
           ) %>%
-          ungroup()
+          ungroup() %>%
+          arrange(date_var_formatted) # To ensure that the dates are in the right order
       
       # Set up highlighting individual admins
       

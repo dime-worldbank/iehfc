@@ -8,12 +8,12 @@
 
   pacman::p_load(
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib
   )
 
-  remotes::install_github(repo = "rstudio/bslib", quiet = TRUE, upgrade = "never")
-
-  library(bslib, quietly = TRUE)
+  # remotes::install_(repo = "rstudio/bslib", quiet = TRUE)
+  # 
+  # library(bslib, quietly = TRUE)
 
   ## 2. Load Custom Functions ----
 
