@@ -10,8 +10,8 @@
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
       shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib
   )
-
-
+  
+  
   ## 2. Load Custom Functions ----
 
 # Reminder — Currently, this project works with an .Rproj file. Open the project directly from the .Rproj
@@ -20,7 +20,6 @@
 # directory using `setwd(...)`, with `...` being the file path that leads you to the `iehfc` folder.
 
   shiny::addResourcePath(prefix = "res", directoryPath = "iehfc_app/www")
-
 
   source("R/iehfc_app.R")
 
