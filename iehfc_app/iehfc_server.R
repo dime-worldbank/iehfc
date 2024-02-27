@@ -6,17 +6,12 @@
   library(bsicons)
   library(shinydashboard)
   
-  # Increase maximum file upload size
-  
-  options(shiny.maxRequestSize = 100 * (1024^2))
-
   iehfc_server <- function(input, output, session) {
       
       source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
       source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
       source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
       source("iehfc_app/server_scripts/admin.R",      local = TRUE)
-      source("iehfc_app/server_scripts/unit.R",       local = TRUE)
       
       observeEvent(
           input$gotoTab, {
@@ -178,7 +173,7 @@
           # Duplicate IDs
           # Additional variables for reference
       
-      current_duplicate_id_var     <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
+      current_duplicate_id_var <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
       current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
       
       # Observe any change in 'duplicate_id_select_var' and update current_duplicate_id_var
@@ -192,31 +187,23 @@
       })
       
       output$duplicate_id_select <- renderUI({
-          selectizeInput(
-              "duplicate_id_select_var", label = NULL, 
-              choices = hfc_dataset() %>%
-                  names,
-              selected = current_duplicate_id_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("duplicate_id_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names,
+                         selected = current_duplicate_id_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$duplicate_extra_vars_select <- renderUI({
-          selectizeInput(
-              "duplicate_extra_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(duplicate_id_var()) # Everything but the ID variable
-                  ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(duplicate_extra_vars()),
-                      !any_of(duplicate_extra_vars())
-                  ) %>%
-                  names(), 
-              selected = current_duplicate_extra_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("duplicate_extra_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(duplicate_id_var()) # Everything but the ID variable
+                             ) %>%
+                             names(), 
+                         selected = current_duplicate_extra_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$duplicate_setup <- renderUI({
@@ -251,7 +238,7 @@
       
         ### Outlier Check Setup ----
       
-      # Outlier data quality checks: 
+      # Outlier data quality checks:
           # "Individual" outlier checks -- check individual variable for outliers
           # "Group" outlier checks -- check group of variables (e.g. income for every household member) for outliers
           # Additional variables for reference
@@ -282,77 +269,61 @@
       })
       
       output$indiv_outlier_vars_select <- renderUI({
-          selectizeInput(
-              "indiv_outlier_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(outlier_id_var()) # Everything but the ID variable
-                  ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(indiv_outlier_vars()),
-                      !any_of(indiv_outlier_vars())
-                  ) %>%
-                  names(), 
-              selected = current_indiv_outlier_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("indiv_outlier_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(outlier_id_var()) # Everything but the ID variable
+                             ) %>%
+                             names(), 
+                         selected = current_indiv_outlier_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$group_outlier_vars_select <- renderUI({
-          selectizeInput(
-              "group_outlier_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(duplicate_id_var()) # Everything but the ID variable
-                  ) %>%
-                  names() %>%
-                  tibble(var = .) %>%
-                  filter(
-                      str_detect(var, "_[a-zA-z]{0,1}[0-9]+$") # All variables with e.g form "_1", "_01", or "_p1"
-                  ) %>%
-                  mutate(
-                      group = str_replace(var, "_{0,1}[0-9]+$", "") # Extract common portion of variable names
-                  ) %>%
-                  group_by(group) %>%
-                  filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
-                  select(group) %>%
-                  distinct() %>%
-                  pull(), 
-              selected = current_group_outlier_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("group_outlier_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(duplicate_id_var()) # Everything but the ID variable
+                             ) %>%
+                             names() %>%
+                             tibble(var = .) %>%
+                             filter(
+                                 str_detect(var, "_[a-zA-z]{0,1}[0-9]+$") # All variables with e.g form "_1", "_01", or "_p1"
+                             ) %>%
+                             mutate(
+                                 group = str_replace(var, "_{0,1}[0-9]+$", "") # Extract common portion of variable names
+                             ) %>%
+                             group_by(group) %>%
+                             filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
+                             select(group) %>%
+                             distinct() %>%
+                             pull(), 
+                         selected = current_group_outlier_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$outlier_id_select <- renderUI({
-          selectizeInput(
-              "outlier_id_select_var", label = NULL, 
-              choices = hfc_dataset() %>%
-                  names(), 
-              selected = current_outlier_id_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("outlier_id_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names(), 
+                         selected = current_outlier_id_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$outlier_extra_vars_select <- renderUI({
-          selectizeInput(
-              "outlier_extra_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(duplicate_id_var()), # Everything but the ID variable or outlier variables
-                      -any_of(indiv_outlier_vars()),
-                      -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
-                  ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(outlier_extra_vars()),
-                      !any_of(outlier_extra_vars())
-                  ) %>%
-                  names(), 
-              selected = current_outlier_extra_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("outlier_extra_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(duplicate_id_var()), # Everything but the ID variable or outlier variables
+                                 -any_of(indiv_outlier_vars()),
+                                 -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
+                             ) %>%
+                             names(), 
+                         selected = current_outlier_extra_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$outlier_setup <- renderUI({
@@ -436,63 +407,51 @@
       })
       
       output$enumerator_var_select <- renderUI({
-          selectizeInput(
-              "enumerator_var_select_var", label = NULL, 
-              choices = hfc_dataset() %>%
-                  names(), 
-              selected = current_enumerator_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("enumerator_var_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names(), 
+                         selected = current_enumerator_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$enumerator_ave_vars_select <- renderUI({
-          selectizeInput(
-              "enumerator_ave_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(enumerator_var())
-                  ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(enumerator_ave_vars()),
-                      !any_of(enumerator_ave_vars())
-                  ) %>%
-                  names(), 
-              selected = current_enumerator_ave_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("enumerator_ave_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(enumerator_var())
+                             ) %>%
+                             names(), 
+                         selected = current_enumerator_ave_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$enumerator_date_var_select <- renderUI({
-          selectizeInput(
-              "enumerator_date_var_select_var", label = NULL, 
-              choices = c(
-                  "", # Provides no option as a possibility
-                  hfc_dataset() %>%
-                      select(
-                          -all_of(enumerator_var())
-                      ) %>%
-                      names()
-              ),
-              selected = current_enumerator_date_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("enumerator_date_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(enumerator_var())
+                                 ) %>%
+                                 names()
+                         ),
+                         selected = current_enumerator_date_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$enumerator_complete_var_select <- renderUI({
-          selectizeInput(
-              "enumerator_complete_var_select_var", label = NULL, 
-              choices = c(
-                  "", # Provides no option as a possibility
-                  hfc_dataset() %>%
-                      select(
-                          -all_of(enumerator_var())
-                      ) %>%
-                      names()
-              ), 
-              selected = current_enumerator_complete_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("enumerator_complete_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(enumerator_var())
+                                 ) %>%
+                                 names()
+                         ), 
+                         selected = current_enumerator_complete_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$enumerator_setup <- renderUI({
@@ -549,7 +508,7 @@
       # (Eventually) Progress (requires principal sample dataset)
       
       current_admin_var          <- reactiveVal() # For storing current state of 'admin_var_select_var'
-      current_admin_super_vars   <- reactiveVal() # For storing current state of 'admin_super_vars_select_var'
+      current_admin_super_vars    <- reactiveVal() # For storing current state of 'admin_super_vars_select_var'
       current_admin_date_var     <- reactiveVal() # For storing current state of 'admin_date_var_select_var'
       current_admin_complete_var <- reactiveVal() # For storing current state of 'admin_complete_var_select_var'
       
@@ -574,63 +533,51 @@
       })
       
       output$admin_var_select <- renderUI({
-          selectizeInput(
-              "admin_var_select_var", label = NULL, 
-              choices = hfc_dataset() %>%
-                  names(), 
-              selected = current_admin_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("admin_var_select_var", label = NULL, 
+                         choices = hfc_dataset() %>%
+                             names(), 
+                         selected = current_admin_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$admin_super_vars_select <- renderUI({
-          selectizeInput(
-              "admin_super_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(admin_var())
-                  ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(admin_super_vars()),
-                      !any_of(admin_super_vars())
-                  ) %>%
-                  names(), 
-              selected = current_admin_super_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("admin_super_vars_select_var", label = NULL,
+                         choices = hfc_dataset() %>%
+                             select(
+                                 -all_of(admin_var())
+                             ) %>%
+                             names(), 
+                         selected = current_admin_super_vars(),
+                         multiple = TRUE,
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$admin_date_var_select <- renderUI({
-          selectizeInput(
-              "admin_date_var_select_var", label = NULL, 
-              choices = c(
-                  "", # Provides no option as a possibility
-                  hfc_dataset() %>%
-                      select(
-                          -all_of(admin_var())
-                      ) %>%
-                      names()
-              ),
-              selected = current_admin_date_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("admin_date_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(admin_var())
+                                 ) %>%
+                                 names()
+                         ),
+                         selected = current_admin_date_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$admin_complete_var_select <- renderUI({
-          selectizeInput(
-              "admin_complete_var_select_var", label = NULL, 
-              choices = c(
-                  "", # Provides no option as a possibility
-                  hfc_dataset() %>%
-                      select(
-                          -all_of(admin_var())
-                      ) %>%
-                      names()
-              ), 
-              selected = current_admin_complete_var(),
-              options = list('dropdownParent' = 'body')
-          )
+          selectizeInput("admin_complete_var_select_var", label = NULL, 
+                         choices = c(
+                             "", # Provides no option as a possibility
+                             hfc_dataset() %>%
+                                 select(
+                                     -all_of(admin_var())
+                                 ) %>%
+                                 names()
+                         ), 
+                         selected = current_admin_complete_var(),
+                         options = list('dropdownParent' = 'body'))
       })
       
       output$admin_setup <- renderUI({
@@ -681,84 +628,12 @@
       
         ### Unit of Observation Check Setup ----
       
-      # Unit of observation data quality checks:
-      # This is more of a "tracking" service. Its purpose is more often to be able to check the
-      # status of a specific unit of observation (e.g. household).
-      
-      current_unit_var        <- reactiveVal() # For storing current state of 'unit_var_select_var'
-      current_unit_extra_vars <- reactiveVal() # For storing current state of 'unit_extra_vars_select_var'
-      
-      # Observe any change in 'unit_var_select_var' and update current_unit_var
-      observe({
-          current_unit_var(input$unit_var_select_var)
-      })
-      
-      # Observe any change in 'unit_extra_vars_select_var' and update current_unit_extra_vars
-      observe({
-          current_unit_extra_vars(input$unit_extra_vars_select_var)
-      })
-      
-      output$unit_var_select <- renderUI({
-          selectizeInput(
-              "unit_var_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  names(),
-              selected = current_unit_var(),
-              options = list('dropdownParent' = 'body')
-          )
-      })
-      
-      output$unit_extra_vars_select <- renderUI({
-          selectizeInput(
-              "unit_extra_vars_select_var", label = NULL,
-              choices = hfc_dataset() %>%
-                  select(
-                      -all_of(unit_var()) # Everything but the unit of observation variable
-                  ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(unit_extra_vars()),
-                      !any_of(unit_extra_vars())
-                  ) %>%
-                  names(), 
-              selected = current_unit_extra_vars(),
-              multiple = TRUE,
-              options = list('dropdownParent' = 'body')
-          )
-      })
-      
-      output$unit_setup <- renderUI({
+      output$unit_setup <- renderUI(
           card(
-              height = "30vh", fill = FALSE,
-              full_screen = TRUE,
-              card_header(
-                  span("Unit of Observation Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
-                      tooltip(
-                          "Placeholder text",
-                          placement = "auto"
-                      )
-              ),
-              card_body(
-                  fluidRow(
-                      column(6,
-                             span("Unit of Observation/ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip(
-                                     "Placeholder text",
-                                     placement = "right"
-                                 ),
-                             uiOutput("unit_var_select", style = "z-index: 1000;") # Set a high z-index to overlap other elements
-                      ),
-                      column(6,
-                             span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip(
-                                     "Placeholder text",
-                                     placement = "right"
-                                 ),
-                             uiOutput("unit_extra_vars_select", style = "z-index: 1000;") # Set a high z-index to overlap other elements
-                      )
-                  )
-              )
+              card_header("Unit of Observation Check Setup"),
+              "Under construction!"
           )
-      })
+      )
       
         ### Survey Programming Check Setup ----
       
@@ -1152,31 +1027,6 @@
           }
       )
       
-        ### Unit of Observation-Level Outputs ----
-      
-      output$unit_output <- renderUI({
-          if("unit" %in% selected_checks()) {
-              card(
-                  DTOutput("unit_table"),
-                  uiOutput("unit_table_dl"),
-                  full_screen = TRUE
-              )
-          } else {
-              "If you would like to see Unit of Observation-Level Checks, please select \"Unit of Observation-Level\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
-          }
-      })
-      
-      output$unit_table_for_dl <- downloadHandler(
-          filename = "unit_table.csv",
-          content = function(file) {
-              write.csv(unit_dataset(), file, row.names = FALSE)
-          }
-      )
-      
-      output$unit_table_dl <- renderUI({
-          downloadButton("unit_table_for_dl", label = "Download Table")
-      })
-      
         ### Output Tab Setup ----
       
       output$output_tab_nodata <- renderUI({
@@ -1193,7 +1043,7 @@
               nav_panel("Outliers", uiOutput("outlier_output")),
               nav_panel("Enumerator", uiOutput("enumerator_output")),
               nav_panel("Admin Level", uiOutput("admin_output")),
-              nav_panel("Tracking", uiOutput("unit_output")),
+              nav_panel("Tracking", "Under construction!"),
               nav_panel("Programming", "Under construction!")
           )
       })
