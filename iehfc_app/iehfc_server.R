@@ -74,7 +74,7 @@
       
       output$upload_tab_data <- renderUI({
           layout_column_wrap(
-              heigth = "85vh",
+              height = "85vh",
               width = 1,
               card(
                   card_header(
@@ -797,7 +797,7 @@
       output$setup_run_hfcs_button <- renderUI({
           actionButton(
               "run_hfcs",
-              "RUN HFCS",
+              "RUN HFCs",
               icon("paper-plane"),
               class = "btn btn-outline-primary btn-lg"
           )
@@ -1157,6 +1157,7 @@
       output$unit_output <- renderUI({
           if("unit" %in% selected_checks()) {
               card(
+                  height = "80vh",
                   DTOutput("unit_table"),
                   uiOutput("unit_table_dl"),
                   full_screen = TRUE
@@ -1183,6 +1184,10 @@
           "Please upload your data in the \"Upload Data\" Tab."
       })
       
+      output$output_tab_nocheck <- renderUI({
+          "Please complete the \"Check Selection and Setup\" tab and click on the \"Run HFCs\" button to display outputs."
+      })
+      
       output$output_tab_norun <- renderUI({
           "Please click on the \"Run HFCs\" button in the \"Check Selection and Setup\" tab to display outputs."
       })
@@ -1201,6 +1206,8 @@
       output$output_tab <- renderUI({
           if(is.null(hfc_dataset())) {
               return(uiOutput("output_tab_nodata"))
+          } else if(is.null(input$run_hfcs)) {
+              return(uiOutput("output_tab_nocheck"))
           } else if(input$run_hfcs == 0) {
               return(uiOutput("output_tab_norun"))
           } else {
