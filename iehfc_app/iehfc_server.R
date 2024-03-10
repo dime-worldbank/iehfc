@@ -806,7 +806,7 @@
       # take you to output tab
       
       observeEvent(input$run_hfcs, {
-          updateNavbarPage(session, "tabs", selected = "output_tab")
+          updateTabsetPanel(session,"setup_tab", selected = "output_tab")
       })
       
       output$setup_tab_data <- renderUI({
@@ -1214,6 +1214,49 @@
               return(uiOutput("output_tab_data"))
           }
       })
+      
+      # Download consolidated report
+
+      output$full_report_dl <- downloadHandler(
+          filename = function() {
+              paste0("full-report-", Sys.Date(), ".html")
+          },
+          content = function(file) {
+              # 1. Check if 'duplicate' check is selected
+              includeDuplicates <- "duplicate" %in% selected_checks()
+              
+              # Prepare the dataset only if duplicates check is selected
+              duplicatesData <- NULL
+              if (includeDuplicates) {
+                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
+                  duplicatesData <- isolate(duplicate_dataset())
+              }
+              # 2. Check if 'outlier' check is selected
+              includeOutliers <- "outlier" %in% selected_checks()
+              
+              # Prepare the dataset only if duplicates check is selected
+              outliersData <- NULL
+              if (includeOutliers) {
+                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
+                  outliersData <- isolate(outlier_dataset())
+              }
+              
+              # Render the R Markdown file with parameters
+              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
+                                params = list(
+                                    includeDuplicates = includeDuplicates,
+                                    duplicatesData = duplicatesData, 
+                                    includeOutliers = includeOutliers,
+                                    outliersData = outliersData
+                                ),
+                                envir = new.env(parent = globalenv()))
+          }
+      )
+      
+
+     
+      
+      
   }
   
   iehfc_server

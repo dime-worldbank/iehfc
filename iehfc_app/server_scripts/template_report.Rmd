@@ -1,0 +1,43 @@
+---
+title: "Consolidated Report"
+date: paste0(Sys.Date())
+output: html_document
+params: 
+  includeDuplicates: FALSE
+  duplicatesData: NULL
+  includeOutliers: FALSE
+  outliersData: NULL
+  # Add parameters for other checks as needed
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DT)
+library(knitr)
+library(kableExtra)
+```
+
+
+```{r duplicates-table, echo=FALSE, results='asis', eval=params$includeDuplicates}
+# 1. duplicates
+if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
+cat("## Duplicates\n")
+ knitr::kable(params$duplicatesData) %>%
+ kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+} else {
+  cat("No duplicate data available or 'Duplicates' check not selected.")
+}
+```
+
+
+```{r outliers-table, echo=FALSE, results='asis', eval=params$includeOutliers}
+# 2. outliers
+if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
+cat("## Outliers\n")
+ knitr::kable(params$outliersData) %>%
+ kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+} else {
+  cat("No outlier data available or 'Outliers' check not selected.")
+}
+```
+
