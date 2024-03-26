@@ -803,6 +803,49 @@
           )
       })
       
+             ### Import parameters
+      output$setup_imp_para_button <- renderUI({
+          actionButton(
+              "imp_para",
+              "Import parameters",
+              icon("upload"),
+              class = "btn btn-outline-secondary"
+          )
+      })
+      
+            ### Export parameters
+   
+      parameter_dataset <- reactive({
+           
+          para1 <- data.frame(Parameter = "duplicate_id_select_var", 
+                     Name = "Duplicates ID var" , 
+                     Value = c(input$duplicate_id_select_var)) 
+          
+          para2 <- data.frame(Parameter = "duplicate_extra_vars_select_var", 
+                            Name = "Duplicates extra var" , 
+                            Value = c(input$duplicate_extra_vars_select_var)) 
+          
+          para3 <- data.frame(Parameter = "duplicate_extra_vars_select_var", 
+                              Name = "Duplicates extra var" , 
+                              Value = c(input$duplicate_extra_vars_select_var)) 
+          rbind(para1, para2)
+      })
+      
+      
+      
+      output$setup_exp_para <- downloadHandler(
+          filename = "iehfc_parameters.csv",
+          content = function(file) {
+              write.csv(parameter_dataset(), file, row.names = TRUE) 
+          }
+      )
+      
+      output$setup_exp_para_button <- renderUI({
+          downloadButton("setup_exp_para", label = "Download Parameters")
+      })
+      
+
+      
       # take you to output tab
       
       observeEvent(input$run_hfcs, {
@@ -816,6 +859,23 @@
                   width = "30%",
                   card(
                       card_header(
+                          card(
+                              fileInput(
+                                  "parameter_file",
+                                  label = span("Upload Parameter File", bsicons::bs_icon("question-circle-fill")) %>%
+                                      tooltip(
+                                          "This is where you upload the parameter. Make sure you used the correct template.",
+                                          placement = "auto"
+                                      ),
+                                  accept = ".csv",
+                                  placeholder = "No file selected",
+                                  buttonLabel = "Upload"
+                              ),
+                              span(
+                                  "Upload the csv parameter file.",
+                                  style = "color: blue; font-size: 12px;"
+                              )
+                          ),
                           span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
                                   "This is where you choose which data quality checks to run. For each check that you select, a corresponding box will appear on the right. You will need to make sure that the parameters within the box are correct before proceeding. Once you are done, click on the \"Run HFCs\" button below.",
@@ -826,6 +886,9 @@
                   ),
                   card(
                       uiOutput("setup_run_hfcs_button")
+                  ),
+                  card(
+                       uiOutput("setup_exp_para_button")
                   )
               ),
               uiOutput("setup_tab_body")
