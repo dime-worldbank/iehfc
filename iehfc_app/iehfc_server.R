@@ -1237,7 +1237,6 @@
               # Prepare the dataset only if outliers check is selected
               outliersData <- NULL
               if (includeOutliers) {
-                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   outliersData <- isolate(outlier_dataset())
               }
               
@@ -1247,9 +1246,17 @@
               # Prepare the dataset only if enum check is selected
               enumeratorData <- NULL
               if (includeEnumerator) {
-                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
+              }
+              
+              # 4. Check if 'admin' check is selected
+              includeAdmin <- "admin" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              adminData <- NULL
+              if (includeAdmin) {
+                  adminData <- isolate(admin_subs_dataset())
               }
               
               
@@ -1263,7 +1270,9 @@
                                     outliersData = outliersData, 
                                     includeEnumerator = includeEnumerator, 
                                     enumeratorSubsData = enumeratorSubsData, 
-                                    enumeratorAveData = enumeratorAveData
+                                    enumeratorAveData = enumeratorAveData, 
+                                    includeAdmin = includeAdmin, 
+                                    adminData = adminData
                                 ),
                                 envir = new.env(parent = globalenv()))
           }

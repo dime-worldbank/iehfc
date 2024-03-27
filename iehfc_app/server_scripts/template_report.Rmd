@@ -10,6 +10,8 @@ params:
   includeEnumerator: FALSE
   enumeratorSubsData: NULL
   enumeratorAveData: NULL
+  includeAdmin: FALSE
+  adminData: NULL
   # Add parameters for other checks as needed
 ---
 
@@ -66,3 +68,13 @@ cat("### Average by Enumerator\n")
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
 ```
+
+```{r admin-table, echo=FALSE, results='asis', eval=params$includeAdmin}
+# 4. Admin
+if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
+cat("## Administrative Unit Testing\n")
+ knitr::kable(params$adminData) %>%
+ kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+} else {
+  cat("No admin data available or 'Administrative Unit' check not selected.")
+}
