@@ -251,7 +251,7 @@
       
         ### Outlier Check Setup ----
       
-      # Outlier data quality checks: 
+        # Outlier data quality checks: 
           # "Individual" outlier checks -- check individual variable for outliers
           # "Group" outlier checks -- check group of variables (e.g. income for every household member) for outliers
           # Additional variables for reference
@@ -403,7 +403,7 @@
       
         ### Enumerator Check Setup ----
       
-      # Enumerator data quality checks:
+          # Enumerator data quality checks:
           # Number of surveys per enumerator
           # Average variable value per enumerator
           # Number of surveys per day per enumerator (requires submission date variable)
@@ -806,7 +806,7 @@
       # take you to output tab
       
       observeEvent(input$run_hfcs, {
-          updateNavbarPage(session, "tabs", selected = "output_tab")
+          updateTabsetPanel(session,"setup_tab", selected = "output_tab")
       })
       
       output$setup_tab_data <- renderUI({
@@ -840,7 +840,7 @@
           }
       })
       
-      ## Output Tab ----
+    ## Output Tab ----
       
         ### Duplicate Outputs ----
       
@@ -997,37 +997,15 @@
       })
       
       output$enumerator_subs_plot_for_dl_html <- downloadHandler(
-          filename = "enumerator_subs_plot.html",
+          filename = function() {
+              paste0("enumerator_subs_plot-", Sys.Date(), ".html")
+          },
           content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = file,
-                  selfcontained = FALSE
-              )
+              plot <- enumerator_daily_subs_plot()
+              htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
       
-      output$enumerator_subs_plot_dl_png <- renderUI({
-          downloadButton("enumerator_subs_plot_for_dl_png", label = "Download Plot (PNG)")
-      })
-      
-      output$enumerator_subs_plot_for_dl_png <- downloadHandler(
-          filename = "enumerator_subs_plot.png",
-          content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
-                  selfcontained = FALSE
-              )
-              
-              webshot::webshot(
-                  url = paste0(tempdir(), "temp.html"),
-                  file = file
-              )
-          }
-      )
       
       output$enumerator_ave_vars_table_for_dl <- downloadHandler(
           filename = "enumerator_ave_vars_table.csv",
@@ -1120,37 +1098,16 @@
       })
       
       output$admin_subs_plot_for_dl_html <- downloadHandler(
-          filename = "admin_subs_plot.html",
+          filename = function() {
+              paste0("admin_subs_plot.html-", Sys.Date(), ".html")
+          },
           content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = file,
-                  selfcontained = FALSE
-              )
+              plot <- admin_daily_subs_plot()
+              htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
       
-      output$admin_subs_plot_dl_png <- renderUI({
-          downloadButton("admin_subs_plot_for_dl_png", label = "Download Plot (PNG)")
-      })
-      
-      output$admin_subs_plot_for_dl_png <- downloadHandler(
-          filename = "admin_subs_plot.png",
-          content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
-                  selfcontained = FALSE
-              )
-              
-              webshot::webshot(
-                  url = paste0(tempdir(), "temp.html"),
-                  file = file
-              )
-          }
-      )
+
       
         ### Unit of Observation-Level Outputs ----
       
@@ -1214,6 +1171,86 @@
               return(uiOutput("output_tab_data"))
           }
       })
+      
+        ### Download consolidated report ----
+
+      output$full_report_dl <- downloadHandler(
+          filename = function() {
+              paste0("full-report-", Sys.Date(), ".html")
+          },
+          content = function(file) {
+              # 1. Check if 'duplicate' check is selected
+              includeDuplicates <- "duplicate" %in% selected_checks()
+              duplicatesData <- NULL
+              # Prepare the dataset only if duplicates check is selected
+              if (includeDuplicates) {
+                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
+                  duplicatesData <- isolate(duplicate_dataset())
+              }
+              # 2. Check if 'outlier' check is selected
+              includeOutliers <- "outlier" %in% selected_checks()
+              
+              # Prepare the dataset only if outliers check is selected
+              outliersData <- NULL
+              if (includeOutliers) {
+                  outliersData <- isolate(outlier_dataset())
+              }
+              
+              # 3. Check if 'enumerator' check is selected
+              includeEnumerator <- "enumerator" %in% selected_checks()
+              
+              enumeratorSubsData <- NULL 
+              enumeratorAveData <- NULL 
+              
+              # Prepare the dataset only if enum check is selected
+              if (includeEnumerator) {
+                  enumeratorSubsData <- isolate(enumerator_subs_dataset())
+                  enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
+              }
+              
+              # 4. Check if 'admin' check is selected
+              includeAdmin <- "admin" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              adminData <- NULL
+              if (includeAdmin) {
+                  adminData <- isolate(admin_subs_dataset())
+              }
+              
+              # 5. Check if 'unit' check is selected
+              includeUnit <- "unit" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              unitData <- NULL
+              if (includeUnit) {
+                  unitData <- isolate(unit_dataset())
+              }
+              
+              
+              
+              # Render the R Markdown file with parameters
+              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
+                                params = list(
+                                    includeDuplicates = includeDuplicates,
+                                    duplicatesData = duplicatesData,
+                                    includeOutliers = includeOutliers,
+                                    outliersData = outliersData, 
+                                    includeEnumerator = includeEnumerator, 
+                                    enumeratorSubsData = enumeratorSubsData, 
+                                    enumeratorAveData = enumeratorAveData, 
+                                    includeAdmin = includeAdmin, 
+                                    adminData = adminData, 
+                                    includeUnit = includeUnit,
+                                    unitData = unitData
+                                ),
+                                envir = new.env(parent = globalenv()))
+          }
+      )
+      
+
+     
+      
+      
   }
   
   iehfc_server
