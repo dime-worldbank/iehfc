@@ -1,12 +1,15 @@
 ---
 title: "Consolidated Report"
-date: paste0(Sys.Date())
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: html_document
 params: 
   includeDuplicates: FALSE
   duplicatesData: NULL
   includeOutliers: FALSE
   outliersData: NULL
+  includeEnumerator: FALSE
+  enumeratorSubsData: NULL
+  enumeratorAveData: NULL
   # Add parameters for other checks as needed
 ---
 
@@ -41,3 +44,25 @@ cat("## Outliers\n")
 }
 ```
 
+```{r enumerator-table-1, echo=FALSE, results='asis', eval=params$includeEnumerator}
+# 3.a enumerator
+if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) {
+cat("## Enumerator\n")
+cat("### Number of Submissions\n")
+ knitr::kable(params$enumeratorSubsData) %>%
+ kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+} else {
+  cat("No enumerator data available or 'Enumerator' check not selected.")
+}
+```
+
+```{r enumerator-table-2, echo=FALSE, results='asis', eval=params$includeEnumerator}
+# 3.a enumerator
+if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
+cat("### Average by Enumerator\n")
+ knitr::kable(params$enumeratorAveData) %>%
+ kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+} else {
+  cat("No enumerator data available or 'Enumerator' check not selected.")
+}
+```

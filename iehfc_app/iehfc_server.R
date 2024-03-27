@@ -251,7 +251,7 @@
       
         ### Outlier Check Setup ----
       
-      # Outlier data quality checks: 
+        # Outlier data quality checks: 
           # "Individual" outlier checks -- check individual variable for outliers
           # "Group" outlier checks -- check group of variables (e.g. income for every household member) for outliers
           # Additional variables for reference
@@ -403,7 +403,7 @@
       
         ### Enumerator Check Setup ----
       
-      # Enumerator data quality checks:
+          # Enumerator data quality checks:
           # Number of surveys per enumerator
           # Average variable value per enumerator
           # Number of surveys per day per enumerator (requires submission date variable)
@@ -840,7 +840,7 @@
           }
       })
       
-      ## Output Tab ----
+        ### Output Tab ----
       
         ### Duplicate Outputs ----
       
@@ -1215,7 +1215,7 @@
           }
       })
       
-      # Download consolidated report
+        ### Download consolidated report ----
 
       output$full_report_dl <- downloadHandler(
           filename = function() {
@@ -1234,12 +1234,25 @@
               # 2. Check if 'outlier' check is selected
               includeOutliers <- "outlier" %in% selected_checks()
               
-              # Prepare the dataset only if duplicates check is selected
+              # Prepare the dataset only if outliers check is selected
               outliersData <- NULL
               if (includeOutliers) {
                   # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   outliersData <- isolate(outlier_dataset())
               }
+              
+              # 3. Check if 'enumerator' check is selected
+              includeEnumerator <- "enumerator" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              enumeratorData <- NULL
+              if (includeEnumerator) {
+                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
+                  enumeratorSubsData <- isolate(enumerator_subs_dataset())
+                  enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
+              }
+              
+              
               
               # Render the R Markdown file with parameters
               rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
@@ -1247,7 +1260,10 @@
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData, 
                                     includeOutliers = includeOutliers,
-                                    outliersData = outliersData
+                                    outliersData = outliersData, 
+                                    includeEnumerator = includeEnumerator, 
+                                    enumeratorSubsData = enumeratorSubsData, 
+                                    enumeratorAveData = enumeratorAveData
                                 ),
                                 envir = new.env(parent = globalenv()))
           }
