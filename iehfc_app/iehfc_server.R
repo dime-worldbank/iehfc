@@ -997,37 +997,15 @@
       })
       
       output$enumerator_subs_plot_for_dl_html <- downloadHandler(
-          filename = "enumerator_subs_plot.html",
+          filename = function() {
+              paste0("enumerator_subs_plot-", Sys.Date(), ".html")
+          },
           content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = file,
-                  selfcontained = FALSE
-              )
+              plot <- enumerator_daily_subs_plot()
+              htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
       
-      output$enumerator_subs_plot_dl_png <- renderUI({
-          downloadButton("enumerator_subs_plot_for_dl_png", label = "Download Plot (PNG)")
-      })
-      
-      output$enumerator_subs_plot_for_dl_png <- downloadHandler(
-          filename = "enumerator_subs_plot.png",
-          content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
-                  selfcontained = FALSE
-              )
-              
-              webshot::webshot(
-                  url = paste0(tempdir(), "temp.html"),
-                  file = file
-              )
-          }
-      )
       
       output$enumerator_ave_vars_table_for_dl <- downloadHandler(
           filename = "enumerator_ave_vars_table.csv",
@@ -1120,37 +1098,16 @@
       })
       
       output$admin_subs_plot_for_dl_html <- downloadHandler(
-          filename = "admin_subs_plot.html",
+          filename = function() {
+              paste0("admin_subs_plot.html-", Sys.Date(), ".html")
+          },
           content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = file,
-                  selfcontained = FALSE
-              )
+              plot <- admin_daily_subs_plot()
+              htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
       
-      output$admin_subs_plot_dl_png <- renderUI({
-          downloadButton("admin_subs_plot_for_dl_png", label = "Download Plot (PNG)")
-      })
-      
-      output$admin_subs_plot_for_dl_png <- downloadHandler(
-          filename = "admin_subs_plot.png",
-          content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
-                  selfcontained = FALSE
-              )
-              
-              webshot::webshot(
-                  url = paste0(tempdir(), "temp.html"),
-                  file = file
-              )
-          }
-      )
+
       
         ### Unit of Observation-Level Outputs ----
       
