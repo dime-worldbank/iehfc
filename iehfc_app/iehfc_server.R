@@ -803,32 +803,132 @@
           )
       })
       
-             ### Import parameters
-      output$setup_imp_para_button <- renderUI({
-          actionButton(
-              "imp_para",
-              "Import parameters",
-              icon("upload"),
-              class = "btn btn-outline-secondary"
-          )
-      })
-      
-            ### Export parameters
+           ### Export parameters
    
       parameter_dataset <- reactive({
-           
-          para1 <- data.frame(Parameter = "duplicate_id_select_var", 
-                     Name = "Duplicates ID var" , 
-                     Value = c(input$duplicate_id_select_var)) 
+          # Initialize an empty data frame
+          combined_df <- data.frame(Parameter = character(0), Name = character(0), Value = character(0))
           
-          para2 <- data.frame(Parameter = "duplicate_extra_vars_select_var", 
-                            Name = "Duplicates extra var" , 
-                            Value = c(input$duplicate_extra_vars_select_var)) 
+          # Check if each parameter is selected and add it to the combined data frame
           
-          para3 <- data.frame(Parameter = "duplicate_extra_vars_select_var", 
-                              Name = "Duplicates extra var" , 
-                              Value = c(input$duplicate_extra_vars_select_var)) 
-          rbind(para1, para2)
+          ## Duplicates
+          if (!is.null(input$duplicate_id_select_var)) {
+              para1 <- data.frame(Parameter = "duplicate_id_select_var", 
+                                  Name = "Duplicates ID variable", 
+                                  Value = c(input$duplicate_id_select_var))
+              combined_df <- rbind(combined_df, para1)
+          }
+          
+          if (!is.null(input$duplicate_extra_vars_select_var)) {
+              para2 <- data.frame(Parameter = "duplicate_extra_vars_select_var", 
+                                  Name = "Duplicates additional variables", 
+                                  Value = c(input$duplicate_extra_vars_select_var))
+              combined_df <- rbind(combined_df, para2)
+          }
+          
+          ## Outlier
+          if (!is.null(input$indiv_outlier_vars_select_var)) {
+              para3 <- data.frame(Parameter = "indiv_outlier_vars_select_var", 
+                                  Name = "Individual outlier variables", 
+                                  Value = c(input$indiv_outlier_vars_select_var))
+              combined_df <- rbind(combined_df, para3)
+          }
+          
+          if (!is.null(input$group_outlier_vars_select_var)) {
+              para4 <- data.frame(Parameter = "group_outlier_vars_select_var", 
+                                  Name = "Grouped outlier variables", 
+                                  Value = c(input$group_outlier_vars_select_var))
+              combined_df <- rbind(combined_df, para4)
+          }
+          
+          if (!is.null(input$outlier_id_select_var)) {
+              para5 <- data.frame(Parameter = "outlier_id_select_var", 
+                                  Name = "Outlier ID variable", 
+                                  Value = c(input$outlier_id_select_var))
+              combined_df <- rbind(combined_df, para5)
+          }
+          
+          if (!is.null(input$outlier_extra_vars_select_var)) {
+              para5 <- data.frame(Parameter = "outlier_extra_vars_select_var", 
+                                  Name = "Outlier ID variable", 
+                                  Value = c(input$outlier_extra_vars_select_var))
+              combined_df <- rbind(combined_df, para5)
+          }
+          
+          ## Enumerator level
+          if (!is.null(input$enumerator_var_select_var)) {
+              para6 <- data.frame(Parameter = "enumerator_var_select_var", 
+                                  Name = "Enumerator variable", 
+                                  Value = c(input$enumerator_var_select_var))
+              combined_df <- rbind(combined_df, para6)
+          }
+          
+          if (!is.null(input$enumerator_ave_vars_select_var)) {
+              para7 <- data.frame(Parameter = "enumerator_ave_vars_select_var", 
+                                  Name = "Enumerator Average Value Variables", 
+                                  Value = c(input$enumerator_ave_vars_select_var))
+              combined_df <- rbind(combined_df, para7)
+          }
+          
+          if (!is.null(input$enumerator_date_var_select_var)) {
+              para8 <- data.frame(Parameter = "enumerator_date_var_select_var", 
+                                  Name = "Submission Date Variable", 
+                                  Value = c(input$enumerator_date_var_select_var))
+              combined_df <- rbind(combined_df, para8)
+          }
+          
+          if (!is.null(input$enumerator_complete_var_select_var)) {
+              para9 <- data.frame(Parameter = "enumerator_complete_var_select_var", 
+                                  Name = "Submission Complete Variable", 
+                                  Value = c(input$enumerator_complete_var_select_var))
+              combined_df <- rbind(combined_df, para9)
+          }
+          
+          ## Admin level
+          if (!is.null(input$admin_var_select_var)) {
+              para10 <- data.frame(Parameter = "admin_var_select_var", 
+                                  Name = "Administrative Unit Variable", 
+                                  Value = c(input$admin_var_select_var))
+              combined_df <- rbind(combined_df, para10)
+          }
+          
+          if (!is.null(input$admin_super_vars_select_var)) {
+              para11 <- data.frame(Parameter = "admin_super_vars_select_var", 
+                                  Name = "Higher-Level Administrative Unit Variables", 
+                                  Value = c(input$admin_super_vars_select_var))
+              combined_df <- rbind(combined_df, para11)
+          }
+          
+          if (!is.null(input$admin_date_var_select_var)) {
+              para12 <- data.frame(Parameter = "admin_date_var_select_var", 
+                                  Name = "Submission Date Variable", 
+                                  Value = c(input$admin_date_var_select_var))
+              combined_df <- rbind(combined_df, para12)
+          }
+          
+          if (!is.null(input$admin_complete_var_select_var)) {
+              para13 <- data.frame(Parameter = "admin_complete_var_select_var", 
+                                  Name = "Submission Complete Variable", 
+                                  Value = c(input$admin_complete_var_select_var))
+              combined_df <- rbind(combined_df, para13)
+          }
+          
+          ## Unit of Observation
+          if (!is.null(input$unit_var_select_var)) {
+              para14 <- data.frame(Parameter = "unit_var_select_var", 
+                                   Name = "Unit of Observation/ID Variable", 
+                                   Value = c(input$unit_var_select_var))
+              combined_df <- rbind(combined_df, para14)
+          }
+          
+          if (!is.null(input$unit_extra_vars_select_var)) {
+              para15 <- data.frame(Parameter = "unit_extra_vars_select_var", 
+                                   Name = "Unit Additional Variables", 
+                                   Value = c(input$unit_extra_vars_select_var))
+              combined_df <- rbind(combined_df, para15)
+          }
+          
+          return(combined_df)
       })
       
       
