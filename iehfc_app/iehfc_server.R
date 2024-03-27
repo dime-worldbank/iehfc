@@ -840,7 +840,7 @@
           }
       })
       
-        ### Output Tab ----
+    ## Output Tab ----
       
         ### Duplicate Outputs ----
       
@@ -1224,9 +1224,8 @@
           content = function(file) {
               # 1. Check if 'duplicate' check is selected
               includeDuplicates <- "duplicate" %in% selected_checks()
-              
-              # Prepare the dataset only if duplicates check is selected
               duplicatesData <- NULL
+              # Prepare the dataset only if duplicates check is selected
               if (includeDuplicates) {
                   # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   duplicatesData <- isolate(duplicate_dataset())
@@ -1243,8 +1242,10 @@
               # 3. Check if 'enumerator' check is selected
               includeEnumerator <- "enumerator" %in% selected_checks()
               
+              enumeratorSubsData <- NULL 
+              enumeratorAveData <- NULL 
+              
               # Prepare the dataset only if enum check is selected
-              enumeratorData <- NULL
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
@@ -1259,20 +1260,31 @@
                   adminData <- isolate(admin_subs_dataset())
               }
               
+              # 5. Check if 'unit' check is selected
+              includeUnit <- "unit" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              unitData <- NULL
+              if (includeUnit) {
+                  unitData <- isolate(unit_dataset())
+              }
+              
               
               
               # Render the R Markdown file with parameters
               rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
                                 params = list(
                                     includeDuplicates = includeDuplicates,
-                                    duplicatesData = duplicatesData, 
+                                    duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,
                                     outliersData = outliersData, 
                                     includeEnumerator = includeEnumerator, 
                                     enumeratorSubsData = enumeratorSubsData, 
                                     enumeratorAveData = enumeratorAveData, 
                                     includeAdmin = includeAdmin, 
-                                    adminData = adminData
+                                    adminData = adminData, 
+                                    includeUnit = includeUnit,
+                                    unitData = unitData
                                 ),
                                 envir = new.env(parent = globalenv()))
           }

@@ -1,7 +1,14 @@
 ---
-title: "Consolidated Report"
+title: "IEHFC- Consolidated Report"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: html_document
+output: 
+    html_document:
+     toc: true
+     toc_depth: 2
+     toc_float:
+      collapsed: true
+     number_sections: true
+     theme: flatly
 params: 
   includeDuplicates: FALSE
   duplicatesData: NULL
@@ -12,6 +19,8 @@ params:
   enumeratorAveData: NULL
   includeAdmin: FALSE
   adminData: NULL
+  includeUnit: FALSE
+  unitData: NULL
   # Add parameters for other checks as needed
 ---
 
@@ -20,6 +29,16 @@ knitr::opts_chunk$set(echo = TRUE)
 library(DT)
 library(knitr)
 library(kableExtra)
+
+cat("
+<style>
+.scrollable-table {
+  overflow-y: auto;
+  height: 200px;
+}
+</style>
+", sep="\n")
+
 ```
 
 
@@ -39,6 +58,7 @@ cat("## Duplicates\n")
 # 2. outliers
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
 cat("## Outliers\n")
+    cat('<div class="scrollable-table">')
  knitr::kable(params$outliersData) %>%
  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
 } else {
@@ -76,5 +96,18 @@ cat("## Administrative Unit Testing\n")
  knitr::kable(params$adminData) %>%
  kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
 } else {
-  cat("No admin data available or 'Administrative Unit' check not selected.")
+  cat("No admin data available or 'Administrative' check not selected.")
 }
+```
+
+```{r unit-table, echo=FALSE, results='asis', eval=params$includeUnit}
+# 4. Admin
+if (!is.null(params$unitData) && nrow(params$unitData) > 0) {
+cat("## Unit of Observation-Level Testing\n")
+ knitr::kable(params$unitData) %>%
+ kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+} else {
+  cat("No unit data available or 'Unit of Observation-Level' check not selected.")
+}
+```
+
