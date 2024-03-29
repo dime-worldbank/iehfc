@@ -152,6 +152,22 @@
       
       ## Setup Tab ----
       
+        ### Read from imported parameters
+      
+      parameter_file <- reactive({
+          input$parameter_file
+      })
+      
+      imported_para_dataset <- reactiveVal()
+      
+      observeEvent(input$parameter_file, {
+          para_ds <- read.csv(parameter_file()$datapath)
+          imported_para_dataset(para_ds)
+          print(imported_para_dataset)
+      })
+      
+      
+   
         ### Check Selection ----
       
       output$check_select <- renderUI({
@@ -164,9 +180,16 @@
               choiceValues = list(
                   "duplicate", "outlier", "enumerator", "admin", "unit", "programming"
               ),
-              selected = c("duplicate")
+              selected = if (!is.null(imported_para_dataset())) {
+                  selected_rows <- c(imported_para_dataset()$Check)
+                  print(selected_rows)
+              } else {
+                  selected_rows <- c("duplicate")  # Default selection if dataset is not created
+              }
+              
           )
       })
+      
       
       selected_checks <- reactive({
           input$check_select
@@ -180,6 +203,21 @@
       
       current_duplicate_id_var     <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
       current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
+      
+      # Bring duplicate variables from uploaded parameter dataset
+      observe({
+          duplicate_id_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_id_select_var", "Value"]
+          if (!is.null(duplicate_id_select_var_imported)) {
+              current_duplicate_id_var(duplicate_id_select_var_imported)
+          }
+          
+          duplicate_extra_vars_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_extra_vars_select_var", "Value"]
+          if (!is.null(duplicate_extra_vars_imported)) {
+              current_duplicate_extra_vars(duplicate_extra_vars_imported)
+          }
+      })
       
       # Observe any change in 'duplicate_id_select_var' and update current_duplicate_id_var
       observe({
@@ -260,6 +298,34 @@
       current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
       current_outlier_id_var     <- reactiveVal() # For storing current state of 'outlier_id_select_var'
       current_outlier_extra_vars <- reactiveVal() # For storing current state of 'outlier_extra_vars_select_var'
+      
+      # Bring outlier variables from uploaded parameter dataset
+      observe({
+          indiv_outlier_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "indiv_outlier_vars_select_var", "Value"]
+          if (!is.null(indiv_outlier_vars_select_var_imported)) {
+              current_indiv_outlier_vars(indiv_outlier_vars_select_var_imported)
+          }
+          
+          group_outlier_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "group_outlier_vars_select_var", "Value"]
+          if (!is.null(group_outlier_vars_select_var_imported)) {
+              current_duplicate_extra_vars(group_outlier_vars_select_var_imported)
+          }
+          
+          outlier_id_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_id_select_var", "Value"]
+          if (!is.null(outlier_id_select_var_imported)) {
+              current_outlier_id_var(outlier_id_select_var_imported)
+          }
+          
+          outlier_extra_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_extra_vars_select_var", "Value"]
+          if (!is.null(outlier_extra_vars_select_var_imported)) {
+              current_outlier_extra_vars(outlier_extra_vars_select_var_imported)
+          }
+      })
+      
       
       # Observe any change in 'indiv_outlier_vars_select_var' and update current_indiv_outlier_vars
       observe({
@@ -415,6 +481,33 @@
       current_enumerator_date_var     <- reactiveVal() # For storing current state of 'enumerator_date_var_select_var'
       current_enumerator_complete_var <- reactiveVal() # For storing current state of 'enumerator_complete_var_select_var'
       
+      # Bring enumerator variables from uploaded parameter dataset
+      observe({
+          enumerator_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_var_select_var", "Value"]
+          if (!is.null(enumerator_var_select_var_imported)) {
+              current_enumerator_var(enumerator_var_select_var_imported)
+          }
+          
+          enumerator_ave_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_ave_vars_select_var", "Value"]
+          if (!is.null(enumerator_ave_vars_select_var_imported)) {
+              current_enumerator_ave_vars(enumerator_ave_vars_select_var_imported)
+          }
+          
+          enumerator_date_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_date_var_select_var", "Value"]
+          if (!is.null(enumerator_date_var_select_var_imported)) {
+              current_enumerator_date_var(enumerator_date_var_select_var_imported)
+          }
+          
+          enumerator_complete_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_complete_var_select_var", "Value"]
+          if (!is.null(enumerator_complete_var_select_var_imported)) {
+              current_enumerator_complete_var(enumerator_complete_var_select_var_imported)
+          }
+      })
+      
       # Observe any change in 'enumerator_var_select_var' and update current_enumerator_var
       observe({
           current_enumerator_var(input$enumerator_var_select_var)
@@ -553,6 +646,34 @@
       current_admin_date_var     <- reactiveVal() # For storing current state of 'admin_date_var_select_var'
       current_admin_complete_var <- reactiveVal() # For storing current state of 'admin_complete_var_select_var'
       
+      # Bring admin variables from uploaded parameter dataset
+      observe({
+          admin_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_var_select_var", "Value"]
+          if (!is.null(admin_var_select_var_imported)) {
+              current_admin_var(admin_var_select_var_imported)
+          }
+          
+          admin_super_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_super_vars_select_var", "Value"]
+          if (!is.null(admin_super_vars_select_var_imported)) {
+              current_admin_super_vars(admin_super_vars_select_var_imported)
+          }
+          
+          admin_date_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_date_var_select_var", "Value"]
+          if (!is.null(admin_date_var_select_var_imported)) {
+              current_admin_date_var(admin_date_var_select_var_imported)
+          }
+          
+          admin_complete_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_complete_var_select_var", "Value"]
+          if (!is.null(admin_complete_var_select_var_imported)) {
+              current_admin_complete_var(admin_complete_var_select_var_imported)
+          }
+      })
+      
+      
       # Observe any change in 'admin_var_select_var' and update current_admin_var
       observe({
           current_admin_var(input$admin_var_select_var)
@@ -688,6 +809,21 @@
       current_unit_var        <- reactiveVal() # For storing current state of 'unit_var_select_var'
       current_unit_extra_vars <- reactiveVal() # For storing current state of 'unit_extra_vars_select_var'
       
+      # Bring unit variables from uploaded parameter dataset
+      observe({
+          unit_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "unit_var_select_var", "Value"]
+          if (!is.null(unit_var_select_var_imported)) {
+              current_unit_var(unit_var_select_var_imported)
+          }
+          
+          unit_extra_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "unit_extra_vars_select_var", "Value"]
+          if (!is.null(unit_extra_vars_select_var_imported)) {
+              current_unit_extra_vars(unit_extra_vars_select_var_imported)
+          }
+      })
+      
       # Observe any change in 'unit_var_select_var' and update current_unit_var
       observe({
           current_unit_var(input$unit_var_select_var)
@@ -813,14 +949,16 @@
           
           ## Duplicates
           if (!is.null(input$duplicate_id_select_var)) {
-              para1 <- data.frame(Parameter = "duplicate_id_select_var", 
+              para1 <- data.frame(Check = "duplicate",
+                                  Parameter = "duplicate_id_select_var", 
                                   Name = "Duplicates ID variable", 
                                   Value = c(input$duplicate_id_select_var))
               combined_df <- rbind(combined_df, para1)
           }
           
           if (!is.null(input$duplicate_extra_vars_select_var)) {
-              para2 <- data.frame(Parameter = "duplicate_extra_vars_select_var", 
+              para2 <- data.frame(Check = "duplicate",
+                                  Parameter = "duplicate_extra_vars_select_var", 
                                   Name = "Duplicates additional variables", 
                                   Value = c(input$duplicate_extra_vars_select_var))
               combined_df <- rbind(combined_df, para2)
@@ -828,28 +966,32 @@
           
           ## Outlier
           if (!is.null(input$indiv_outlier_vars_select_var)) {
-              para3 <- data.frame(Parameter = "indiv_outlier_vars_select_var", 
+              para3 <- data.frame(Check = "outlier",
+                                  Parameter = "indiv_outlier_vars_select_var", 
                                   Name = "Individual outlier variables", 
                                   Value = c(input$indiv_outlier_vars_select_var))
               combined_df <- rbind(combined_df, para3)
           }
           
           if (!is.null(input$group_outlier_vars_select_var)) {
-              para4 <- data.frame(Parameter = "group_outlier_vars_select_var", 
+              para4 <- data.frame(Check = "outlier",
+                                  Parameter = "group_outlier_vars_select_var", 
                                   Name = "Grouped outlier variables", 
                                   Value = c(input$group_outlier_vars_select_var))
               combined_df <- rbind(combined_df, para4)
           }
           
           if (!is.null(input$outlier_id_select_var)) {
-              para5 <- data.frame(Parameter = "outlier_id_select_var", 
+              para5 <- data.frame(Check = "outlier",
+                                  Parameter = "outlier_id_select_var", 
                                   Name = "Outlier ID variable", 
                                   Value = c(input$outlier_id_select_var))
               combined_df <- rbind(combined_df, para5)
           }
           
           if (!is.null(input$outlier_extra_vars_select_var)) {
-              para5 <- data.frame(Parameter = "outlier_extra_vars_select_var", 
+              para5 <- data.frame(Check = "outlier",
+                                  Parameter = "outlier_extra_vars_select_var", 
                                   Name = "Outlier ID variable", 
                                   Value = c(input$outlier_extra_vars_select_var))
               combined_df <- rbind(combined_df, para5)
@@ -857,28 +999,32 @@
           
           ## Enumerator level
           if (!is.null(input$enumerator_var_select_var)) {
-              para6 <- data.frame(Parameter = "enumerator_var_select_var", 
+              para6 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_var_select_var", 
                                   Name = "Enumerator variable", 
                                   Value = c(input$enumerator_var_select_var))
               combined_df <- rbind(combined_df, para6)
           }
           
           if (!is.null(input$enumerator_ave_vars_select_var)) {
-              para7 <- data.frame(Parameter = "enumerator_ave_vars_select_var", 
+              para7 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var))
               combined_df <- rbind(combined_df, para7)
           }
           
           if (!is.null(input$enumerator_date_var_select_var)) {
-              para8 <- data.frame(Parameter = "enumerator_date_var_select_var", 
+              para8 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_date_var_select_var", 
                                   Name = "Submission Date Variable", 
                                   Value = c(input$enumerator_date_var_select_var))
               combined_df <- rbind(combined_df, para8)
           }
           
           if (!is.null(input$enumerator_complete_var_select_var)) {
-              para9 <- data.frame(Parameter = "enumerator_complete_var_select_var", 
+              para9 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_complete_var_select_var", 
                                   Name = "Submission Complete Variable", 
                                   Value = c(input$enumerator_complete_var_select_var))
               combined_df <- rbind(combined_df, para9)
@@ -886,28 +1032,32 @@
           
           ## Admin level
           if (!is.null(input$admin_var_select_var)) {
-              para10 <- data.frame(Parameter = "admin_var_select_var", 
+              para10 <- data.frame(Check = "admin",
+                                   Parameter = "admin_var_select_var", 
                                   Name = "Administrative Unit Variable", 
                                   Value = c(input$admin_var_select_var))
               combined_df <- rbind(combined_df, para10)
           }
           
           if (!is.null(input$admin_super_vars_select_var)) {
-              para11 <- data.frame(Parameter = "admin_super_vars_select_var", 
+              para11 <- data.frame(Check = "admin",
+                                   Parameter = "admin_super_vars_select_var", 
                                   Name = "Higher-Level Administrative Unit Variables", 
                                   Value = c(input$admin_super_vars_select_var))
               combined_df <- rbind(combined_df, para11)
           }
           
           if (!is.null(input$admin_date_var_select_var)) {
-              para12 <- data.frame(Parameter = "admin_date_var_select_var", 
+              para12 <- data.frame(Check = "admin",
+                                   Parameter = "admin_date_var_select_var", 
                                   Name = "Submission Date Variable", 
                                   Value = c(input$admin_date_var_select_var))
               combined_df <- rbind(combined_df, para12)
           }
           
           if (!is.null(input$admin_complete_var_select_var)) {
-              para13 <- data.frame(Parameter = "admin_complete_var_select_var", 
+              para13 <- data.frame(Check = "admin",
+                                   Parameter = "admin_complete_var_select_var", 
                                   Name = "Submission Complete Variable", 
                                   Value = c(input$admin_complete_var_select_var))
               combined_df <- rbind(combined_df, para13)
@@ -915,14 +1065,16 @@
           
           ## Unit of Observation
           if (!is.null(input$unit_var_select_var)) {
-              para14 <- data.frame(Parameter = "unit_var_select_var", 
+              para14 <- data.frame(Check = "unit",
+                                   Parameter = "unit_var_select_var", 
                                    Name = "Unit of Observation/ID Variable", 
                                    Value = c(input$unit_var_select_var))
               combined_df <- rbind(combined_df, para14)
           }
           
           if (!is.null(input$unit_extra_vars_select_var)) {
-              para15 <- data.frame(Parameter = "unit_extra_vars_select_var", 
+              para15 <- data.frame(Check = "unit",
+                                   Parameter = "unit_extra_vars_select_var", 
                                    Name = "Unit Additional Variables", 
                                    Value = c(input$unit_extra_vars_select_var))
               combined_df <- rbind(combined_df, para15)
@@ -960,9 +1112,9 @@
                   card(
                       card_header(
                           card(
-                              fileInput(
+                              fileInput( # Import parameters
                                   "parameter_file",
-                                  label = span("Upload Parameter File", bsicons::bs_icon("question-circle-fill")) %>%
+                                  label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                                       tooltip(
                                           "This is where you upload the parameter. Make sure you used the correct template.",
                                           placement = "auto"
