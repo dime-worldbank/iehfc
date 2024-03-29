@@ -163,7 +163,6 @@
       observeEvent(input$parameter_file, {
           para_ds <- read.csv(parameter_file()$datapath)
           imported_para_dataset(para_ds)
-          print(imported_para_dataset)
       })
       
       
@@ -182,7 +181,6 @@
               ),
               selected = if (!is.null(imported_para_dataset())) {
                   selected_rows <- c(imported_para_dataset()$Check)
-                  print(selected_rows)
               } else {
                   selected_rows <- c("duplicate")  # Default selection if dataset is not created
               }
