@@ -942,6 +942,7 @@
       parameter_dataset <- reactive({
           # Initialize an empty data frame
           combined_df <- data.frame(Parameter = character(0), Name = character(0), Value = character(0))
+          current_datetime <- now()
           
           # Check if each parameter is selected and add it to the combined data frame
           
@@ -950,7 +951,8 @@
               para1 <- data.frame(Check = "duplicate",
                                   Parameter = "duplicate_id_select_var", 
                                   Name = "Duplicates ID variable", 
-                                  Value = c(input$duplicate_id_select_var))
+                                  Value = c(input$duplicate_id_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para1)
           }
           
@@ -958,7 +960,8 @@
               para2 <- data.frame(Check = "duplicate",
                                   Parameter = "duplicate_extra_vars_select_var", 
                                   Name = "Duplicates additional variables", 
-                                  Value = c(input$duplicate_extra_vars_select_var))
+                                  Value = c(input$duplicate_extra_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para2)
           }
           
@@ -967,7 +970,8 @@
               para3 <- data.frame(Check = "outlier",
                                   Parameter = "indiv_outlier_vars_select_var", 
                                   Name = "Individual outlier variables", 
-                                  Value = c(input$indiv_outlier_vars_select_var))
+                                  Value = c(input$indiv_outlier_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para3)
           }
           
@@ -975,7 +979,8 @@
               para4 <- data.frame(Check = "outlier",
                                   Parameter = "group_outlier_vars_select_var", 
                                   Name = "Grouped outlier variables", 
-                                  Value = c(input$group_outlier_vars_select_var))
+                                  Value = c(input$group_outlier_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para4)
           }
           
@@ -983,7 +988,8 @@
               para5 <- data.frame(Check = "outlier",
                                   Parameter = "outlier_id_select_var", 
                                   Name = "Outlier ID variable", 
-                                  Value = c(input$outlier_id_select_var))
+                                  Value = c(input$outlier_id_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para5)
           }
           
@@ -991,7 +997,8 @@
               para5 <- data.frame(Check = "outlier",
                                   Parameter = "outlier_extra_vars_select_var", 
                                   Name = "Outlier ID variable", 
-                                  Value = c(input$outlier_extra_vars_select_var))
+                                  Value = c(input$outlier_extra_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para5)
           }
           
@@ -1000,7 +1007,8 @@
               para6 <- data.frame(Check = "enumerator",
                                   Parameter = "enumerator_var_select_var", 
                                   Name = "Enumerator variable", 
-                                  Value = c(input$enumerator_var_select_var))
+                                  Value = c(input$enumerator_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para6)
           }
           
@@ -1008,7 +1016,8 @@
               para7 <- data.frame(Check = "enumerator",
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
-                                  Value = c(input$enumerator_ave_vars_select_var))
+                                  Value = c(input$enumerator_ave_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para7)
           }
           
@@ -1016,7 +1025,8 @@
               para8 <- data.frame(Check = "enumerator",
                                   Parameter = "enumerator_date_var_select_var", 
                                   Name = "Submission Date Variable", 
-                                  Value = c(input$enumerator_date_var_select_var))
+                                  Value = c(input$enumerator_date_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para8)
           }
           
@@ -1024,7 +1034,8 @@
               para9 <- data.frame(Check = "enumerator",
                                   Parameter = "enumerator_complete_var_select_var", 
                                   Name = "Submission Complete Variable", 
-                                  Value = c(input$enumerator_complete_var_select_var))
+                                  Value = c(input$enumerator_complete_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para9)
           }
           
@@ -1033,7 +1044,8 @@
               para10 <- data.frame(Check = "admin",
                                    Parameter = "admin_var_select_var", 
                                   Name = "Administrative Unit Variable", 
-                                  Value = c(input$admin_var_select_var))
+                                  Value = c(input$admin_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para10)
           }
           
@@ -1041,7 +1053,8 @@
               para11 <- data.frame(Check = "admin",
                                    Parameter = "admin_super_vars_select_var", 
                                   Name = "Higher-Level Administrative Unit Variables", 
-                                  Value = c(input$admin_super_vars_select_var))
+                                  Value = c(input$admin_super_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para11)
           }
           
@@ -1049,7 +1062,8 @@
               para12 <- data.frame(Check = "admin",
                                    Parameter = "admin_date_var_select_var", 
                                   Name = "Submission Date Variable", 
-                                  Value = c(input$admin_date_var_select_var))
+                                  Value = c(input$admin_date_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para12)
           }
           
@@ -1057,7 +1071,8 @@
               para13 <- data.frame(Check = "admin",
                                    Parameter = "admin_complete_var_select_var", 
                                   Name = "Submission Complete Variable", 
-                                  Value = c(input$admin_complete_var_select_var))
+                                  Value = c(input$admin_complete_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para13)
           }
           
@@ -1066,7 +1081,8 @@
               para14 <- data.frame(Check = "unit",
                                    Parameter = "unit_var_select_var", 
                                    Name = "Unit of Observation/ID Variable", 
-                                   Value = c(input$unit_var_select_var))
+                                   Value = c(input$unit_var_select_var),
+                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para14)
           }
           
@@ -1074,7 +1090,8 @@
               para15 <- data.frame(Check = "unit",
                                    Parameter = "unit_extra_vars_select_var", 
                                    Name = "Unit Additional Variables", 
-                                   Value = c(input$unit_extra_vars_select_var))
+                                   Value = c(input$unit_extra_vars_select_var),
+                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para15)
           }
           
@@ -1114,7 +1131,9 @@
                                   "parameter_file",
                                   label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                                       tooltip(
-                                          "This is where you upload the parameter. Make sure you used the correct template.",
+                                          "This is optional. If you have the parameters saved in a csv file, you can upload it here. 
+                                          Make sure to use the correct template. You can download the parameters from the \"Download Parameters\" option.
+                                          You can use the downloaded csv file to reuse here.",
                                           placement = "auto"
                                       ),
                                   accept = ".csv",
@@ -1122,7 +1141,7 @@
                                   buttonLabel = "Upload"
                               ),
                               span(
-                                  "Upload the csv parameter file.",
+                                  "(Optional) Upload the csv parameter file.",
                                   style = "color: blue; font-size: 12px;"
                               )
                           ),
