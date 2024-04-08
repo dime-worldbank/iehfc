@@ -1108,7 +1108,10 @@
       )
       
       output$setup_exp_para_button <- renderUI({
-          downloadButton("setup_exp_para", label = "Download Parameters")
+          downloadButton("setup_exp_para", 
+                         label = "Download as csv",
+                         icon("export"),
+                         class = "btn btn-outline-primary btn-sm")
       })
       
 
@@ -1126,7 +1129,19 @@
                   width = "30%",
                   card(
                       card_header(
-                          card(
+                
+                          span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
+                              tooltip(
+                                  "This is where you choose which data quality checks to run. For each check that you select, a corresponding box will appear on the right. You will need to make sure that the parameters within the box are correct before proceeding. Once you are done, click on the \"Run HFCs\" button below.",
+                                  placement = "auto"
+                              )
+                      ),
+                      uiOutput("check_select")
+                  ),
+                  card(
+                      uiOutput("setup_run_hfcs_button")
+                  ),
+                  card(
                               fileInput( # Import parameters
                                   "parameter_file",
                                   label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
@@ -1145,18 +1160,11 @@
                                   style = "color: blue; font-size: 12px;"
                               )
                           ),
-                          span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
-                              tooltip(
-                                  "This is where you choose which data quality checks to run. For each check that you select, a corresponding box will appear on the right. You will need to make sure that the parameters within the box are correct before proceeding. Once you are done, click on the \"Run HFCs\" button below.",
-                                  placement = "auto"
-                              )
-                      ),
-                      uiOutput("check_select")
-                  ),
-                  card(
-                      uiOutput("setup_run_hfcs_button")
-                  ),
-                  card(
+                  card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
+                           tooltip(
+                               "Click here to download the selected parameters as csv.",
+                               placement = "auto"
+                           ),
                        uiOutput("setup_exp_para_button")
                   )
               ),
