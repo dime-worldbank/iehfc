@@ -15,31 +15,29 @@
 
   fluidPage(
       useShinyjs(),
-      navbarPage(
+      useShinyFeedback(),
+      page_navbar(
           title = "iehfc",
-          
-          # Initialize shinyjs
-          
-          tabPanel(
+          nav_panel(
               "Introduction",
               introduction_tab 
           ),
-          tabPanel(
+          nav_panel(
               "Upload Data",
               id = "upload_tab",  # Give an ID for reference
               uiOutput("upload_tab")
           ),
-          tabPanel(
+          nav_panel(
               "Check Selection and Setup",
               id = "setup_tab",  # Give an ID for reference
               uiOutput("setup_tab")
           ),
-          tabPanel(
+          nav_panel(
               "Outputs",
               id = "output_tab",  # Give an ID for reference
               uiOutput("output_tab")
           ),
-          navbarMenu("More",
+          nav_menu("More",
                      tabPanel(tags$a("Guides", href = "https://github.com/dime-worldbank/iehfc/blob/main/README.md")),
                      # tabPanel(tags$a("About", href = "https://www.github.com")), # Under construction
                      tabPanel(tags$a("Github", href = "https://www.github.com/dime-worldbank/iehfc"))
@@ -59,8 +57,17 @@
                   body {
                       font-size: 16px;
                   }
+                  
+                  .nav-link {
+                      font-size: 18px;
+                  }
+                  
+                  .shiny-notification {
+                       position:fixed;
+                       right: calc(65%);
+                  }
                   "
-              )
+              ) # Source: https://stackoverflow.com/questions/44112000/move-r-shiny-shownotification-to-center-of-screen
       )
       
   )

@@ -74,7 +74,7 @@
       
       output$upload_tab_data <- renderUI({
           layout_column_wrap(
-              height = "85vh",
+              height = "120vh",
               width = 1,
               card(
                   card_header(
@@ -116,7 +116,8 @@
               "use_test_data",
               "Use Test Data",
               icon("table"),
-              class = "btn btn-outline-primary btn-lg"
+              class = "btn btn-outline-primary btn-lg",
+              width = "100%"
           )
       })
       
@@ -795,11 +796,13 @@
       })
       
       output$setup_run_hfcs_button <- renderUI({
-          actionButton(
-              "run_hfcs",
-              "RUN HFCs",
-              icon("paper-plane"),
-              class = "btn btn-outline-primary btn-lg"
+          loadingButton(
+              inputId      = "run_hfcs",
+              label        = "RUN HFCs",
+              class        = "btn btn-lg btn-outline-primary",
+              icon         = icon("paper-plane"),
+              style        = "width: 100%;",
+              loadingLabel = ""
           )
       })
       
@@ -807,6 +810,13 @@
       
       observeEvent(input$run_hfcs, {
           updateNavbarPage(session, "tabs", selected = "output_tab")
+          Sys.sleep(1)
+          resetLoadingButton("run_hfcs")
+          showNotification(
+              "HFCs were successully run. Please click on the \"Outputs\" tab.",
+              duration = 4,
+              type     = "message"
+          )
       })
       
       output$setup_tab_data <- renderUI({

@@ -11,6 +11,9 @@
       shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib
   )
   
+  remotes::install_github("merlinoa/shinyFeedback", ref = "feature/loadingButton_icon")
+  library(shinyFeedback)
+  
   
   ## 2. Load Custom Functions ----
 
