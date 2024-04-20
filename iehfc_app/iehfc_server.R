@@ -36,12 +36,21 @@
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          ds <- read.csv(hfc_file()$datapath, na.strings = c("", "NA"))
+          ds <- fread(hfc_file()$datapath, na.strings = c("", "NA_character_", "NA"))
+          too_many_cols <- ncol(ds) > 10000
+          if(too_many_cols) {
+              showNotification(
+                  "Your dataset has more than 10,000 variables. Unfortunately, the platform currently cannot handle such a large dataset. Please create a subset of your dataset and try again.",
+                  duration = NULL,
+                  type     = "error"
+              )
+          }
+          req(!too_many_cols)
           hfc_dataset(ds)
       })
       
       observeEvent(input$use_test_data, {
-          ds <- read.csv("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
+          ds <- fread("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
           hfc_dataset(ds)
       })
       

@@ -15,7 +15,6 @@
 
   fluidPage(
       useShinyjs(),
-      useShinyFeedback(),
       page_navbar(
           title = "iehfc",
           nav_panel(
