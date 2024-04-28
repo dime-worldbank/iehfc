@@ -37,8 +37,7 @@ library(kableExtra)
 # 1. duplicates
 if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
 cat("## Duplicates\n")
- knitr::kable(params$duplicatesData) %>%
- kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+ DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No duplicate data available or 'Duplicates' check not selected.")
 }
@@ -49,8 +48,7 @@ cat("## Duplicates\n")
 # 2. outliers
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
 cat("## Outliers\n")
- knitr::kable(params$outliersData) %>%
- kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+  DT::datatable(params$outliersData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No outlier data available or 'Outliers' check not selected.")
 }
@@ -61,8 +59,7 @@ cat("## Outliers\n")
 if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) {
 cat("## Enumerator\n")
 cat("### Number of Submissions\n")
- knitr::kable(params$enumeratorSubsData) %>%
- kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+ DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
@@ -72,8 +69,7 @@ cat("### Number of Submissions\n")
 # 3.a enumerator
 if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
 cat("### Average by Enumerator\n")
- knitr::kable(params$enumeratorAveData) %>%
- kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+ DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
@@ -84,8 +80,7 @@ cat("### Average by Enumerator\n")
 # 4. Admin
 if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
 cat("## Administrative Unit Testing\n")
- knitr::kable(params$adminData) %>%
- kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+ DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No admin data available or 'Administrative' check not selected.")
 }
@@ -95,8 +90,7 @@ cat("## Administrative Unit Testing\n")
 # 4. Admin
 if (!is.null(params$unitData) && nrow(params$unitData) > 0) {
 cat("## Unit of Observation-Level Testing\n")
- knitr::kable(params$unitData) %>%
- kableExtra::kable_styling(bootstrap_options = c("striped", "hover"))
+ DT::datatable(params$unitData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No unit data available or 'Unit of Observation-Level' check not selected.")
 }
