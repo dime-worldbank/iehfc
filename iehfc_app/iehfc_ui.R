@@ -37,8 +37,7 @@
           tabPanel(
               "Outputs",
               id = "output_tab",  # Give an ID for reference
-              uiOutput("output_tab"), 
-              downloadButton("full_report_dl", "Download Consolidated Report")
+              uiOutput("output_tab")
               
           ),
           navbarMenu("More",

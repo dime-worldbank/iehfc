@@ -1494,13 +1494,20 @@
       })
       
       output$output_tab_data <- renderUI({
-          navset_tab(
-              nav_panel("Duplicates", uiOutput("duplicate_output")),
-              nav_panel("Outliers", uiOutput("outlier_output")),
-              nav_panel("Enumerator", uiOutput("enumerator_output")),
-              nav_panel("Admin Level", uiOutput("admin_output")),
-              nav_panel("Tracking", uiOutput("unit_output")),
-              nav_panel("Programming", "Under construction!")
+          # Wrap the navset_tab and the download button in a tagList
+          tagList(
+              # Place the download button at the top
+              downloadButton("full_report_dl", "Download Consolidated Report"),
+              # Your existing navset_tab structure with panels
+              navset_tab(
+                  nav_panel("Duplicates", uiOutput("duplicate_output")),
+                  nav_panel("Outliers", uiOutput("outlier_output")),
+                  nav_panel("Enumerator", uiOutput("enumerator_output")),
+                  nav_panel("Admin Level", uiOutput("admin_output")),
+                  nav_panel("Tracking", uiOutput("unit_output")),
+                  nav_panel("Programming", "Under construction!")
+              )
+              # If you want the download button at the bottom, move it here after the navset_tab
           )
       })
       
