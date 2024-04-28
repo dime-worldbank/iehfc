@@ -17,6 +17,9 @@ params:
   includeEnumerator: FALSE
   enumeratorSubsData: NULL
   enumeratorAveData: NULL
+  enumeratorDate: NULL
+  includeEnumeratorPlot: FALSE
+  enumeratorPlotPath: NULL
   includeAdmin: FALSE
   adminData: NULL
   includeUnit: FALSE
@@ -36,7 +39,7 @@ library(kableExtra)
 ```{r duplicates-table, echo=FALSE, results='asis', eval=params$includeDuplicates}
 # 1. duplicates
 if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
-cat("## Duplicates\n")
+cat("# Duplicates\n")
  DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No duplicate data available or 'Duplicates' check not selected.")
@@ -47,7 +50,7 @@ cat("## Duplicates\n")
 ```{r outliers-table, echo=FALSE, results='asis', eval=params$includeOutliers}
 # 2. outliers
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
-cat("## Outliers\n")
+cat("# Outliers\n")
   DT::datatable(params$outliersData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No outlier data available or 'Outliers' check not selected.")
@@ -57,8 +60,8 @@ cat("## Outliers\n")
 ```{r enumerator-table-1, echo=FALSE, results='asis', eval=params$includeEnumerator}
 # 3.a enumerator
 if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) {
-cat("## Enumerator\n")
-cat("### Number of Submissions\n")
+cat("# Enumerator\n")
+cat("## Number of Submissions\n")
  DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
@@ -68,7 +71,7 @@ cat("### Number of Submissions\n")
 ```{r enumerator-table-2, echo=FALSE, results='asis', eval=params$includeEnumerator}
 # 3.a enumerator
 if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
-cat("### Average by Enumerator\n")
+cat("## Average by Enumerator\n")
  DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
@@ -76,10 +79,21 @@ cat("### Average by Enumerator\n")
 ```
 
 
+```{r enumerator-plot, echo=FALSE, results='asis', eval=params$includeEnumerator, eval=FALSE, include=FALSE}
+if (!is.null(params$enumeratorPlotPath) && file.exists(params$enumeratorPlotPath)) {
+  # Include the plot
+  knitr::include_graphics(params$enumeratorPlotPath)
+} else {
+  cat("No plot available for enumerator data.")
+}
+```
+
+
+
 ```{r admin-table, echo=FALSE, results='asis', eval=params$includeAdmin}
 # 4. Admin
 if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
-cat("## Administrative Unit Testing\n")
+cat("# Administrative Unit Testing\n")
  DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No admin data available or 'Administrative' check not selected.")
@@ -89,7 +103,7 @@ cat("## Administrative Unit Testing\n")
 ```{r unit-table, echo=FALSE, results='asis', eval=params$includeUnit}
 # 4. Admin
 if (!is.null(params$unitData) && nrow(params$unitData) > 0) {
-cat("## Unit of Observation-Level Testing\n")
+cat("# Unit of Observation-Level Testing\n")
  DT::datatable(params$unitData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No unit data available or 'Unit of Observation-Level' check not selected.")

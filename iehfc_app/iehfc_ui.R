@@ -16,7 +16,7 @@
   fluidPage(
       useShinyjs(),
       navbarPage(
-          title = "iehfc",
+          title = "High-frequency Checks",
           
           # Initialize shinyjs
           
@@ -48,7 +48,8 @@
           theme = bs_theme(
               base_font    = font_google("Atkinson Hyperlegible"),
               heading_font = font_google("Atkinson Hyperlegible"),
-              code_font    = font_google("Fira Code")
+              code_font    = font_google("Fira Code"), 
+              bootswatch = "pulse"
           ) %>%
               bs_add_rules(
                   "

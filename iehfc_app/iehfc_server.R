@@ -1110,7 +1110,7 @@
       output$setup_exp_para_button <- renderUI({
           downloadButton("setup_exp_para", 
                          label = "Download as csv",
-                         icon("export"),
+                         icon("download"),
                          class = "btn btn-outline-primary btn-sm")
       })
       
@@ -1349,6 +1349,7 @@
               htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
+     
       
       
       output$enumerator_ave_vars_table_for_dl <- downloadHandler(
@@ -1522,6 +1523,8 @@
               return(uiOutput("output_tab_data"))
           }
       })
+     
+      
       
         ### Download consolidated report ----
 
@@ -1552,12 +1555,19 @@
               
               enumeratorSubsData <- NULL 
               enumeratorAveData <- NULL 
+              enumeratorPlotPath <- NULL 
+          #    enumeratorDate <- NULL
               
               # Prepare the dataset only if enum check is selected
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
+              #    enumeratorPlotPath <- reactive_image_path()
+            #      enumeratorDate <- isolate(enumerator_date_var())  # Here, ensure you call the reactive object as a function
               }
+              
+              
+              
               
               # 4. Check if 'admin' check is selected
               includeAdmin <- "admin" %in% selected_checks()
@@ -1589,6 +1599,8 @@
                                     includeEnumerator = includeEnumerator, 
                                     enumeratorSubsData = enumeratorSubsData, 
                                     enumeratorAveData = enumeratorAveData, 
+                                 #   enumeratorPlotPath = enumeratorPlotPath,
+                                  #  enumeratorDate = enumeratorDate, 
                                     includeAdmin = includeAdmin, 
                                     adminData = adminData, 
                                     includeUnit = includeUnit,
