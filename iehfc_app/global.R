@@ -8,9 +8,8 @@
 
   pacman::p_load(
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, pacman
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib
   )
-  
   
   ## 2. Load Custom Functions ----
 

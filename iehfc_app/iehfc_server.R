@@ -1132,7 +1132,10 @@
                 
                           span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
-                                  "This is where you choose which data quality checks to run. For each check that you select, a corresponding box will appear on the right. You will need to make sure that the parameters within the box are correct before proceeding. Once you are done, click on the \"Run HFCs\" button below.",
+                                  "This is where you choose which data quality checks to run. 
+                                  For each check that you select, a corresponding box will appear on the right. 
+                                  You will need to make sure that the parameters within the box are correct before proceeding. 
+                                  Once you are done, click on the \"Run HFCs\" button below.",
                                   placement = "auto"
                               )
                       ),
@@ -1146,9 +1149,10 @@
                                   "parameter_file",
                                   label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                                       tooltip(
-                                          "This is optional. If you have the parameters saved in a csv file, you can upload it here. 
-                                          Make sure to use the correct template. You can download the parameters from the \"Download Parameters\" option.
-                                          You can use the downloaded csv file to reuse here.",
+                                          "This is optional. If you've saved your parameters in a CSV file, 
+                                          you can upload it here. Ensure that your file matches the required template. 
+                                          You can download the correct template using the 'Download Parameters' option. 
+                                          Once downloaded, you can reuse the CSV file for uploads here.",
                                           placement = "auto"
                                       ),
                                   accept = ".csv",
@@ -1162,7 +1166,7 @@
                           ),
                   card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                            tooltip(
-                               "Click here to download the selected parameters as csv.",
+                               "Click here to download the selected parameters as a CSV file or to obtain the required template.",
                                placement = "auto"
                            ),
                        uiOutput("setup_exp_para_button")
