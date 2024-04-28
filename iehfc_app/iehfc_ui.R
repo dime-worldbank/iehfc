@@ -46,9 +46,22 @@
                      # tabPanel(tags$a("About", href = "https://www.github.com")), # Under construction
                      tabPanel(tags$a("Github", href = "https://www.github.com/dime-worldbank/iehfc"))
           ),
-          theme = bs_theme() %>%
+          theme = bs_theme(
+              base_font    = font_google("Atkinson Hyperlegible"),
+              heading_font = font_google("Atkinson Hyperlegible"),
+              code_font    = font_google("Fira Code")
+          ) %>%
               bs_add_rules(
-                  sass::sass_file("www/custom.css")
+                  "
+                  h3 {
+                      font-size: 24px;
+                      font-weight: bold;
+                  }
+
+                  body {
+                      font-size: 16px;
+                  }
+                  "
               )
       )
       

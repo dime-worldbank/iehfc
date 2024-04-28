@@ -10,7 +10,8 @@
       
       req_packages <- c(
           "pacman", "shiny", "dplyr", "tidyr", "purrr", "ggplot2", "janitor", "data.table", "DT",
-          "remotes", "bsicons", "shinydashboard", "shinyjs", "markdown"
+          "remotes", "bsicons", "shinydashboard", "shinyjs", "markdown", "htmlwidgets", "webshot",
+          "plotly", "bslib"
       )
       
       if(sum(req_packages %in% (.packages())) != length(req_packages)) { # Means we need to run global.R to get packages, otherwise we're fine
