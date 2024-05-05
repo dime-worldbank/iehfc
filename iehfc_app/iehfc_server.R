@@ -138,7 +138,7 @@
                       ),
                       span(
                           "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
-                          style = "color: blue; font-size: 12px;"
+                          style = "color: #593196; font-size: 12px;"
                       )
                   ),
                   card(
@@ -1161,7 +1161,7 @@
                               ),
                               span(
                                   "(Optional) Upload the csv parameter file.",
-                                  style = "color: blue; font-size: 12px;"
+                                  style = "color: #593196; font-size: 12px;"
                               )
                           ),
                   card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
