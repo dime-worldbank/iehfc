@@ -1278,7 +1278,9 @@
               card_header(
                   span("Cumulative Submissions by Enumerator", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "Placeholder",
+                          "This graph tracks the total number of submissions made by each enumerator over the selected time period. 
+                          Each line represents an individual enumerator's cumulative submissions, allowing for a visual comparison of activity levels and workload distribution among the team. 
+                          Use this graph to identify trends, outliers, or imbalances in data collection efforts.",
                           placement = "auto"
                       )
               ),
@@ -1386,7 +1388,7 @@
               card_header(
                   span("Submissions by Administrative Unit", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "Shows the total number of submissions per administrative unit and (if a date variable was provided) the number of submissions per administrative unit per day.",
+                          "Shows the total number of submissions per administrative unit and, if a date variable was provided, per day.",
                           placement = "auto"
                       )
               ),
@@ -1401,7 +1403,7 @@
               card_header(
                   span("Cumulative Submissions by Administrative Unit", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "Placeholder",
+                          "This graph displays the accumulated submissions by the selected Administrative Unit level over time.",
                           placement = "auto"
                       )
               ),
