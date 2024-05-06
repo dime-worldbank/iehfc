@@ -15,8 +15,10 @@
 
   fluidPage(
       useShinyjs(),
-      page_navbar(
-          title = "iehfc",
+      navbarPage(
+          title = "IEHFC",
+          
+          # Initialize shinyjs
           nav_panel(
               "Introduction",
               introduction_tab 
@@ -35,6 +37,7 @@
               "Outputs",
               id = "output_tab",  # Give an ID for reference
               uiOutput("output_tab")
+              
           ),
           nav_menu("More",
                      tabPanel(tags$a("Guides", href = "https://github.com/dime-worldbank/iehfc/blob/main/README.md")),
@@ -44,7 +47,8 @@
           theme = bs_theme(
               base_font    = font_google("Atkinson Hyperlegible"),
               heading_font = font_google("Atkinson Hyperlegible"),
-              code_font    = font_google("Fira Code")
+              code_font    = font_google("Fira Code"), 
+              bootswatch = "pulse"
           ) %>%
               bs_add_rules(
                   "
@@ -65,6 +69,10 @@
                        position:fixed;
                        right: calc(65%);
                   }
+                  
+                   .navbar, .navbar-light, .bg-light {
+        background-color: #9e83cf !important;  /* Purple background for main navbar */
+    }
                   "
               ) # Source: https://stackoverflow.com/questions/44112000/move-r-shiny-shownotification-to-center-of-screen
       )

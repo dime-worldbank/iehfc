@@ -148,7 +148,7 @@
                       ),
                       span(
                           "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
-                          style = "color: blue; font-size: 12px;"
+                          style = "color: #593196; font-size: 12px;"
                       )
                   ),
                   card(
@@ -162,6 +162,21 @@
       
       ## Setup Tab ----
       
+        ### Read from imported parameters
+      
+      parameter_file <- reactive({
+          input$parameter_file
+      })
+      
+      imported_para_dataset <- reactiveVal()
+      
+      observeEvent(input$parameter_file, {
+          para_ds <- read.csv(parameter_file()$datapath)
+          imported_para_dataset(para_ds)
+      })
+      
+      
+   
         ### Check Selection ----
       
       output$check_select <- renderUI({
@@ -174,9 +189,15 @@
               choiceValues = list(
                   "duplicate", "outlier", "enumerator", "admin", "unit", "programming"
               ),
-              selected = c("duplicate")
+              selected = if (!is.null(imported_para_dataset())) {
+                  selected_rows <- c(imported_para_dataset()$Check)
+              } else {
+                  selected_rows <- c("duplicate")  # Default selection if dataset is not created
+              }
+              
           )
       })
+      
       
       selected_checks <- reactive({
           input$check_select
@@ -190,6 +211,21 @@
       
       current_duplicate_id_var     <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
       current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
+      
+      # Bring duplicate variables from uploaded parameter dataset
+      observe({
+          duplicate_id_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_id_select_var", "Value"]
+          if (!is.null(duplicate_id_select_var_imported)) {
+              current_duplicate_id_var(duplicate_id_select_var_imported)
+          }
+          
+          duplicate_extra_vars_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_extra_vars_select_var", "Value"]
+          if (!is.null(duplicate_extra_vars_imported)) {
+              current_duplicate_extra_vars(duplicate_extra_vars_imported)
+          }
+      })
       
       # Observe any change in 'duplicate_id_select_var' and update current_duplicate_id_var
       observe({
@@ -261,7 +297,7 @@
       
         ### Outlier Check Setup ----
       
-      # Outlier data quality checks: 
+        # Outlier data quality checks: 
           # "Individual" outlier checks -- check individual variable for outliers
           # "Group" outlier checks -- check group of variables (e.g. income for every household member) for outliers
           # Additional variables for reference
@@ -270,6 +306,34 @@
       current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
       current_outlier_id_var     <- reactiveVal() # For storing current state of 'outlier_id_select_var'
       current_outlier_extra_vars <- reactiveVal() # For storing current state of 'outlier_extra_vars_select_var'
+      
+      # Bring outlier variables from uploaded parameter dataset
+      observe({
+          indiv_outlier_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "indiv_outlier_vars_select_var", "Value"]
+          if (!is.null(indiv_outlier_vars_select_var_imported)) {
+              current_indiv_outlier_vars(indiv_outlier_vars_select_var_imported)
+          }
+          
+          group_outlier_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "group_outlier_vars_select_var", "Value"]
+          if (!is.null(group_outlier_vars_select_var_imported)) {
+              current_duplicate_extra_vars(group_outlier_vars_select_var_imported)
+          }
+          
+          outlier_id_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_id_select_var", "Value"]
+          if (!is.null(outlier_id_select_var_imported)) {
+              current_outlier_id_var(outlier_id_select_var_imported)
+          }
+          
+          outlier_extra_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_extra_vars_select_var", "Value"]
+          if (!is.null(outlier_extra_vars_select_var_imported)) {
+              current_outlier_extra_vars(outlier_extra_vars_select_var_imported)
+          }
+      })
+      
       
       # Observe any change in 'indiv_outlier_vars_select_var' and update current_indiv_outlier_vars
       observe({
@@ -413,7 +477,7 @@
       
         ### Enumerator Check Setup ----
       
-      # Enumerator data quality checks:
+          # Enumerator data quality checks:
           # Number of surveys per enumerator
           # Average variable value per enumerator
           # Number of surveys per day per enumerator (requires submission date variable)
@@ -424,6 +488,33 @@
       current_enumerator_ave_vars     <- reactiveVal() # For storing current state of 'enumerator_ave_vars_select_var'
       current_enumerator_date_var     <- reactiveVal() # For storing current state of 'enumerator_date_var_select_var'
       current_enumerator_complete_var <- reactiveVal() # For storing current state of 'enumerator_complete_var_select_var'
+      
+      # Bring enumerator variables from uploaded parameter dataset
+      observe({
+          enumerator_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_var_select_var", "Value"]
+          if (!is.null(enumerator_var_select_var_imported)) {
+              current_enumerator_var(enumerator_var_select_var_imported)
+          }
+          
+          enumerator_ave_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_ave_vars_select_var", "Value"]
+          if (!is.null(enumerator_ave_vars_select_var_imported)) {
+              current_enumerator_ave_vars(enumerator_ave_vars_select_var_imported)
+          }
+          
+          enumerator_date_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_date_var_select_var", "Value"]
+          if (!is.null(enumerator_date_var_select_var_imported)) {
+              current_enumerator_date_var(enumerator_date_var_select_var_imported)
+          }
+          
+          enumerator_complete_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_complete_var_select_var", "Value"]
+          if (!is.null(enumerator_complete_var_select_var_imported)) {
+              current_enumerator_complete_var(enumerator_complete_var_select_var_imported)
+          }
+      })
       
       # Observe any change in 'enumerator_var_select_var' and update current_enumerator_var
       observe({
@@ -563,6 +654,34 @@
       current_admin_date_var     <- reactiveVal() # For storing current state of 'admin_date_var_select_var'
       current_admin_complete_var <- reactiveVal() # For storing current state of 'admin_complete_var_select_var'
       
+      # Bring admin variables from uploaded parameter dataset
+      observe({
+          admin_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_var_select_var", "Value"]
+          if (!is.null(admin_var_select_var_imported)) {
+              current_admin_var(admin_var_select_var_imported)
+          }
+          
+          admin_super_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_super_vars_select_var", "Value"]
+          if (!is.null(admin_super_vars_select_var_imported)) {
+              current_admin_super_vars(admin_super_vars_select_var_imported)
+          }
+          
+          admin_date_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_date_var_select_var", "Value"]
+          if (!is.null(admin_date_var_select_var_imported)) {
+              current_admin_date_var(admin_date_var_select_var_imported)
+          }
+          
+          admin_complete_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "admin_complete_var_select_var", "Value"]
+          if (!is.null(admin_complete_var_select_var_imported)) {
+              current_admin_complete_var(admin_complete_var_select_var_imported)
+          }
+      })
+      
+      
       # Observe any change in 'admin_var_select_var' and update current_admin_var
       observe({
           current_admin_var(input$admin_var_select_var)
@@ -698,6 +817,21 @@
       current_unit_var        <- reactiveVal() # For storing current state of 'unit_var_select_var'
       current_unit_extra_vars <- reactiveVal() # For storing current state of 'unit_extra_vars_select_var'
       
+      # Bring unit variables from uploaded parameter dataset
+      observe({
+          unit_var_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "unit_var_select_var", "Value"]
+          if (!is.null(unit_var_select_var_imported)) {
+              current_unit_var(unit_var_select_var_imported)
+          }
+          
+          unit_extra_vars_select_var_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "unit_extra_vars_select_var", "Value"]
+          if (!is.null(unit_extra_vars_select_var_imported)) {
+              current_unit_extra_vars(unit_extra_vars_select_var_imported)
+          }
+      })
+      
       # Observe any change in 'unit_var_select_var' and update current_unit_var
       observe({
           current_unit_var(input$unit_var_select_var)
@@ -813,6 +947,185 @@
           )
       })
       
+           ### Export parameters
+   
+      parameter_dataset <- reactive({
+          # Initialize an empty data frame
+          combined_df <- data.frame(Parameter = character(0), Name = character(0), Value = character(0))
+          current_datetime <- now()
+          
+          # Check if each parameter is selected and add it to the combined data frame
+          
+          ## Duplicates
+          if (!is.null(input$duplicate_id_select_var)) {
+              para1 <- data.frame(Check = "duplicate",
+                                  Parameter = "duplicate_id_select_var", 
+                                  Name = "Duplicates ID variable", 
+                                  Value = c(input$duplicate_id_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para1)
+          }
+          
+          if (!is.null(input$duplicate_extra_vars_select_var)) {
+              para2 <- data.frame(Check = "duplicate",
+                                  Parameter = "duplicate_extra_vars_select_var", 
+                                  Name = "Duplicates additional variables", 
+                                  Value = c(input$duplicate_extra_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para2)
+          }
+          
+          ## Outlier
+          if (!is.null(input$indiv_outlier_vars_select_var)) {
+              para3 <- data.frame(Check = "outlier",
+                                  Parameter = "indiv_outlier_vars_select_var", 
+                                  Name = "Individual outlier variables", 
+                                  Value = c(input$indiv_outlier_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para3)
+          }
+          
+          if (!is.null(input$group_outlier_vars_select_var)) {
+              para4 <- data.frame(Check = "outlier",
+                                  Parameter = "group_outlier_vars_select_var", 
+                                  Name = "Grouped outlier variables", 
+                                  Value = c(input$group_outlier_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para4)
+          }
+          
+          if (!is.null(input$outlier_id_select_var)) {
+              para5 <- data.frame(Check = "outlier",
+                                  Parameter = "outlier_id_select_var", 
+                                  Name = "Outlier ID variable", 
+                                  Value = c(input$outlier_id_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para5)
+          }
+          
+          if (!is.null(input$outlier_extra_vars_select_var)) {
+              para5 <- data.frame(Check = "outlier",
+                                  Parameter = "outlier_extra_vars_select_var", 
+                                  Name = "Outlier ID variable", 
+                                  Value = c(input$outlier_extra_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para5)
+          }
+          
+          ## Enumerator level
+          if (!is.null(input$enumerator_var_select_var)) {
+              para6 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_var_select_var", 
+                                  Name = "Enumerator variable", 
+                                  Value = c(input$enumerator_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para6)
+          }
+          
+          if (!is.null(input$enumerator_ave_vars_select_var)) {
+              para7 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_ave_vars_select_var", 
+                                  Name = "Enumerator Average Value Variables", 
+                                  Value = c(input$enumerator_ave_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para7)
+          }
+          
+          if (!is.null(input$enumerator_date_var_select_var)) {
+              para8 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_date_var_select_var", 
+                                  Name = "Submission Date Variable", 
+                                  Value = c(input$enumerator_date_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para8)
+          }
+          
+          if (!is.null(input$enumerator_complete_var_select_var)) {
+              para9 <- data.frame(Check = "enumerator",
+                                  Parameter = "enumerator_complete_var_select_var", 
+                                  Name = "Submission Complete Variable", 
+                                  Value = c(input$enumerator_complete_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para9)
+          }
+          
+          ## Admin level
+          if (!is.null(input$admin_var_select_var)) {
+              para10 <- data.frame(Check = "admin",
+                                   Parameter = "admin_var_select_var", 
+                                  Name = "Administrative Unit Variable", 
+                                  Value = c(input$admin_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para10)
+          }
+          
+          if (!is.null(input$admin_super_vars_select_var)) {
+              para11 <- data.frame(Check = "admin",
+                                   Parameter = "admin_super_vars_select_var", 
+                                  Name = "Higher-Level Administrative Unit Variables", 
+                                  Value = c(input$admin_super_vars_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para11)
+          }
+          
+          if (!is.null(input$admin_date_var_select_var)) {
+              para12 <- data.frame(Check = "admin",
+                                   Parameter = "admin_date_var_select_var", 
+                                  Name = "Submission Date Variable", 
+                                  Value = c(input$admin_date_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para12)
+          }
+          
+          if (!is.null(input$admin_complete_var_select_var)) {
+              para13 <- data.frame(Check = "admin",
+                                   Parameter = "admin_complete_var_select_var", 
+                                  Name = "Submission Complete Variable", 
+                                  Value = c(input$admin_complete_var_select_var),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para13)
+          }
+          
+          ## Unit of Observation
+          if (!is.null(input$unit_var_select_var)) {
+              para14 <- data.frame(Check = "unit",
+                                   Parameter = "unit_var_select_var", 
+                                   Name = "Unit of Observation/ID Variable", 
+                                   Value = c(input$unit_var_select_var),
+                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para14)
+          }
+          
+          if (!is.null(input$unit_extra_vars_select_var)) {
+              para15 <- data.frame(Check = "unit",
+                                   Parameter = "unit_extra_vars_select_var", 
+                                   Name = "Unit Additional Variables", 
+                                   Value = c(input$unit_extra_vars_select_var),
+                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para15)
+          }
+          
+          return(combined_df)
+      })
+      
+      
+      
+      output$setup_exp_para <- downloadHandler(
+          filename = "iehfc_parameters.csv",
+          content = function(file) {
+              write.csv(parameter_dataset(), file, row.names = TRUE) 
+          }
+      )
+      
+      output$setup_exp_para_button <- renderUI({
+          downloadButton("setup_exp_para", 
+                         label = "Download as csv",
+                         icon("download"),
+                         class = "btn btn-outline-primary btn-sm")
+      })
+      
+
+      
       # take you to output tab
       
       observeEvent(input$run_hfcs, {
@@ -832,9 +1145,13 @@
                   width = "30%",
                   card(
                       card_header(
+                
                           span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
-                                  "This is where you choose which data quality checks to run. For each check that you select, a corresponding box will appear on the right. You will need to make sure that the parameters within the box are correct before proceeding. Once you are done, click on the \"Run HFCs\" button below.",
+                                  "This is where you choose which data quality checks to run. 
+                                  For each check that you select, a corresponding box will appear on the right. 
+                                  You will need to make sure that the parameters within the box are correct before proceeding. 
+                                  Once you are done, click on the \"Run HFCs\" button below.",
                                   placement = "auto"
                               )
                       ),
@@ -842,6 +1159,33 @@
                   ),
                   card(
                       uiOutput("setup_run_hfcs_button")
+                  ),
+                  card(
+                              fileInput( # Import parameters
+                                  "parameter_file",
+                                  label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
+                                      tooltip(
+                                          "This is optional. If you've saved your parameters in a CSV file, 
+                                          you can upload it here. Ensure that your file matches the required template. 
+                                          You can download the correct template using the 'Download Parameters' option. 
+                                          Once downloaded, you can reuse the CSV file for uploads here.",
+                                          placement = "auto"
+                                      ),
+                                  accept = ".csv",
+                                  placeholder = "No file selected",
+                                  buttonLabel = "Upload"
+                              ),
+                              span(
+                                  "(Optional) Upload the csv parameter file.",
+                                  style = "color: #593196; font-size: 12px;"
+                              )
+                          ),
+                  card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
+                           tooltip(
+                               "Click here to download the selected parameters as a CSV file or to obtain the required template.",
+                               placement = "auto"
+                           ),
+                       uiOutput("setup_exp_para_button")
                   )
               ),
               uiOutput("setup_tab_body")
@@ -856,7 +1200,7 @@
           }
       })
       
-      ## Output Tab ----
+    ## Output Tab ----
       
         ### Duplicate Outputs ----
       
@@ -1013,37 +1357,16 @@
       })
       
       output$enumerator_subs_plot_for_dl_html <- downloadHandler(
-          filename = "enumerator_subs_plot.html",
+          filename = function() {
+              paste0("enumerator_subs_plot-", Sys.Date(), ".html")
+          },
           content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = file,
-                  selfcontained = FALSE
-              )
+              plot <- enumerator_daily_subs_plot()
+              htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
+     
       
-      output$enumerator_subs_plot_dl_png <- renderUI({
-          downloadButton("enumerator_subs_plot_for_dl_png", label = "Download Plot (PNG)")
-      })
-      
-      output$enumerator_subs_plot_for_dl_png <- downloadHandler(
-          filename = "enumerator_subs_plot.png",
-          content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
-                  selfcontained = FALSE
-              )
-              
-              webshot::webshot(
-                  url = paste0(tempdir(), "temp.html"),
-                  file = file
-              )
-          }
-      )
       
       output$enumerator_ave_vars_table_for_dl <- downloadHandler(
           filename = "enumerator_ave_vars_table.csv",
@@ -1136,37 +1459,16 @@
       })
       
       output$admin_subs_plot_for_dl_html <- downloadHandler(
-          filename = "admin_subs_plot.html",
+          filename = function() {
+              paste0("admin_subs_plot.html-", Sys.Date(), ".html")
+          },
           content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = file,
-                  selfcontained = FALSE
-              )
+              plot <- admin_daily_subs_plot()
+              htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
       
-      output$admin_subs_plot_dl_png <- renderUI({
-          downloadButton("admin_subs_plot_for_dl_png", label = "Download Plot (PNG)")
-      })
-      
-      output$admin_subs_plot_for_dl_png <- downloadHandler(
-          filename = "admin_subs_plot.png",
-          content = function(file) {
-              # Because this is a plotly object, using htmlWidget::savewidget() and webshot::webshot()
-              htmlwidgets::saveWidget(
-                  as_widget(test_plotly),
-                  file = paste0(tempdir(), "temp.html"), # Saves to specific section's temporary files directory
-                  selfcontained = FALSE
-              )
-              
-              webshot::webshot(
-                  url = paste0(tempdir(), "temp.html"),
-                  file = file
-              )
-          }
-      )
+
       
         ### Unit of Observation-Level Outputs ----
       
@@ -1209,13 +1511,20 @@
       })
       
       output$output_tab_data <- renderUI({
-          navset_tab(
-              nav_panel("Duplicates", uiOutput("duplicate_output")),
-              nav_panel("Outliers", uiOutput("outlier_output")),
-              nav_panel("Enumerator", uiOutput("enumerator_output")),
-              nav_panel("Admin Level", uiOutput("admin_output")),
-              nav_panel("Tracking", uiOutput("unit_output")),
-              nav_panel("Programming", "Under construction!")
+          # Wrap the navset_tab and the download button in a tagList
+          tagList(
+              # Place the download button at the top
+              downloadButton("full_report_dl", "Download Consolidated Report"),
+              # Your existing navset_tab structure with panels
+              navset_tab(
+                  nav_panel("Duplicates", uiOutput("duplicate_output")),
+                  nav_panel("Outliers", uiOutput("outlier_output")),
+                  nav_panel("Enumerator", uiOutput("enumerator_output")),
+                  nav_panel("Admin Level", uiOutput("admin_output")),
+                  nav_panel("Tracking", uiOutput("unit_output")),
+                  nav_panel("Programming", "Under construction!")
+              )
+              # If you want the download button at the bottom, move it here after the navset_tab
           )
       })
       
@@ -1230,6 +1539,97 @@
               return(uiOutput("output_tab_data"))
           }
       })
+     
+      
+      
+        ### Download consolidated report ----
+
+      output$full_report_dl <- downloadHandler(
+          filename = function() {
+              paste0("full-report-", Sys.Date(), ".html")
+          },
+          content = function(file) {
+              # 1. Check if 'duplicate' check is selected
+              includeDuplicates <- "duplicate" %in% selected_checks()
+              duplicatesData <- NULL
+              # Prepare the dataset only if duplicates check is selected
+              if (includeDuplicates) {
+                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
+                  duplicatesData <- isolate(duplicate_dataset())
+              }
+              # 2. Check if 'outlier' check is selected
+              includeOutliers <- "outlier" %in% selected_checks()
+              
+              # Prepare the dataset only if outliers check is selected
+              outliersData <- NULL
+              if (includeOutliers) {
+                  outliersData <- isolate(outlier_dataset())
+              }
+              
+              # 3. Check if 'enumerator' check is selected
+              includeEnumerator <- "enumerator" %in% selected_checks()
+              
+              enumeratorSubsData <- NULL 
+              enumeratorAveData <- NULL 
+              enumeratorPlotPath <- NULL 
+          #    enumeratorDate <- NULL
+              
+              # Prepare the dataset only if enum check is selected
+              if (includeEnumerator) {
+                  enumeratorSubsData <- isolate(enumerator_subs_dataset())
+                  enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
+              #    enumeratorPlotPath <- reactive_image_path()
+            #      enumeratorDate <- isolate(enumerator_date_var())  # Here, ensure you call the reactive object as a function
+              }
+              
+              
+              
+              
+              # 4. Check if 'admin' check is selected
+              includeAdmin <- "admin" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              adminData <- NULL
+              if (includeAdmin) {
+                  adminData <- isolate(admin_subs_dataset())
+              }
+              
+              # 5. Check if 'unit' check is selected
+              includeUnit <- "unit" %in% selected_checks()
+              
+              # Prepare the dataset only if enum check is selected
+              unitData <- NULL
+              if (includeUnit) {
+                  unitData <- isolate(unit_dataset())
+              }
+              
+              
+              
+              # Render the R Markdown file with parameters
+              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
+                                params = list(
+                                    includeDuplicates = includeDuplicates,
+                                    duplicatesData = duplicatesData,
+                                    includeOutliers = includeOutliers,
+                                    outliersData = outliersData, 
+                                    includeEnumerator = includeEnumerator, 
+                                    enumeratorSubsData = enumeratorSubsData, 
+                                    enumeratorAveData = enumeratorAveData, 
+                                 #   enumeratorPlotPath = enumeratorPlotPath,
+                                  #  enumeratorDate = enumeratorDate, 
+                                    includeAdmin = includeAdmin, 
+                                    adminData = adminData, 
+                                    includeUnit = includeUnit,
+                                    unitData = unitData
+                                ),
+                                envir = new.env(parent = globalenv()))
+          }
+      )
+      
+
+     
+      
+      
   }
   
   iehfc_server
