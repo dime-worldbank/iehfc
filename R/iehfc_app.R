@@ -10,7 +10,7 @@
       
       req_packages <- c(
           "pacman", "shiny", "dplyr", "tidyr", "purrr", "ggplot2", "janitor", "data.table", "DT",
-          "remotes", "bsicons", "shinydashboard", "shinyjs", "markdown", "shinyFeedback",
+          "remotes", "bsicons", "shinydashboard", "shinyjs", "markdown",
           "htmlwidgets", "plotly"
       )
       
