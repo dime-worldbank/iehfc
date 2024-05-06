@@ -36,12 +36,21 @@
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          ds <- read.csv(hfc_file()$datapath, na.strings = c("", "NA"))
+          ds <- fread(hfc_file()$datapath, na.strings = c("", "NA_character_", "NA"))
+          too_many_cols <- ncol(ds) > 10000
+          if(too_many_cols) {
+              showNotification(
+                  "Your dataset has more than 10,000 variables. Unfortunately, the platform currently cannot handle such a large dataset. Please create a subset of your dataset and try again.",
+                  duration = NULL,
+                  type     = "error"
+              )
+          }
+          req(!too_many_cols)
           hfc_dataset(ds)
       })
       
       observeEvent(input$use_test_data, {
-          ds <- read.csv("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
+          ds <- fread("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
           hfc_dataset(ds)
       })
       
@@ -74,7 +83,7 @@
       
       output$upload_tab_data <- renderUI({
           layout_column_wrap(
-              height = "85vh",
+              height = "120vh",
               width = 1,
               card(
                   card_header(
@@ -116,7 +125,8 @@
               "use_test_data",
               "Use Test Data",
               icon("table"),
-              class = "btn btn-outline-primary btn-lg"
+              class = "btn btn-outline-primary btn-lg",
+              width = "100%"
           )
       })
       
@@ -931,7 +941,7 @@
       output$setup_run_hfcs_button <- renderUI({
           actionButton(
               "run_hfcs",
-              "RUN HFCs",
+              "RUN HFCS",
               icon("paper-plane"),
               class = "btn btn-outline-primary btn-lg"
           )
@@ -1119,7 +1129,13 @@
       # take you to output tab
       
       observeEvent(input$run_hfcs, {
-          updateTabsetPanel(session,"setup_tab", selected = "output_tab")
+          updateNavbarPage(session, "tabs", selected = "output_tab")
+          Sys.sleep(1)
+          showNotification(
+              "HFCs were successully run. Please click on the \"Outputs\" tab.",
+              duration = 4,
+              type     = "message"
+          )
       })
       
       output$setup_tab_data <- renderUI({

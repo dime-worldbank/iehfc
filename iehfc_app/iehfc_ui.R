@@ -19,7 +19,6 @@
           title = "IEHFC",
           
           # Initialize shinyjs
-          
           nav_panel(
               "Introduction",
               introduction_tab 
@@ -40,10 +39,10 @@
               uiOutput("output_tab")
               
           ),
-          navbarMenu("More",
-                     nav_panel(tags$a("Guides", href = "https://github.com/dime-worldbank/iehfc/blob/main/README.md")),
-                     # nav_panel(tags$a("About", href = "https://www.github.com")), # Under construction
-                     nav_panel(tags$a("Github", href = "https://www.github.com/dime-worldbank/iehfc"))
+          nav_menu("More",
+                     tabPanel(tags$a("Guides", href = "https://github.com/dime-worldbank/iehfc/blob/main/README.md")),
+                     # tabPanel(tags$a("About", href = "https://www.github.com")), # Under construction
+                     tabPanel(tags$a("Github", href = "https://www.github.com/dime-worldbank/iehfc"))
           ),
           theme = bs_theme(
               base_font    = font_google("Atkinson Hyperlegible"),
@@ -53,20 +52,29 @@
           ) %>%
               bs_add_rules(
                   "
-    h3 {
-        font-size: 24px;
-        font-weight: bold;
-    }
-    body {
-        font-size: 16px;
-    }
-     .navbar, .navbar-light, .bg-light {
+                  h3 {
+                      font-size: 24px;
+                      font-weight: bold;
+                  }
+
+                  body {
+                      font-size: 16px;
+                  }
+                  
+                  .nav-link {
+                      font-size: 18px;
+                  }
+                  
+                  .shiny-notification {
+                       position:fixed;
+                       right: calc(65%);
+                  }
+                  
+                   .navbar, .navbar-light, .bg-light {
         background-color: #9e83cf !important;  /* Purple background for main navbar */
     }
-  
-    "
-              )
-          
+                  "
+              ) # Source: https://stackoverflow.com/questions/44112000/move-r-shiny-shownotification-to-center-of-screen
       )
       
   )
