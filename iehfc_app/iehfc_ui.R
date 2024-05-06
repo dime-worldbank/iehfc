@@ -60,23 +60,10 @@
     body {
         font-size: 16px;
     }
-    .nav-link, .nav-link.active, .navbar-brand, .navbar-brand:hover, .navbar-brand:focus, .navbar-brand:active, .dropdown-item, .dropdown-item:hover, .dropdown-item:focus, .dropdown-item:active {
-        font-size: 18px;
-        color: white;  /* Set text color to white for all states */
+     .navbar, .navbar-light, .bg-light {
+        background-color: #9e83cf !important;  /* Purple background for main navbar */
     }
-    .nav-link:hover, .nav-link:focus, .nav-link.active, .dropdown-item:hover, .dropdown-item:focus, .dropdown-item:active {
-        color: white !important;  /* Ensure hover, focus, and active states are also white */
-        background-color: transparent !important; /* Removes any background color change on hover or active */
-    }
-    .dropdown-menu {
-        background-color: #593196 !important; /* Ensure dropdown menu has a purple background */
-    }
-    .dropdown-menu > .active > .dropdown-item {
-        background-color: #593196 !important; /* Keep the purple background for active items */
-    }
-    .navbar, .navbar-light, .bg-light {
-        background-color: #593196 !important; /* Ensure the navbar has a purple background */
-    }
+  
     "
               )
           
