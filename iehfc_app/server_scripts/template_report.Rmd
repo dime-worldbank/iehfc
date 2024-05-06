@@ -17,9 +17,6 @@ params:
   includeEnumerator: FALSE
   enumeratorSubsData: NULL
   enumeratorAveData: NULL
-  enumeratorDate: NULL
-  includeEnumeratorPlot: FALSE
-  enumeratorPlotPath: NULL
   includeAdmin: FALSE
   adminData: NULL
   includeUnit: FALSE
@@ -75,16 +72,6 @@ cat("## Average by Enumerator\n")
  DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE)) 
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
-}
-```
-
-
-```{r enumerator-plot, echo=FALSE, results='asis', eval=params$includeEnumerator, eval=FALSE, include=FALSE}
-if (!is.null(params$enumeratorPlotPath) && file.exists(params$enumeratorPlotPath)) {
-  # Include the plot
-  knitr::include_graphics(params$enumeratorPlotPath)
-} else {
-  cat("No plot available for enumerator data.")
 }
 ```
 
