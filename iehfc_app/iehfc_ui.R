@@ -15,6 +15,13 @@
 
   fluidPage(
       useShinyjs(),
+      tags$head(
+          tags$script(HTML('
+            $(document).ready(function() {
+                $(".navbar .container-fluid .navbar-nav .dropdown .dropdown-menu").append(\'<li><a href="https://github.com/dime-worldbank/iehfc/blob/main/README.md" >Guides</a></li>\');
+                $(".navbar .container-fluid .navbar-nav .dropdown .dropdown-menu").append(\'<li><a href="https://www.github.com/dime-worldbank/iehfc">Github</a></li>\');
+            });
+          '))),
       navbarPage(
           title = "IEHFC",
           
@@ -39,11 +46,9 @@
               uiOutput("output_tab")
               
           ),
-          nav_menu("More",
-                     tabPanel(tags$a("Guides", href = "https://github.com/dime-worldbank/iehfc/blob/main/README.md")),
-                     # tabPanel(tags$a("About", href = "https://www.github.com")), # Under construction
-                     tabPanel(tags$a("Github", href = "https://www.github.com/dime-worldbank/iehfc"))
+          nav_menu("More"
           ),
+          
           theme = bs_theme(
               base_font    = font_google("Atkinson Hyperlegible"),
               heading_font = font_google("Atkinson Hyperlegible"),
