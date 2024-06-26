@@ -10,7 +10,7 @@
               box(
                   width = "100%", status = "success",
                   shiny::img(src = "res/BULBS_purple.png", style = "width:220px;"),
-                  shiny::img(src = "res/WB_logo.png", style = "max-width:100%;"),
+                  shiny::img(src = "res/WB_logo.png", style = "max-width:100%; margin-bottom:20px;"),
               ),
               div(style = "text-align:left", tags$h3("The Need for iehfc")),
               box(
