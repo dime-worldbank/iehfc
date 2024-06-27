@@ -23,26 +23,26 @@
             });
           '))),
       navbarPage(
-          title = "IEHFC",
-          
+          "IEHFC",
+          id = "tabs",
           # Initialize shinyjs
-          nav_panel(
+          tabPanel(
               "Introduction",
               introduction_tab 
           ),
-          nav_panel(
+          tabPanel(
               "Upload Data",
-              id = "upload_tab",  # Give an ID for reference
+              value = "upload_tab",  # Give an ID for reference
               uiOutput("upload_tab")
           ),
-          nav_panel(
+          tabPanel(
               "Check Selection and Setup",
-              id = "setup_tab",  # Give an ID for reference
+              value = "setup_tab",  # Give an ID for reference
               uiOutput("setup_tab")
           ),
-          nav_panel(
+          tabPanel(
               "Outputs",
-              id = "output_tab",  # Give an ID for reference
+              value = "output_tab",  # Give an ID for reference
               uiOutput("output_tab")
               
           ),
