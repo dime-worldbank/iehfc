@@ -240,23 +240,30 @@
       output$duplicate_id_select <- renderUI({
           selectizeInput(
               "duplicate_id_select_var", label = NULL, 
-              choices = hfc_dataset() %>%
-                  names,
-              selected = current_duplicate_id_var(),
+              choices = hfc_dataset() %>% names,
+              selected = current_duplicate_id_var(),  # Preserve the selection
               options = list('dropdownParent' = 'body')
           )
       })
+      
+      observe({
+          updateSelectizeInput(session, "duplicate_id_select_var", 
+                               choices = hfc_dataset() %>% names,
+                               selected = current_duplicate_id_var())
+      })
+      
+      
       
       output$duplicate_extra_vars_select <- renderUI({
           selectizeInput(
               "duplicate_extra_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(duplicate_id_var()) # Everything but the ID variable
+                      -all_of(duplicate_id_var()[duplicate_id_var() != ""]) # Everything but the ID variable
                   ) %>%
                   select( # Ensures that selection order is preserved
-                      all_of(duplicate_extra_vars()),
-                      !any_of(duplicate_extra_vars())
+                      all_of(duplicate_extra_vars()[duplicate_extra_vars() != ""]),
+                      !any_of(duplicate_extra_vars()[duplicate_extra_vars() != ""])
                   ) %>%
                   names(), 
               selected = current_duplicate_extra_vars(),
@@ -360,11 +367,11 @@
               "indiv_outlier_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(outlier_id_var()) # Everything but the ID variable
+                      -all_of(outlier_id_var()[outlier_id_var() != ""]) # Everything but the ID variable
                   ) %>%
                   select( # Ensures that selection order is preserved
-                      all_of(indiv_outlier_vars()),
-                      !any_of(indiv_outlier_vars())
+                      all_of(indiv_outlier_vars()[indiv_outlier_vars() != ""]),
+                      !any_of(indiv_outlier_vars()[indiv_outlier_vars() != ""])
                   ) %>%
                   names(), 
               selected = current_indiv_outlier_vars(),
@@ -373,12 +380,14 @@
           )
       })
       
+    
+      
       output$group_outlier_vars_select <- renderUI({
           selectizeInput(
               "group_outlier_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(duplicate_id_var()) # Everything but the ID variable
+                      -all_of(duplicate_id_var()[duplicate_id_var() != ""]) # Everything but the ID variable
                   ) %>%
                   names() %>%
                   tibble(var = .) %>%
@@ -409,12 +418,18 @@
           )
       })
       
+      observe({
+          updateSelectizeInput(session, "outlier_id_select_var", 
+                               choices = hfc_dataset() %>% names,
+                               selected = current_outlier_id_var())
+      })
+      
       output$outlier_extra_vars_select <- renderUI({
           selectizeInput(
               "outlier_extra_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(duplicate_id_var()), # Everything but the ID variable or outlier variables
+                      -all_of(duplicate_id_var()[duplicate_id_var() != ""]), # Everything but the ID variable or outlier variables
                       -any_of(indiv_outlier_vars()),
                       -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
                   ) %>%
@@ -546,16 +561,22 @@
           )
       })
       
+      observe({
+          updateSelectizeInput(session, "enumerator_var_select_var", 
+                               choices = hfc_dataset() %>% names,
+                               selected = current_enumerator_var())
+      })
+      
       output$enumerator_ave_vars_select <- renderUI({
           selectizeInput(
               "enumerator_ave_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(enumerator_var())
+                      -all_of(enumerator_var()[enumerator_var() != ""])
                   ) %>%
                   select( # Ensures that selection order is preserved
-                      all_of(enumerator_ave_vars()),
-                      !any_of(enumerator_ave_vars())
+                      all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
+                      !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                   ) %>%
                   names(), 
               selected = current_enumerator_ave_vars(),
@@ -571,7 +592,7 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(enumerator_var())
+                          -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
                       names()
               ),
@@ -587,7 +608,7 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(enumerator_var())
+                          -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
                       names()
               ), 
@@ -712,16 +733,22 @@
           )
       })
       
+      observe({
+          updateSelectizeInput(session, "admin_var_select_var", 
+                               choices = hfc_dataset() %>% names,
+                               selected = current_admin_var())
+      })
+      
       output$admin_super_vars_select <- renderUI({
           selectizeInput(
               "admin_super_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(admin_var())
+                      -all_of(admin_var()[admin_var() != ""])
                   ) %>%
                   select( # Ensures that selection order is preserved
-                      all_of(admin_super_vars()),
-                      !any_of(admin_super_vars())
+                      all_of(admin_super_vars()[admin_super_vars() != ""]),
+                      !any_of(admin_super_vars()[admin_super_vars() != ""])
                   ) %>%
                   names(), 
               selected = current_admin_super_vars(),
@@ -737,7 +764,7 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(admin_var())
+                          -all_of(admin_var()[admin_var() != ""])
                       ) %>%
                       names()
               ),
@@ -753,7 +780,7 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(admin_var())
+                          -all_of(admin_var()[admin_var() != ""])
                       ) %>%
                       names()
               ), 
@@ -852,16 +879,22 @@
           )
       })
       
+      observe({
+          updateSelectizeInput(session, "unit_var_select_var", 
+                               choices = hfc_dataset() %>% names,
+                               selected = current_unit_var())
+      })
+      
       output$unit_extra_vars_select <- renderUI({
           selectizeInput(
               "unit_extra_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(unit_var()) # Everything but the unit of observation variable
+                      -all_of(unit_var()[unit_var() != ""]) 
                   ) %>%
-                  select( # Ensures that selection order is preserved
-                      all_of(unit_extra_vars()),
-                      !any_of(unit_extra_vars())
+                  select(
+                      all_of(unit_extra_vars()[unit_extra_vars() != ""]), 
+                      !any_of(unit_extra_vars()[unit_extra_vars() != ""]) 
                   ) %>%
                   names(), 
               selected = current_unit_extra_vars(),
@@ -869,6 +902,7 @@
               options = list('dropdownParent' = 'body')
           )
       })
+      
       
       output$unit_setup <- renderUI({
           card(
