@@ -313,6 +313,8 @@
       current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
       current_outlier_id_var     <- reactiveVal() # For storing current state of 'outlier_id_select_var'
       current_outlier_extra_vars <- reactiveVal() # For storing current state of 'outlier_extra_vars_select_var'
+      current_outlier_method     <- reactiveVal() # For storing current state of 'outlier_method'
+      current_outlier_multiplier <- reactiveVal() # For storing current state of 'outlier_multiplier'
       
       # Bring outlier variables from uploaded parameter dataset
       observe({
@@ -339,6 +341,18 @@
           if (!is.null(outlier_extra_vars_select_var_imported)) {
               current_outlier_extra_vars(outlier_extra_vars_select_var_imported)
           }
+          
+          outlier_method_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_method", "Value"]
+          if (!is.null(outlier_method_imported)) {
+              current_outlier_method(outlier_method_imported)
+          }
+          
+          outlier_multiplier_imported <- 
+              imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_multiplier", "Value"]
+          if (!is.null(outlier_multiplier_imported)) {
+              current_outlier_multiplier(outlier_multiplier_imported)
+          }
       })
       
       
@@ -360,6 +374,16 @@
       # Observe any change in 'indiv_outlier_vars_select_var' and update current_outlier_id_var
       observe({
           current_outlier_extra_vars(input$outlier_extra_vars_select_var)
+      })
+      
+      # Observe any change in 'indiv_outlier_method' and update current_outlier_method
+      observe({
+          current_outlier_method(input$outlier_method)
+      })
+      
+      # Observe any change in 'indiv_outlier_multiplier' and update current_outlier_multiplier
+      observe({
+          current_outlier_multiplier(input$outlier_multiplier)
       })
       
       output$indiv_outlier_vars_select <- renderUI({
@@ -444,6 +468,30 @@
           )
       })
       
+      output$outlier_method <- renderUI({
+          default_method <- ifelse(is.null(current_outlier_method()) || current_outlier_method() == "", "sd", 
+                                   current_outlier_method())
+          selectizeInput(
+              "outlier_method", label = NULL, 
+              choices = c("iqr", "sd"), 
+              selected = default_method,
+              multiple = FALSE,
+              options = list('dropdownParent' = 'body')
+          )
+      })
+      
+      output$outlier_multiplier <- renderUI({
+          default_multiplier <- ifelse(is.null(current_outlier_multiplier()) || current_outlier_multiplier() == "", "3", 
+                                       current_outlier_multiplier())
+          selectizeInput(
+              "outlier_multiplier", label = NULL, 
+              choices = c("1.5", "3"), 
+              selected = default_multiplier,
+              multiple = FALSE,
+              options = list('dropdownParent' = 'body')
+          )
+      })
+      
       output$outlier_setup <- renderUI({
           card(
               height = "30vh", fill = FALSE,
@@ -484,6 +532,22 @@
                                  tooltip("These are additional variables that you may want to include in the output table", 
                                          placement = "right"),
                              uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      )
+                  )
+              ),
+              card_body(
+                  fluidRow(
+                      column(6, 
+                             span("Method", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Select preferred method for outlier calculation", 
+                                         placement = "right"),
+                             uiOutput("outlier_method", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                      ),
+                      column(6,
+                             span("Multiplier", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Select the multiplier to be used for outlier calculation", 
+                                         placement = "right"),
+                             uiOutput("outlier_multiplier", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
                   )
               )
