@@ -267,7 +267,7 @@
       
       output$duplicate_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -431,7 +431,7 @@
       
       output$outlier_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Outlier Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -598,7 +598,7 @@
       
       output$enumerator_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Enumerator Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -764,7 +764,7 @@
       
       output$admin_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Administrative Unit-Level Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -872,7 +872,7 @@
       
       output$unit_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Unit of Observation Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
