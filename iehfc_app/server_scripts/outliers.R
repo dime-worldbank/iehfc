@@ -162,26 +162,49 @@
   }) %>%
   bindEvent(input$run_hfcs)
   
-  
-  
   output$outlier_table <- renderDT(
       outlier_dataset(), fillContainer = TRUE
   )
   
   
+  custom_winsorize <- function(data, var, method, multiplier) {
+      if (method == "sd") {
+          mean_val <- mean(data[[var]], na.rm = TRUE)
+          sd_val <- sd(data[[var]], na.rm = TRUE)
+          lower_limit <- mean_val - (multiplier * sd_val)
+          upper_limit <- mean_val + (multiplier * sd_val)
+          
+      } else if (method == "iqr") {
+          q1 <- quantile(data[[var]], 0.25, na.rm = TRUE)
+          q3 <- quantile(data[[var]], 0.75, na.rm = TRUE)
+          iqr_val <- IQR(data[[var]], na.rm = TRUE)
+          lower_limit <- q1 - (multiplier * iqr_val)
+          upper_limit <- q3 + (multiplier * iqr_val)
+      } else {
+          stop("Invalid method selected")
+      }
+      
+      data[[var]] <- ifelse(data[[var]] < lower_limit, lower_limit,
+                            ifelse(data[[var]] > upper_limit, upper_limit, data[[var]]))
+      return(data)
+  }
   
-  filtered_hfc_dataset <- reactive({
-      req(hfc_dataset(), outlier_dataset()) 
+
+    winsorized_hfc_dataset <- reactive({
+      req(hfc_dataset())
+      data <- hfc_dataset()
       
-      outlier_ids <- outlier_dataset() %>%
-          pull(!!sym(outlier_id_var())) %>%
-          unique()
+      method <- outlier_method_selected()
+      multiplier <- as.numeric(input$outlier_multiplier)
       
-      hfc_dataset() %>%
-          filter(!(!!sym(outlier_id_var()) %in% outlier_ids))
+      selected_vars <- current_indiv_outlier_vars()
+      for (var in selected_vars) {
+          data <- custom_winsorize(data, var, method, multiplier)
+      }
+      return(data)
   })
   
-  
+    
   ## Individual Variables Histograms -------------
   
   #calculate appropriate bin width for each hist
@@ -208,8 +231,8 @@
       bin_width_with <- calculate_bin_width(hfc_dataset(), var)
       hist_with_outliers <- generate_histogram(hfc_dataset(), var, bin_width_with, "with outliers")
       
-      bin_width_without <- calculate_bin_width(filtered_hfc_dataset(), var)
-      hist_without_outliers <- generate_histogram(filtered_hfc_dataset(), var, bin_width_without, "without outliers")
+      bin_width_without <- calculate_bin_width(winsorized_hfc_dataset(), var)
+      hist_without_outliers <- generate_histogram(winsorized_hfc_dataset(), var, bin_width_without, "without outliers")
       
       list(with = ggplotly(hist_with_outliers, tooltip = c("x", "y")),
            without = ggplotly(hist_without_outliers, tooltip = c("x", "y")))
@@ -268,7 +291,7 @@
   
   group_combined_boxplots <- function(group) {
       boxplot_with_outliers <- generate_boxplot(hfc_dataset(), group, "with Outliers")
-      boxplot_without_outliers <- generate_boxplot(filtered_hfc_dataset(), group, "without Outliers")
+      boxplot_without_outliers <- generate_boxplot(winsorized_hfc_dataset(), group, "without Outliers")
       
       list(with = ggplotly(boxplot_with_outliers),
            without = ggplotly(boxplot_without_outliers))
