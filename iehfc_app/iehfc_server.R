@@ -9,7 +9,9 @@
   # Increase maximum file upload size
   
   options(shiny.maxRequestSize = 100 * (1024^2))
+  
 
+  
   iehfc_server <- function(input, output, session) {
       
       source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
@@ -17,6 +19,7 @@
       source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
       source("iehfc_app/server_scripts/admin.R",      local = TRUE)
       source("iehfc_app/server_scripts/unit.R",       local = TRUE)
+
       
       observeEvent(
           input$gotoTab, {
@@ -26,6 +29,8 @@
               )
           }
       )
+      
+   
       
       ## Upload Tab ----
       
@@ -194,7 +199,8 @@
           input$check_select
       })
       
-
+      
+        
       
         ### Duplicate Check Setup ----
       
@@ -230,6 +236,15 @@
           current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
       })
       
+      observe({
+          updateSelectizeInput(session, "duplicate_id_select_var", 
+                               choices = hfc_dataset() %>% names,
+                               selected = current_duplicate_id_var()
+          )
+      })
+      
+     
+      
       output$duplicate_id_select <- renderUI({
           selectizeInput(
               "duplicate_id_select_var", label = NULL, 
@@ -238,14 +253,6 @@
               options = list('dropdownParent' = 'body')
           )
       })
-      
-      observe({
-          updateSelectizeInput(session, "duplicate_id_select_var", 
-                               choices = hfc_dataset() %>% names,
-                               selected = current_duplicate_id_var())
-      })
-      
-      
       
       output$duplicate_extra_vars_select <- renderUI({
           selectizeInput(
@@ -265,35 +272,59 @@
           )
       })
       
+      
+      
       output$duplicate_setup <- renderUI({
           card(
               height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
-                  span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
-                      tooltip(
-                          "The duplicate check requires you to provide the variable you want to check for duplicates. You can add any additional variable you want to include in the output table",
-                          placement = "auto"
-                      )
+                  div(
+                      span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "The duplicate check requires you to provide the variable you want to check for duplicates. You can add any additional variable you want to include in the output table",
+                              placement = "auto"
+                          ),
+                      downloadButton("duplicate_r_exp",
+                                     label = NULL,
+                                     shiny::img(src = "res/logo_r.png", height = "20px"),
+                                     class = "btn-light",
+                                     style = "float: right; margin-left: 10px;",
+                      ) %>% tooltip("Click to download R code", placement = "auto"),
+                      downloadButton("duplicate_s_exp",
+                                     label = NULL,
+                                     shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                     class = "btn-light",
+                                     style = "float: right; margin-left: 10px;"
+                      ) %>% tooltip("Click to download Stata code", placement = "auto")
+                  )
               ),
               card_body(
                   fluidRow(
-                      column(6, 
+                      column(6,
                              span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This is the variable that you want to check for duplicates (usually an ID intended to be uniquely identified)", 
-                                         placement = "right"),
-                             uiOutput("duplicate_id_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                                 tooltip(
+                                     "This is the variable that you want to check for duplicates (usually an ID intended to be uniquely identified)",
+                                     placement = "right"
+                                 ),
+                             uiOutput("duplicate_id_select", style = "z-index: 1000;")
                       ),
                       column(6,
                              span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to display in the output table", 
-                                         placement = "right"),
-                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                                 tooltip(
+                                     "These are additional variables that you may want to display in the output table",
+                                     placement = "right"
+                                 ),
+                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
+                      )
+                      
                       )
                   )
               )
-          )
       })
+     
+    
+     
       
         ### Outlier Check Setup ----
       
@@ -496,7 +527,19 @@
                       tooltip(
                           "The outlier check requires you to provide (1) individual variables or groups of variables you want to check for outliers and (2) an ID variable to identify the observations containing outliers. You may also add any additional variables you want to include in the output table",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("outlier_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("outlier_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -685,7 +728,19 @@
                       tooltip(
                           "The enumerator check requires you to provide (1) the variable that identifies enumerators and (2) variables for which you'd like to see average values for each enumerator. You can include a submission date variable and a \"submission completeness\" variable",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("enumerator_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("enumerator_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -857,7 +912,19 @@
                       tooltip(
                           "The administrative unit-level check requires you to (1) provide the variable that identifies the administrative unit and (2) higher-level administrative units that would help either locate or uniquely identify the administrative level of choice. You can include a submission date variable and a \"submission completeness\" variable",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("admin_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("admin_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -972,7 +1039,19 @@
                       tooltip(
                           "Placeholder text",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("unit_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("unit_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -1217,7 +1296,7 @@
                          class = "btn btn-outline-primary btn-sm")
       })
       
-
+        
       
       # take you to output tab
       
@@ -1292,6 +1371,8 @@
       })
       
     ## Output Tab ----
+      
+     
       
         ### Duplicate Outputs ----
       

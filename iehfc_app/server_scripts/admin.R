@@ -167,3 +167,144 @@
       admin_daily_subs_plot()
   )
   
+  
+  ##### Download admin codes ----
+  output$admin_r_exp <- downloadHandler(
+      filename = function() {
+          "admin_run.R"
+      },
+      content = function(file) {
+          code <- paste(
+              "# Remember to load your dataset \n",
+              "hfc_dataset <- \n",
+              "\n",
+              "# Duplicate Variables \n",
+              "duplicate_id_var <- ", paste0("\"", input$duplicate_id_select_var, "\"", collapse = ", "), "\n",
+              "duplicate_extra_vars <- c(", paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "), ")\n",
+              "\n",
+              
+              "duplicate_dataset <- hfc_dataset %>% \n",
+              "    group_by(!!sym(duplicate_id_var)) %>% \n",
+              "    filter(n() > 1) %>% \n",
+              "    ungroup() %>% \n",
+              "    select(all_of(c(duplicate_id_var, duplicate_extra_vars))) \n",
+              " \n",
+              
+              "# Export to CSV  \n",
+              "write.csv(admin_dataset, \"admin_table.csv\", row.names = FALSE) \n",
+              sep = ""
+          )
+          writeLines(code, file)
+      }
+  )
+  
+  
+  output$admin_s_exp <- downloadHandler(
+      filename = function() {
+          "admin_run.do"
+      },
+      content = function(file) {
+          code <- paste(
+              "    /*----------------------------------------------------\n",
+              "           This is code sample for duplicates check. \n",
+              "    -----------------------------------------------------*/ \n",
+              "\n",
+              "\n",
+              "    * Define the duplicate variables\n",
+              "       local admin_var ", paste0(input$admin_var_select_var, collapse = " "), "\n",
+              "       local admin_super_vars ", paste0(input$admin_super_vars_select_var, collapse = " "), "\n",
+              "       local admin_date_var ", paste0(input$admin_date_var_select_var, collapse = " "), "\n",
+              "       local admin_complete_var ", paste0(input$admin_complete_var_select_var, collapse = " "), "\n",
+              "\n",
+              "       loc dateformat  \"MDY\" // check the format and change this to DMY or MDY as appropriate\n",
+              "\n",
+              "       * Check variables\n",
+              "            if !mi(\"`admin_complete_var'\") {\n",
+              "                qui ta `admin_complete_var'\n",
+              "                if r(r)>2 {\n",
+              "                    n di as err \"Submission Complete Variable must be a 1/0 variable.\"\n",
+              "                    exit\n",
+              "                }\n",
+              "            }\n",
+              "\n",
+              "\n",
+              "    * Submissions by Admin\n",
+              "        preserve \n",
+              "            bys `admin_var' `admin_date_var' `admin_super_vars': gen submissions = _N\n",
+              "\n",
+              "            if !mi(\"`admin_complete_var'\") {\n",
+              "                loc complete \"complete\"\n",
+              "                loc num_complete_submissions \"num_complete_submissions\"\n",
+              "                bys `admin_var' `admin_date_var' `admin_super_vars': egen complete = total(`admin_complete_var')\n",
+              "            }\n",
+              "\n",
+              "        if !mi(\"`admin_date_var'\") {\n",
+              "            * Create subdate\n",
+              "            cap confirm string var `admin_date_var'\n",
+              "            if !_rc {\n",
+              "                g admin_subdate = date(`admin_date_var', \"`dateformat'\")\n",
+              "            }\n",
+              "\n",
+              "            cap confirm numeric var `admin_date_var'\n",
+              "            if !_rc {\n",
+              "                g admin_subdate = `admin_date_var'\n",
+              "            }\n",
+              "\n",
+              "            format admin_subdate %td\n",
+              "\n",
+              "            collapse (first) submissions `complete', by(`admin_var' `admin_super_vars' admin_subdate)\n",
+              "\n",
+              "            tempfile admin_data\n", 
+			  "            save `admin_data'\n",
+			  "\n",
+			  "            * Graph\n",
+              "            loc admn_type: type `admin_var'\n",
+              "            if regex(\"`admn_type'\", \"str\") {\n",
+              "                encode `admin_var', gen(`admin_var'_num)\n",
+              "            }\n",
+              "\n",
+			  "            collapse (sum) submissions `complete', by(`admin_var'_num admin_subdate)\n",
+			  "\n",
+			  "            xtset `admin_var'_num admin_subdate\n",
+              "            bysort `admin_var'_num (admin_subdate): gen cum_submissions = sum(submissions)\n",
+              "\n",
+              "            levelsof admin_subdate, loc(alldates)\n",
+              "            xtline cum_submissions, overlay  ///\n",
+              "                    title(\"Cumulative Submissions Over Time\") ///\n",
+              "                    xtitle(\"Date\") ytitle(\"Cumulative # of Submissions\") ///\n",
+              "                    xlab(\"`alldates'\", labsize(small) ang(v)) ///\n",
+              "                    legend(off) ///\n",
+              "                    name(admin_graph, replace)\n",
+              "            graph export \"admin_subs_plot-`=c(current_date)'.png\", as(png) replace width(5000)\n",
+              "            gr close admin_graph\n",
+              "\n",
+			
+              "            * Table\n",
+			  "            u `admin_data', clear \n",
+              "            tostring admin_subdate, replace format(\"%td\") force\n",
+              "            reshape wide `complete' submissions, i(`admin_var' `admin_super_vars') j(admin_subdate) str\n",
+              "            if !mi(\"`admin_complete_var'\") {\n",
+              "                egen num_complete_submissions = rowtotal(complete*)\n",
+              "            }\n",
+              "\n",
+              "            egen num_submissions = rowtotal(submissions*)\n",
+              "            ren (submissions*) (d_*) \n",
+              "\n",
+              "            order `admin_var' `admin_super_vars' num_submissions `num_complete_submissions' d_*\n",
+              "        }\n",
+              "\n",
+              "        if mi(\"`admin_date_var'\") {\n",
+              "            collapse (first) num_submissions=submissions `num_complete_submissions'=`complete', by(`admin_var' `admin_super_vars')\n",
+              "            order `admin_var' `admin_super_vars' num_submissions `num_complete_submissions'\n",
+              "        }\n",
+              "\n",
+              "        list, table  abbreviate(22)\n",
+              "\n",
+              "        * Export to CSV\n",
+              "        export delimited using \"admin_subs_table.csv\", replace\n",
+              "    restore\n",
+              sep = ""
+          )
+          writeLines(code, file)
+      }
+  )
