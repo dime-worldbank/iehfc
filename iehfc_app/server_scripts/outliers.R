@@ -232,7 +232,7 @@
       hist_with_outliers <- generate_histogram(hfc_dataset(), var, bin_width_with, "with outliers")
       
       bin_width_without <- calculate_bin_width(winsorized_hfc_dataset(), var)
-      hist_without_outliers <- generate_histogram(winsorized_hfc_dataset(), var, bin_width_without, "without outliers")
+      hist_without_outliers <- generate_histogram(winsorized_hfc_dataset(), var, bin_width_without, "winsorized (xx%)")
       
       list(with = ggplotly(hist_with_outliers, tooltip = c("x", "y")),
            without = ggplotly(hist_without_outliers, tooltip = c("x", "y")))
