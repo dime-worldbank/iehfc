@@ -1337,7 +1337,7 @@
                   full_screen = TRUE
               ),
               card(
-                  uiOutput("group_combined_boxplot_rendered"),  # Render all scatterplots
+                  uiOutput("group_boxplot_rendered"),  # Render all scatterplots
                   full_screen = TRUE
               )
       )
