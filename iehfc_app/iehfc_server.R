@@ -58,24 +58,15 @@
           hfc_dataset(), fillContainer = TRUE
       )
       
-      output$hfc_ds_names_display <- renderPrint({
-          print_matrix <- function(vctr, col_num = 1) {
-              matrix <- vctr %>%
-                  `[`(
-                      1:(col_num * ceiling(length(.) / col_num))
-                  ) %>% # To get the right number of elements for the matrix
-                  matrix(ncol = col_num, byrow = TRUE)
-              matrix[is.na(matrix)] <- ""
-              write.table(
-                  format(matrix, justify = "right"),
-                  row.names = FALSE, col.names = FALSE, quote = FALSE
-              )
-          }
+      output$hfc_ds_names_types_display <- renderDT({
+          hfc_ds_names_types <- hfc_dataset() %>%
+              tibble::as_tibble() %>%
+              dplyr::summarise_all(class) %>%
+              tidyr::pivot_longer(cols = everything(), names_to = "Variable", values_to = "Type")
           
-          hfc_ds_names <- hfc_dataset() %>%
-              names() %>%
-              print_matrix(col_num = 4)
+          datatable(hfc_ds_names_types, options = list(pageLength = 10, scrollX = TRUE))
       })
+      
       
       output$upload_tab_nodata <- renderUI({
           "Please either upload your dataset using the sidebar on the left or click on the \"Use Test Data\" button."
@@ -99,14 +90,14 @@
               ),
               card(
                   card_header(
-                      span("Explore Variable Names", bsicons::bs_icon("question-circle-fill")) %>%
+                      span("Explore Variable Names and Types", bsicons::bs_icon("question-circle-fill")) %>%
                           tooltip(
                               "You can refer back to these variable names while setting the parameters for your checks in the next tab.",
                               placement = "auto"
                           )
                   ),
-                  verbatimTextOutput(
-                      "hfc_ds_names_display"
+                  DTOutput(
+                      "hfc_ds_names_types_display"
                   )
               )
           )
@@ -229,8 +220,9 @@
           }
       })
    
+
       ### Check Selection ----
-      
+
       output$check_select <- renderUI({
           checkboxGroupInput(
               "check_select", "Select High-Frequency Checks",
@@ -254,6 +246,8 @@
       selected_checks <- reactive({
           input$check_select
       })
+      
+
       
         ### Duplicate Check Setup ----
       
@@ -349,8 +343,8 @@
                       #        uiOutput("duplicate_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       # ),
                       column(6,
-                             span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to feature in the output table", 
+                             span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("These are additional variables that you may want to display in the output table", 
                                          placement = "right"),
                              uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -446,6 +440,7 @@
                       all_of(indiv_outlier_vars()[indiv_outlier_vars() != ""]),
                       !any_of(indiv_outlier_vars()[indiv_outlier_vars() != ""])
                   ) %>%
+                  select(where(is.numeric)) %>%
                   names(), 
               selected = current_indiv_outlier_vars(),
               multiple = TRUE,
@@ -458,7 +453,7 @@
       output$group_outlier_vars_select <- renderUI({
           selectizeInput(
               "group_outlier_vars_select_var", label = NULL,
-              choices = {             dataset <- hfc_dataset()
+              choices = {dataset <- hfc_dataset()
 
               if (!is.null(selected_id_var()) && selected_id_var() != "") {
                   dataset <- dataset %>% select(-all_of(selected_id_var()))
@@ -566,8 +561,8 @@
               card_body(
                   fluidRow(
                       column(6,
-                             span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to include in the output table", 
+                             span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("These are additional variables that you may want to display in the output table", 
                                          placement = "right"),
                              uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -721,7 +716,7 @@
       
       output$enumerator_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Enumerator Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -893,7 +888,7 @@
       
       output$admin_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Administrative Unit-Level Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -1008,7 +1003,7 @@
       
       output$unit_setup <- renderUI({
           card(
-              height = "30vh", fill = FALSE,
+              height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
                   span("Unit of Observation Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -1028,7 +1023,7 @@
                              uiOutput("unit_var_select", style = "z-index: 1000;") # Set a high z-index to overlap other elements
                       ),
                       column(6,
-                             span("Additional Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                             span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
                                  tooltip(
                                      "These are additional variables that you might want to include in the output table",
                                      placement = "right"
@@ -1135,7 +1130,7 @@
           if (!is.null(input$duplicate_extra_vars_select_var)) {
               para2 <- data.frame(Check = "duplicate",
                                   Parameter = "duplicate_extra_vars_select_var", 
-                                  Name = "Duplicates additional variables", 
+                                  Name = "Duplicates display variables", 
                                   Value = c(input$duplicate_extra_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para2)
@@ -1265,7 +1260,7 @@
           if (!is.null(input$unit_extra_vars_select_var)) {
               para15 <- data.frame(Check = "unit",
                                    Parameter = "unit_extra_vars_select_var", 
-                                   Name = "Unit Additional Variables", 
+                                   Name = "Unit Display Variables", 
                                    Value = c(input$unit_extra_vars_select_var),
                                    Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para15)
