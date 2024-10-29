@@ -650,10 +650,9 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      select(
-                          -all_of(enumerator_var()[enumerator_var() != ""])
-                      ) %>%
-                      names()
+                      select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
+                              select_if(lubridate::is.Date) %>%
+                              names()
               ),
               selected = current_enumerator_date_var(),
               options = list('dropdownParent' = 'body')
@@ -669,6 +668,7 @@
                       select(
                           -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
+                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
                       names()
               ), 
               selected = current_enumerator_complete_var(),
@@ -823,8 +823,8 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(admin_var()[admin_var() != ""])
-                      ) %>%
+                          -all_of(admin_var()[admin_var() != ""])) %>%
+                      select_if(lubridate::is.Date) %>%
                       names()
               ),
               selected = current_admin_date_var(),
@@ -839,8 +839,9 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(admin_var()[admin_var() != ""])
-                      ) %>%
+                          -all_of(admin_var()[admin_var() != ""])) %>%
+                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
+                      
                       names()
               ), 
               selected = current_admin_complete_var(),
