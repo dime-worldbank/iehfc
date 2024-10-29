@@ -1661,8 +1661,6 @@
               
               # 3. Check if 'enumerator' check is selected
               includeEnumerator <- "enumerator" %in% selected_checks()
-              
-              includeEnumerator <- "enumerator" %in% selected_checks()
               enumeratorSubsData <- NULL 
               enumeratorAveData <- NULL 
               enumeratorPlotPath <- NULL  # Initialize as NULL
@@ -1671,10 +1669,9 @@
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
                   
-                  # Generate and save the Plotly plot
-                #  plot <- enumerator_daily_subs_plot()  # This function needs to generate a Plotly plot
-                 # enumeratorPlotPath <- tempfile(fileext = ".html")  # Temporary HTML file path
-                 # saveWidget(plot, enumeratorPlotPath, selfcontained = TRUE)
+                  enumeratorDailySubsPlot <- if (includeEnumerator) {
+                      enumerator_daily_subs_plot()
+                  }
               }
               
               # 4. Check if 'admin' check is selected
@@ -1684,6 +1681,10 @@
               adminData <- NULL
               if (includeAdmin) {
                   adminData <- isolate(admin_subs_dataset())
+                  
+                  adminDailySubsPlot <- if (includeAdmin) {
+                      admin_daily_subs_plot()
+                  }
               }
               
               # 5. Check if 'unit' check is selected
@@ -1707,8 +1708,10 @@
                                     includeEnumerator = includeEnumerator, 
                                     enumeratorSubsData = enumeratorSubsData, 
                                     enumeratorAveData = enumeratorAveData, 
+                                    enumeratorDailySubsPlot = enumeratorDailySubsPlot,
                                     includeAdmin = includeAdmin, 
                                     adminData = adminData, 
+                                    adminDailySubsPlot = adminDailySubsPlot,
                                     includeUnit = includeUnit,
                                     unitData = unitData
                                 ),

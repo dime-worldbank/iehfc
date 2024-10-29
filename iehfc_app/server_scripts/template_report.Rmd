@@ -17,8 +17,10 @@ params:
   includeEnumerator: FALSE
   enumeratorSubsData: NULL
   enumeratorAveData: NULL
+  enumeratorDailySubsPlot: NULL
   includeAdmin: FALSE
   adminData: NULL
+  adminDailySubsPlot: NULL
   includeUnit: FALSE
   unitData: NULL
   # Add parameters for other checks as needed
@@ -60,6 +62,10 @@ if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) 
 cat("# Enumerator\n")
 cat("## Number of Submissions\n")
  DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
+ if (params$includeEnumerator && !is.null(params$enumeratorDailySubsPlot)) {
+        cat("## Cumulative Submissions Over Time\n")
+        params$enumeratorDailySubsPlot
+    }
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
@@ -82,7 +88,11 @@ cat("## Average by Enumerator\n")
 if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
 cat("# Administrative Unit Testing\n")
  DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE)) 
-} else {
+if (params$includeAdmin && !is.null(params$adminDailySubsPlot)) {
+        cat("## Cumulative Submissions Over Time\n")
+        params$adminDailySubsPlot
+    }
+}  else {
   cat("No admin data available or 'Administrative' check not selected.")
 }
 ```
