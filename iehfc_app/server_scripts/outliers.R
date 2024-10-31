@@ -1,5 +1,7 @@
 # Outlier Data Quality Checks -- Construction ----
 
+## Check setup -------------
+
   indiv_outlier_vars <- reactive({
       input$indiv_outlier_vars_select_var
   })
@@ -25,7 +27,7 @@
   })
   
  
-  
+  ## Table -------------
   
   indiv_outlier_dataset <- reactive({
       method <- outlier_method_selected()
@@ -163,4 +165,151 @@
   output$outlier_table <- renderDT(
       outlier_dataset(), fillContainer = TRUE
   )
+  
+  
+  custom_winsorize <- function(data, var) {
+      data[[var]] <- DescTools::Winsorize(data[[var]], val = quantile(data[[var]], probs = c(0.05, 0.95), na.rm = TRUE))
+      return(data)
+  }
+  
+  
+
+    winsorized_hfc_dataset <- reactive({
+      req(hfc_dataset())
+      data <- hfc_dataset()
+      selected_vars <- current_indiv_outlier_vars()
+      for (var in selected_vars) {
+          data <- custom_winsorize(data, var)
+      }
+      return(data)
+  })
+  
+    
+  ## Individual Variables Histograms -------------
+  
+  #calculate appropriate bin width for each hist
+  calculate_bin_width <- function(data, var) {
+      x <- data[[var]]
+      n <- length(x)
+      iqr_val <- IQR(x, na.rm = TRUE)
+      bin_width <- 2 * iqr_val / n^(1/3)  
+      return(bin_width)
+  }
+  
+  
+  
+  generate_histogram <- function(dataset, var, bin_width, title_suffix) {
+      ggplot(dataset, aes_string(x = var)) +
+          geom_histogram(binwidth = bin_width, fill = "#9e83cf", color = "black") +
+          labs(title = paste("Histogram of", var, title_suffix), x = var, y = "Frequency") +
+          theme_minimal() +
+          scale_x_continuous(labels = scales::comma)
+  }
+  
+  
+  indiv_combined_histograms <- function(var) {
+      bin_width_with <- calculate_bin_width(hfc_dataset(), var)
+      hist_with_outliers <- generate_histogram(hfc_dataset(), var, bin_width_with, "with outliers")
+      
+      bin_width_without <- calculate_bin_width(winsorized_hfc_dataset(), var)
+      hist_without_outliers <- generate_histogram(winsorized_hfc_dataset(), var, bin_width_without, title_suffix = "winsorized (95%)")
+      
+      list(with = ggplotly(hist_with_outliers, tooltip = c("x", "y")),
+           without = ggplotly(hist_without_outliers, tooltip = c("x", "y")))
+  }
+  
+
+  render_histogram_ui <- function(selected_vars) {
+      if (length(selected_vars) > 0) {
+          fluidRow(
+              lapply(1:length(selected_vars), function(i) {
+                  var <- selected_vars[i]
+                  histograms <- indiv_combined_histograms(var)
+                  
+                  fluidRow(
+                      column(6, plotlyOutput(paste0("histogram_with_", i))),
+                      column(6, plotlyOutput(paste0("histogram_without_", i)))
+                  ) %>% tagAppendAttributes(style = "margin: 40px 0 40px 0;")
+              })
+          )
+      }
+  }
+  
+
+  
+  output$indiv_combined_histogram_rendered <- renderUI({
+      tagList(
+          div(style = "position: absolute; top: 10px; right: 10px; font-size: 13px; color: gray;",
+              "Data winsorized at the 95% level, regardless of method and multiplier settings in the Check Selection and Setup tab."
+          ),
+          render_histogram_ui(current_indiv_outlier_vars())
+      )
+  })
+  
+  observe({
+      selected_vars <- indiv_outlier_vars()
+      if (length(selected_vars) > 0) {
+          lapply(1:length(selected_vars), function(i) {
+              var <- selected_vars[i]
+              histograms <- indiv_combined_histograms(var)
+              
+              output[[paste0("histogram_with_", i)]] <- renderPlotly(histograms$with)
+              output[[paste0("histogram_without_", i)]] <- renderPlotly(histograms$without)
+          })
+      }
+  })
+  
+  ## Group Variables Boxplots -------------
+  
+    generate_boxplot <- function(dataset, group) {
+      variable_group <- dataset %>%
+          select(matches(paste0("^", group, "_{0,1}[0-9]+$"))) %>%
+          pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value")
+
+      
+      ggplot(variable_group, aes(x = issue_var, y = value)) +
+          geom_boxplot(fill = "#9e83cf", color = "black") +
+          labs(title = paste("Boxplot for Group", group), x = "Variables", y = "Values") +
+          theme_minimal() +
+          theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+          scale_y_continuous(labels = scales::comma) 
+
+    }
+  
+  group_boxplots <- function(group) {
+      boxplot <- generate_boxplot(hfc_dataset(), group)
+      list(box = ggplotly(boxplot, tooltip = c("x", "y")))
+  }
+
+  render_boxplot_ui <- function(selected_groups) {
+      if (length(selected_groups) > 0) {
+          fluidRow(
+              lapply(1:length(selected_groups), function(i) {
+                  group <- selected_groups[i]
+                  boxplots <- group_boxplots(group)
+
+                  fluidRow(
+                      column(12, plotlyOutput(paste0("boxplot_", i)))
+                  ) %>% tagAppendAttributes(style = "margin: 40px 0 40px 0;")
+              })
+          )
+      }
+  }
+
+  output$group_boxplot_rendered <- renderUI({
+      render_boxplot_ui(group_outlier_vars())
+  })
+
+  observe({
+      selected_groups <- group_outlier_vars()
+      if (length(selected_groups) > 0) {
+          lapply(1:length(selected_groups), function(i) {
+              group <- selected_groups[i]
+              plots <- group_boxplots(group) 
+              
+              output[[paste0("boxplot_", i)]] <- renderPlotly({ plots$box }) 
+          })
+      }
+  })
+
   

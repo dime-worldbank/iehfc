@@ -7,7 +7,7 @@
   if(!require(pacman)) install.packages("pacman")
 
   pacman::p_load(
-      shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
+      shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DescTools, DT, remotes, bsicons,
       shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra
   )
   
