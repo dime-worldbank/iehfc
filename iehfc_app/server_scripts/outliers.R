@@ -33,11 +33,11 @@
       indiv_outlier_vars() %>%
           map(
               ~ hfc_dataset() %>%
-                  group_by(!!sym(outlier_id_var())) %>%
+                  group_by(!!sym(selected_id_var())) %>%
                   mutate(
-                      !!outlier_id_var() := case_when(
-                          n() > 1 ~ paste0(!!sym(outlier_id_var()), "_", row_number()),
-                          TRUE    ~ as.character(!!sym(outlier_id_var()))
+                      !!selected_id_var() := case_when(
+                          n() > 1 ~ paste0(!!sym(selected_id_var()), "_", row_number()),
+                          TRUE    ~ as.character(!!sym(selected_id_var()))
                       )
                   ) %>%
                   ungroup() %>%
@@ -92,9 +92,9 @@
                   
                 {
                   if (method == "sd") {
-                      select(., any_of(outlier_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, sd, low_limit, high_limit)
+                      select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, sd, low_limit, high_limit)
                   } else {
-                      select(., any_of(outlier_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, iqr, low_limit, high_limit)
+                      select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, iqr, low_limit, high_limit)
                   }
                 }
               
@@ -110,16 +110,16 @@
       group_outlier_vars() %>%
           map(
               ~ hfc_dataset() %>%
-                  group_by(!!sym(outlier_id_var())) %>%
+                  group_by(!!sym(selected_id_var())) %>%
                   mutate(
-                      !!outlier_id_var() := case_when(
-                          n() > 1 ~ paste0(!!sym(outlier_id_var()), "_", row_number()),
-                          TRUE    ~ as.character(!!sym(outlier_id_var()))
+                      !!selected_id_var() := case_when(
+                          n() > 1 ~ paste0(!!sym(selected_id_var()), "_", row_number()),
+                          TRUE    ~ as.character(!!sym(selected_id_var()))
                       )
                   ) %>%
                   ungroup() %>%
                   select(
-                      any_of(outlier_id_var()), any_of(outlier_extra_vars()), matches(paste0("^", .x, "_{0,1}[0-9]+$"))
+                      any_of(selected_id_var()), any_of(outlier_extra_vars()), matches(paste0("^", .x, "_{0,1}[0-9]+$"))
                   ) %>%
                   pivot_longer(
                       cols = matches(paste0("^", .x, "_{0,1}[0-9]+$")),
@@ -144,9 +144,9 @@
                   ) %>%
                   {
                       if (method == "sd") {
-                          select(., any_of(outlier_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, sd, low_limit, high_limit)
+                          select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, sd, low_limit, high_limit)
                       } else {
-                          select(., any_of(outlier_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, iqr, low_limit, high_limit)
+                          select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, iqr, low_limit, high_limit)
                       }
                   }
           ) %>%
@@ -156,7 +156,7 @@
   
   outlier_dataset <- reactive({
       bind_rows(indiv_outlier_dataset(), group_outlier_dataset()) %>%
-          arrange(!!sym(outlier_id_var()), issue_var)
+          arrange(!!sym(selected_id_var()), issue_var)
   }) %>%
   bindEvent(input$run_hfcs)
   
