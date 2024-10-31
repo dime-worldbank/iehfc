@@ -1017,7 +1017,7 @@
                       column(6,
                              span("Unit of Observation", bsicons::bs_icon("question-circle-fill")) %>%
                                  tooltip(
-                                     "This is the variable that identifies the unit of observation for each submission",
+                                     "This is the variable that identifies the unit of observation for each submission.Such variable could be the Dataset ID.",
                                      placement = "right"
                                  ),
                              uiOutput("unit_var_select", style = "z-index: 1000;") # Set a high z-index to overlap other elements
@@ -1118,15 +1118,15 @@
           }
           
           ## Duplicates
-          if (!is.null(input$duplicate_select_var)) {
-              para1 <- data.frame(Check = "duplicate",
-                                  Parameter = "duplicate_select_var", 
-                                  Name = "Duplicates ID variable", 
-                                  Value = c(input$duplicate_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-              combined_df <- rbind(combined_df, para1)
-          }
-          
+          # if (!is.null(input$duplicate_select_var)) {
+          #     para1 <- data.frame(Check = "duplicate",
+          #                         Parameter = "duplicate_select_var", 
+          #                         Name = "Duplicates ID variable", 
+          #                         Value = c(input$duplicate_select_var),
+          #                         Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+          #     combined_df <- rbind(combined_df, para1)
+          # }
+          # 
           if (!is.null(input$duplicate_extra_vars_select_var)) {
               para2 <- data.frame(Check = "duplicate",
                                   Parameter = "duplicate_extra_vars_select_var", 
@@ -1155,19 +1155,11 @@
               combined_df <- rbind(combined_df, para4)
           }
           
-          if (!is.null(input$outlier_id_select_var)) {
-              para5 <- data.frame(Check = "outlier",
-                                  Parameter = "outlier_id_select_var", 
-                                  Name = "Outlier ID variable", 
-                                  Value = c(input$outlier_id_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-              combined_df <- rbind(combined_df, para5)
-          }
           
           if (!is.null(input$outlier_extra_vars_select_var)) {
               para5 <- data.frame(Check = "outlier",
                                   Parameter = "outlier_extra_vars_select_var", 
-                                  Name = "Outlier ID variable", 
+                                  Name = "Outlier additional variables", 
                                   Value = c(input$outlier_extra_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para5)
