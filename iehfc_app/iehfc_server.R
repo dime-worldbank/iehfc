@@ -1401,11 +1401,21 @@
       
       output$outlier_output <- renderUI({
           if("outlier" %in% selected_checks()) {
+              tagList(
               card(
                   DTOutput("outlier_table"),
                   uiOutput("outlier_table_dl"),
                   full_screen = TRUE
+              ),
+              card(
+                  uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+                  full_screen = TRUE
+              ),
+              card(
+                  uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+                  full_screen = TRUE
               )
+      )
           } else {
               "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
