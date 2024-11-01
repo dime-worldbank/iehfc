@@ -40,29 +40,39 @@
           "unit_run.R"
       },
       content = function(file) {
-          code <- paste(
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/unit_run.R"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
+              "    #----------------------------------------------------\n",
+              "    #    This is code sample for unit check. \n",
+              "    #---------------------------------------------------- \n",
+              "\n",
+              "\n",
               "# Remember to load your dataset \n",
               "hfc_dataset <- \n",
               "\n",
-              "# Duplicate Variables \n",
-              "duplicate_id_var <- ", paste0("\"", input$duplicate_id_select_var, "\"", collapse = ", "), "\n",
-              "duplicate_extra_vars <- c(", paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "), ")\n",
+              "# Unit Variables \n",
+              "unit_var <- ", paste0("\"", input$unit_var_select_var, "\"", collapse = ", "), "\n",
+              "unit_extra_vars <- c(", paste0("\"", input$unit_extra_vars_select_var, "\"", collapse = ", "), ")\n",
               "\n",
-              
-              "duplicate_dataset <- hfc_dataset %>% \n",
-              "    group_by(!!sym(duplicate_id_var)) %>% \n",
-              "    filter(n() > 1) %>% \n",
-              "    ungroup() %>% \n",
-              "    select(all_of(c(duplicate_id_var, duplicate_extra_vars))) \n",
-              " \n",
-              
-              "# Export to CSV  \n",
-              "write.csv(unit_dataset, \"unit_table.csv\", row.names = FALSE) \n",
               sep = ""
           )
-          writeLines(code, file)
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
       }
   )
+  
+  
+  
   
   
   output$unit_s_exp <- downloadHandler(
@@ -70,33 +80,30 @@
           "unit_run.do"
       },
       content = function(file) {
-          code <- paste(
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/unit_run.do"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
               "    /*----------------------------------------------------\n",
-              "           This is code sample for duplicates check. \n",
+              "           This is code sample for unit check. \n",
               "    -----------------------------------------------------*/ \n",
               "\n",
               "\n",
-              "    * Define the duplicate variables\n",
+              "    * Define the unit variables\n",
               "       local unit_var ", paste0(input$unit_var_select_var, collapse = " "), "\n",
               "       local unit_extra_vars ", paste0(input$unit_extra_vars_select_var, collapse = " "), "\n",
               "\n",
-              "    * Sort and identify duplicates\n",
-              "       bys `unit_var': gen _unit_order = _n \n",
-              "       loc unit_type: type `unit_var' \n",
-              "       if regex(\"`unit_type'\", \"str\"){ \n",
-              "            ren  `unit_var' `unit_var'__str \n",
-              "       }\n",
-              "       else tostring `unit_var', gen(`unit_var'__str)\n",
-              "\n",
-              "       replace `unit_var'__str = `unit_var'__str + \"_\" + string(_unit_order) \n",
-              "\n",
-              "    * Export to CSV\n",
-              "       keep `unit_var'__str `unit_extra_vars' \n",
-              "       ren `unit_var'__str `unit_var' \n",
-              "       keep `unit_var' `unit_extra_vars' \n",
-              "       export delimited using \"unit_table.csv\", replace\n",
               sep = ""
           )
-          writeLines(code, file)
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
       }
   )

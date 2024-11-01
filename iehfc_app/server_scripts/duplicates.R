@@ -34,29 +34,39 @@
           "duplicate_run.R"
       },
       content = function(file) {
-          code <- paste(
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/duplicate_run.R"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
+              "    #----------------------------------------------------\n",
+              "    #    This is code sample for duplicates check. \n",
+              "    #---------------------------------------------------- \n",
+              "\n",
+              "\n",
               "# Remember to load your dataset \n",
               "hfc_dataset <- \n",
               "\n",
-              "# Duplicate Variables \n",
+              "# Define the duplicate variables\n",
               "duplicate_id_var <- ", paste0("\"", input$duplicate_id_select_var, "\"", collapse = ", "), "\n",
               "duplicate_extra_vars <- c(", paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "), ")\n",
               "\n",
-              
-              "duplicate_dataset <- hfc_dataset %>% \n",
-              "    group_by(!!sym(duplicate_id_var)) %>% \n",
-              "    filter(n() > 1) %>% \n",
-              "    ungroup() %>% \n",
-              "    select(all_of(c(duplicate_id_var, duplicate_extra_vars))) \n",
-              " \n",
-              
-              "# Export to CSV  \n",
-              "write.csv(duplicate_dataset, \"duplicate_table.csv\", row.names = FALSE) \n",
               sep = ""
           )
-          writeLines(code, file)
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
       }
   )
+  
+  
+ 
   
   
   output$duplicate_s_exp <- downloadHandler(
@@ -64,7 +74,14 @@
           "duplicate_run.do"
       },
       content = function(file) {
-          code <- paste(
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/duplicate_run.do"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
               "    /*----------------------------------------------------\n",
               "           This is code sample for duplicates check. \n",
               "    -----------------------------------------------------*/ \n",
@@ -74,21 +91,13 @@
               "       local duplicate_id_var ", paste0(input$duplicate_id_select_var, collapse = " "), "\n",
               "       local duplicate_extra_vars ", paste0(input$duplicate_extra_vars_select_var, collapse = " "), "\n",
               "\n",
-              "    * Sort and identify duplicates\n",
-              "       duplicates tag `duplicate_id_var', gen(_dup)\n",
-              "\n",
-              "    * Filter out duplicates\n",
-              "       keep if _dup > 0\n",
-              "       sort `duplicate_id_var', stable\n",
-              "\n",
-              "    * Keep only the relevant columns\n",
-              "       keep `duplicate_id_var' `duplicate_extra_vars'\n",
-              "       list `duplicate_id_var' `duplicate_extra_vars', sepby(`duplicate_id_var')\n",
-              "\n",
-              "    * Export to CSV\n",
-              "       export delimited using \"duplicate_table.csv\", replace\n",
               sep = ""
           )
-          writeLines(code, file)
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
       }
   )
