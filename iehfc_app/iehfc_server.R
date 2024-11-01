@@ -1409,11 +1409,12 @@
               ),
               card(
                   uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                  full_screen = TRUE
+                  full_screen = TRUE,
+                  style = "display: flex; flex-direction: column;padding: 50px;"
               ),
               card(
                   uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                  full_screen = TRUE
+                  full_screen = TRUE,
               )
       )
           } else {
@@ -1740,15 +1741,22 @@
               
               # Prepare the dataset only if outliers check is selected
               outliersData <- NULL
+              outlierHist <- NULL
+              outlierWinHist <- NULL
+              outlierBox <- NULL
               if (includeOutliers) {
                   outliersData <- isolate(outlier_dataset())
+                  outlierHist <- export_outlier_histogram()
+                  outlierWinHist <- export_outlier_win_histogram()
+                  outlierBox <- export_outlier_boxplot()
               }
               
               # 3. Check if 'enumerator' check is selected
               includeEnumerator <- "enumerator" %in% selected_checks()
               enumeratorSubsData <- NULL 
               enumeratorAveData <- NULL 
-              enumeratorPlotPath <- NULL  # Initialize as NULL
+              #enumeratorPlotPath <- NULL  # Initialize as NULL
+              enumeratorDailySubsPlot <- NULL
               
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
@@ -1790,6 +1798,9 @@
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,
                                     outliersData = outliersData, 
+                                    outlierHist = outlierHist,
+                                    outlierWinHist = outlierWinHist,
+                                    outlierBox = outlierBox,
                                     includeEnumerator = includeEnumerator, 
                                     enumeratorSubsData = enumeratorSubsData, 
                                     enumeratorAveData = enumeratorAveData, 
