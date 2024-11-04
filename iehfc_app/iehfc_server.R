@@ -459,6 +459,7 @@
                   dataset <- dataset %>% select(-all_of(selected_id_var()))
               }
                   dataset %>%
+                      select(where(is.numeric)) %>%
                   names() %>%
                   tibble(var = .) %>%
                   filter(
@@ -468,7 +469,7 @@
                       group = str_replace(var, "_{0,1}[0-9]+$", "") # Extract common portion of variable names
                   ) %>%
                   group_by(group) %>%
-                  filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
+                      filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                   select(group) %>%
                   distinct() %>%
                   pull()}, 
