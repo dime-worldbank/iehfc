@@ -2,7 +2,9 @@
 ############### INTRODUCTION TAB ###############
 ###############################################
 
-  introduction_tab <- tabItem(
+library("shinydashboard")
+
+  introduction_tab <- shinydashboard::tabItem(
       tabName = "introduction",
       div(style = "text-align:left", tags$h2("Welcome to IEHFC!")),
       fluidRow(
