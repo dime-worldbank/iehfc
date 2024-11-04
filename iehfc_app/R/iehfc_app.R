@@ -19,8 +19,8 @@
       }
       
       shinyApp(
-          ui = extract_source(here("iehfc_app", "iehfc_ui.R")),
-          server = extract_source(here("iehfc_app", "iehfc_server.R"))
+          ui = extract_source(here("iehfc_app", "ui.R")),
+          server = extract_source(here("iehfc_app", "server.R"))
       )
       
   }
