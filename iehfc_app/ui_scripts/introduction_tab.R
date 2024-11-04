@@ -4,7 +4,7 @@
 
 library("shinydashboard")
 
-  introduction_tab <- tabItem(
+  introduction_tab <- shinydashboard::tabItem(
       tabName = "introduction",
       div(style = "text-align:left", tags$h2("Welcome to IEHFC!")),
       fluidRow(
