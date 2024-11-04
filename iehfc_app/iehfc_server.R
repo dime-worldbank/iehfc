@@ -459,6 +459,7 @@
                   dataset <- dataset %>% select(-all_of(selected_id_var()))
               }
                   dataset %>%
+                      select(where(is.numeric)) %>%
                   names() %>%
                   tibble(var = .) %>%
                   filter(
@@ -468,7 +469,7 @@
                       group = str_replace(var, "_{0,1}[0-9]+$", "") # Extract common portion of variable names
                   ) %>%
                   group_by(group) %>%
-                  filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
+                      filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                   select(group) %>%
                   distinct() %>%
                   pull()}, 
@@ -675,6 +676,7 @@
                       all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
                       !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                   ) %>%
+                  select(where(is.numeric)) %>%
                   names(), 
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
@@ -688,10 +690,9 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      select(
-                          -all_of(enumerator_var()[enumerator_var() != ""])
-                      ) %>%
-                      names()
+                      select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
+                              select_if(lubridate::is.Date) %>%
+                              names()
               ),
               selected = current_enumerator_date_var(),
               options = list('dropdownParent' = 'body')
@@ -707,6 +708,7 @@
                       select(
                           -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
+                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
                       names()
               ), 
               selected = current_enumerator_complete_var(),
@@ -861,8 +863,8 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(admin_var()[admin_var() != ""])
-                      ) %>%
+                          -all_of(admin_var()[admin_var() != ""])) %>%
+                      select_if(lubridate::is.Date) %>%
                       names()
               ),
               selected = current_admin_date_var(),
@@ -877,8 +879,9 @@
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
-                          -all_of(admin_var()[admin_var() != ""])
-                      ) %>%
+                          -all_of(admin_var()[admin_var() != ""])) %>%
+                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
+                      
                       names()
               ), 
               selected = current_admin_complete_var(),
@@ -1180,7 +1183,7 @@
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) %>% 
               combined_df <- rbind(combined_df, para7)
           }
           
