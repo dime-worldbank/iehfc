@@ -17,6 +17,8 @@
       source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
       source("iehfc_app/server_scripts/admin.R",      local = TRUE)
       source("iehfc_app/server_scripts/unit.R",       local = TRUE)
+      source("iehfc_app/server_scripts/summary.R",       local = TRUE)
+      
       
       observeEvent(
           input$gotoTab, {
@@ -1708,16 +1710,34 @@
       })
       
       output$output_tab <- renderUI({
-          if(is.null(hfc_dataset())) {
+          if (is.null(hfc_dataset())) {
               return(uiOutput("output_tab_nodata"))
-          } else if(is.null(input$run_hfcs)) {
-              return(uiOutput("output_tab_nocheck"))
-          } else if(input$run_hfcs == 0) {
+          } else if (is.null(input$run_hfcs) || input$run_hfcs == 0) {
               return(uiOutput("output_tab_norun"))
           } else {
-              return(uiOutput("output_tab_data"))
+              navset_tab(
+                  if ("duplicate" %in% selected_checks()) {
+                      nav_panel("Duplicates", uiOutput("duplicate_output"))
+                  },
+                  if ("outlier" %in% selected_checks()) {
+                      nav_panel("Outliers", uiOutput("outlier_output"))
+                  },
+                  if ("enumerator" %in% selected_checks()) {
+                      nav_panel("Enumerator", uiOutput("enumerator_output"))
+                  },
+                  if ("admin" %in% selected_checks()) {
+                      nav_panel("Admin Level", uiOutput("admin_output"))
+                  },
+                  if ("unit" %in% selected_checks()) {
+                      nav_panel("Tracking", uiOutput("unit_output"))
+                  },
+                  if ("programming" %in% selected_checks()) {
+                  nav_panel("Programming", "Under construction!")
+                  }
+              )
           }
       })
+      
      
       
       
@@ -1728,6 +1748,7 @@
               paste0("full-report-", Sys.Date(), ".html")
           },
           content = function(file) {
+              summary_data <- summary_card_data()
               # 1. Check if 'duplicate' check is selected
               includeDuplicates <- "duplicate" %in% selected_checks()
               duplicatesData <- NULL
@@ -1794,6 +1815,7 @@
               # Render the R Markdown file with parameters
               rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
                                 params = list(
+                                    summaryData = summary_data,
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,

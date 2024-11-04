@@ -11,6 +11,7 @@ output:
      theme: flatly
      css: "styles.css"
 params: 
+  summaryData: TRUE
   includeDuplicates: FALSE
   duplicatesData: NULL
   includeOutliers: FALSE
@@ -33,9 +34,19 @@ params:
 knitr::opts_chunk$set(echo = FALSE, results = 'asis')
 ```
 
-#  Duplicates
+# Summary
 
-##  Duplicates in ID var
+```{r summary, echo = FALSE, results='asis'}
+# 0. summary
+summary <- params$summaryData
+  cat("* **Total Responses:**", summary$total_responses, "\n")
+  cat("* **Complete Responses:**", summary$total_complete_responses, "\n")
+  cat("* **Duplicate Responses:**", summary$total_duplicate_responses, "\n")
+  cat("* **Unique Responses:**", summary$total_unique_responses, "\n")
+```
+
+
+#  Duplicates
 
 ```{r duplicates-table, eval=params$includeDuplicates}
 cat('<div class="datatable-block">')
