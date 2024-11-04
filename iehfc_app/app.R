@@ -8,7 +8,7 @@
 
   pacman::p_load(
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra 
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here
   )
   
 
@@ -20,9 +20,9 @@
 # your file explorer. If you would rather not use the .Rproj file, you will need to set the working
 # directory using `setwd(...)`, with `...` being the file path that leads you to the `iehfc` folder.
 
-  shiny::addResourcePath(prefix = "res", directoryPath = normalizePath("/Users/worldbank/Documents/GitHub/iehfc/iehfc_app/www", mustWork = TRUE))
+  shiny::addResourcePath(prefix = "res", directoryPath = normalizePath(here("iehfc_app", "www"), mustWork = TRUE))
 
-  source("/Users/worldbank/Documents/GitHub/iehfc/iehfc_app/R/iehfc_app.R")
+  source(here("iehfc_app", "R", "iehfc_app.R"))
 
   ## 3. Run Application ----
 
