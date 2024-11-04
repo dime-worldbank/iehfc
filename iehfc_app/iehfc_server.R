@@ -676,6 +676,7 @@
                       all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
                       !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                   ) %>%
+                  select(where(is.numeric)) %>%
                   names(), 
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
@@ -1182,7 +1183,7 @@
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) %>% 
               combined_df <- rbind(combined_df, para7)
           }
           
