@@ -1409,11 +1409,12 @@
               ),
               card(
                   uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                  full_screen = TRUE
+                  full_screen = TRUE,
+                  style = "display: flex; flex-direction: column;padding: 50px;"
               ),
               card(
                   uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                  full_screen = TRUE
+                  full_screen = TRUE,
               )
       )
           } else {
@@ -1740,26 +1741,30 @@
               
               # Prepare the dataset only if outliers check is selected
               outliersData <- NULL
+              outlierHist <- NULL
+              outlierWinHist <- NULL
+              outlierBox <- NULL
               if (includeOutliers) {
                   outliersData <- isolate(outlier_dataset())
+                  outlierHist <- export_outlier_histogram()
+                  outlierWinHist <- export_outlier_win_histogram()
+                  outlierBox <- export_outlier_boxplot()
               }
               
               # 3. Check if 'enumerator' check is selected
               includeEnumerator <- "enumerator" %in% selected_checks()
-              
-              includeEnumerator <- "enumerator" %in% selected_checks()
               enumeratorSubsData <- NULL 
               enumeratorAveData <- NULL 
-              enumeratorPlotPath <- NULL  # Initialize as NULL
+              #enumeratorPlotPath <- NULL  # Initialize as NULL
+              enumeratorDailySubsPlot <- NULL
               
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
                   
-                  # Generate and save the Plotly plot
-                #  plot <- enumerator_daily_subs_plot()  # This function needs to generate a Plotly plot
-                 # enumeratorPlotPath <- tempfile(fileext = ".html")  # Temporary HTML file path
-                 # saveWidget(plot, enumeratorPlotPath, selfcontained = TRUE)
+                  enumeratorDailySubsPlot <- if (includeEnumerator) {
+                      enumerator_daily_subs_plot()
+                  }
               }
               
               # 4. Check if 'admin' check is selected
@@ -1769,6 +1774,10 @@
               adminData <- NULL
               if (includeAdmin) {
                   adminData <- isolate(admin_subs_dataset())
+                  
+                  adminDailySubsPlot <- if (includeAdmin) {
+                      admin_daily_subs_plot()
+                  }
               }
               
               # 5. Check if 'unit' check is selected
@@ -1789,11 +1798,16 @@
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,
                                     outliersData = outliersData, 
+                                    outlierHist = outlierHist,
+                                    outlierWinHist = outlierWinHist,
+                                    outlierBox = outlierBox,
                                     includeEnumerator = includeEnumerator, 
                                     enumeratorSubsData = enumeratorSubsData, 
                                     enumeratorAveData = enumeratorAveData, 
+                                    enumeratorDailySubsPlot = enumeratorDailySubsPlot,
                                     includeAdmin = includeAdmin, 
                                     adminData = adminData, 
+                                    adminDailySubsPlot = adminDailySubsPlot,
                                     includeUnit = includeUnit,
                                     unitData = unitData
                                 ),
