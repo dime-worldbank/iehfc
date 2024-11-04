@@ -2,6 +2,8 @@
 ############### INTRODUCTION TAB ###############
 ###############################################
 
+library("shinydashboard")
+
   introduction_tab <- tabItem(
       tabName = "introduction",
       div(style = "text-align:left", tags$h2("Welcome to IEHFC!")),
