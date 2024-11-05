@@ -1075,17 +1075,56 @@
           )
       })
       
+
+      
       output$setup_run_hfcs_button <- renderUI({
+          
+          # Initialize a list for missing fields messages
+          missing_fields <- list()
+          
+          # Check required fields and add to missing_fields list if any are missing
+          if (is.null(selected_id_var()) || selected_id_var() == "") {
+              missing_fields <- c(missing_fields, "Please select an ID Variable.")
+          }
+          
+          if ("outlier" %in% input$check_select && is.null(input$indiv_outlier_vars_select_var) && is.null(input$group_outlier_vars_select_var)) {
+              missing_fields <- c(missing_fields, "Please select Individual or Group Outlier Variables.")
+          }
+          
+          if ("enumerator" %in% input$check_select && is.null(input$enumerator_var_select_var)) {
+              missing_fields <- c(missing_fields, "Please select an Enumerator Variable.")
+          }
+          
+          if ("admin" %in% input$check_select && is.null(input$admin_var_select_var)) {
+              missing_fields <- c(missing_fields, "Please select an Admin Unit Variable.")
+          }
+          
+          if ("unit" %in% input$check_select && is.null(input$unit_var_select_var)) {
+              missing_fields <- c(missing_fields, "Please select a Unit of Observation Variable.")
+          }
+          
+          # Determine if all conditions are met
+          all_conditions_met <- length(missing_fields) == 0
+          
+          # Render the action button, enabled or disabled based on conditions
           tagList(
+              # Action button
               tags$div(
                   actionButton(
                       "run_hfcs",
                       "RUN HFCS",
                       icon("paper-plane"),
                       class = "btn btn-outline-primary btn-lg",
-                      disabled = if (is.null(selected_id_var()) || selected_id_var() == "") TRUE else FALSE  # Disable if no ID is selected
+                      disabled = !all_conditions_met  # Disable button if any conditions are not met
                   )
-              )
+              ),
+              
+              # Conditional error message
+              if (!all_conditions_met) {
+                  div(style = "color: red; font-size: 10pt; font-weight: bold; margin-top: 10px;",
+                      HTML(paste(missing_fields, collapse = "<br>"))
+                  )
+              }
           )
       })
       
@@ -1296,6 +1335,10 @@
               type     = "message"
           )
       })
+
+      
+      
+
       
       output$setup_tab_data <- renderUI({
           layout_sidebar(
@@ -1327,11 +1370,7 @@
                       ),
                       uiOutput("check_select"),
                   ),
-                  card(span("Run Checks", bsicons::bs_icon("question-circle-fill")) %>%
-                           tooltip(
-                               "Select an ID Variable to run checks.",
-                               placement = "auto"
-                           ),
+                  card(span("Run Checks"),
                       uiOutput("setup_run_hfcs_button")
                   ),
                   card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
@@ -1403,89 +1442,31 @@
       
         ### Outlier Outputs ----
       
-# See server_scripts/outliers.R for details on outputs creation
-      
-      output$outlier_table_output <- renderUI({
-          if (length(current_indiv_outlier_vars) > 0 || length(current_group_outlier_vars) > 0) {
-              card(
-                  card_header(
-                      span("Outlier Table", bsicons::bs_icon("question-circle-fill")) %>%
-                          tooltip(
-                              "Shows the detected outliers based on selected criteria.",
-                              placement = "auto"
-                          )
-                  ),
-                  DTOutput("outlier_table"),
-                  uiOutput("outlier_table_dl"),
-                  full_screen = TRUE
-              )
-          } else {
-              NULL
-          }
-      })
-      
-      output$indiv_histogram_output <- renderUI({
-          if (!is.null(current_indiv_outlier_vars) && length(current_indiv_outlier_vars) > 0) {
-              card(
-                  card_header(
-                      span("Individual Outlier Histogram", bsicons::bs_icon("question-circle-fill")) %>%
-                          tooltip(
-                              "Displays a histogram of individual outliers to identify any abnormal distributions.",
-                              placement = "auto"
-                          )
-                  ),
-                  uiOutput("indiv_combined_histogram_rendered"),
-                  full_screen = TRUE,
-                  style = "display: flex; flex-direction: column; padding: 50px;"
-              )
-          } else {
-              NULL
-          }
-      })
-      
-      output$group_boxplot_output <- renderUI({
-          if (!is.null(current_group_outlier_vars) && length(current_group_outlier_vars) > 0) {
-              card(
-                  card_header(
-                      span("Group Outlier Boxplot", bsicons::bs_icon("question-circle-fill")) %>%
-                          tooltip(
-                              "Displays a boxplot of group outliers to highlight variability across groups.",
-                              placement = "auto"
-                          )
-                  ),
-                  uiOutput("group_boxplot_rendered"),
-                  full_screen = TRUE
-              )
-          } else {
-              NULL
-          }
-      })
-      
-      outlier_output_components <- reactive({
-          case_when(
-              length(current_indiv_outlier_vars) > 0 & length(current_group_outlier_vars) > 0 ~ list(
-                  c("outlier_table_output", "indiv_histogram_output", "group_boxplot_output")
-              ),
-              length(current_indiv_outlier_vars) > 0 ~ list(
-                  c("outlier_table_output", "indiv_histogram_output")
-              ),
-              length(current_group_outlier_vars) > 0 ~ list(
-                  c("outlier_table_output", "group_boxplot_output")
-              ),
-              TRUE ~ list()
-          ) %>%
-              unlist()
-      })
-      
+
       output$outlier_output <- renderUI({
-          if (length(outlier_output_components()) > 0) {
-              tagList(purrr::map(outlier_output_components(), ~ uiOutput(.x)))
+          if("outlier" %in% selected_checks()) {
+              tagList(
+                  card(
+                      DTOutput("outlier_table"),
+                      uiOutput("outlier_table_dl"),
+                      full_screen = TRUE
+                  ),
+                  card(
+                      uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+                      full_screen = TRUE,
+                      style = "display: flex; flex-direction: column;padding: 50px;"
+                  ),
+                  card(
+                      uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+                      full_screen = TRUE,
+                  )
+              )
           } else {
-              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup\" tab."
+              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
       })
       
-      
+
       
       output$outlier_table_for_dl <- downloadHandler(
           filename = "outlier_table.csv",

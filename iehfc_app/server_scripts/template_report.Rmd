@@ -51,8 +51,10 @@ if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
     cat("# Duplicates\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
+    
 } else {
-  cat("No duplicate data available or 'Duplicates' check not selected.")
+     cat("# Duplicates\n\n")
+    cat("No duplicate data available.")
 }
 cat('</div>')
 ```
@@ -65,7 +67,10 @@ if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
     cat('<div class="datatable-block">')
     DT::datatable(params$outliersData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
-  cat("No outlier data available or 'Outliers' check not selected.")
+    cat("# Outliers\n\n")
+    cat("## Outliers for Selected Vars\n\n")
+    cat('<div class="datatable-block">')
+    cat("No outlier data available.")
 }
 cat('</div>')
 ```
@@ -80,9 +85,7 @@ if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
         cat("\n### Histograms of Variables and Winsorized Variables\n\n")
         plotly::subplot(params$outlierHist, params$outlierWinHist, shareY = FALSE, titleX = FALSE)
   }
-} else {
-  cat("No outlier data available or 'Outliers' check not selected.")
-}
+} 
 ```
 
 
@@ -92,8 +95,6 @@ if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
       cat("\n### Group Outliers Boxplots\n\n")
       params$outlierBox
   }
-} else {
-    cat("No outlier data available or 'Outliers' check not selected.")
 }
 ```
 
@@ -105,7 +106,10 @@ if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) 
     cat('<div class="datatable-block">')
     DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
-  cat("No enumerator data available or 'Enumerator' check not selected.")
+    cat("# Enumerator\n\n")
+    cat("## Number of Submissions\n\n")
+    cat('<div class="datatable-block">')
+    cat("No enumerator data available.")
 }
 cat('</div>')
 ```
@@ -117,8 +121,6 @@ if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) 
         cat("\n### Cumulative Number of Submissions\n\n")
        params$enumeratorDailySubsPlot
   }
-} else { 
-  cat("No enumerator data available or 'Enumerator' check not selected.")
 }
 ```
 
@@ -129,10 +131,11 @@ if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
     cat('<div class="datatable-block">')
     DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
-  cat("No enumerator data available or 'Enumerator' check not selected.")
+    cat("\n## Average by Enumerator\n\n")
+    cat('<div class="datatable-block">')
+    cat("No enumerator data available.")
 }
 cat('</div>')
-
 ```
 
 
@@ -144,8 +147,11 @@ if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
     cat("## Number of Submissions\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE))
+    
 } else {
-  cat("No admin data available or 'Administrative' check not selected.")
+    cat("# Administrative Unit Testing\n\n")
+    cat('<div class="datatable-block">')
+    cat("No admin data available.")
 }
 cat('</div>')
 ```
@@ -158,10 +164,7 @@ if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
       cat("\n### Cumulative Number of Submissions\n\n")
       params$adminDailySubsPlot
   }
-} else {
-  cat("No admin data available or 'Administrative' check not selected.")
 }
-
 ```
 
 
@@ -172,8 +175,11 @@ if (!is.null(params$unitData) && nrow(params$unitData) > 0) {
     cat("## Number of Submissions\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$unitData, options = list(pageLength = 5, scrollX = TRUE))
+    
 } else {
-  cat("No unit data available or 'Unit of Observation-Level' check not selected.")
+    cat("# Unit of Observation-Level Testing\n\n")
+    cat('<div class="datatable-block">')
+    cat("No unit data available.")
 }
 cat('</div>')
 ```
