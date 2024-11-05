@@ -34,10 +34,9 @@ params:
 knitr::opts_chunk$set(echo = FALSE, results = 'asis')
 ```
 
-# Summary
-
 ```{r summary, echo = FALSE, results='asis'}
 # 0. summary
+cat("# Summary\n\n")
 summary <- params$summaryData
   cat("* **Total Responses:**", summary$total_responses, "\n")
   cat("* **Complete Responses:**", summary$total_complete_responses, "\n")
@@ -46,138 +45,133 @@ summary <- params$summaryData
 ```
 
 
-#  Duplicates
 
 ```{r duplicates-table, eval=params$includeDuplicates}
-cat('<div class="datatable-block">')
 if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
-  DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
+    cat("# Duplicates\n\n")
+    cat('<div class="datatable-block">')
+    DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No duplicate data available or 'Duplicates' check not selected.")
 }
 cat('</div>')
 ```
 
-#  Outliers
-
-##  Outliers for selected vars
 
 ```{r outliers-table, eval=params$includeOutliers}
-cat('<div class="datatable-block">')
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
-  DT::datatable(params$outliersData, options = list(pageLength = 5, scrollX = TRUE))
+    cat("# Outliers\n\n")
+    cat("## Outliers for Selected Vars\n\n")
+    cat('<div class="datatable-block">')
+    DT::datatable(params$outliersData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No outlier data available or 'Outliers' check not selected.")
 }
 cat('</div>')
 ```
 
-##  Outliers plots
 
-### Histograms of variables and winsorized variables
 
-```{r outliers-hist, eval=params$includeOutliers}
-cat('<div class="plot-block">')
+```{r outliers-hist, eval=params$includeOutliers, class.output="plot-block"}
+
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
-  if (params$includeOutliers && !is.null(params$outlierHist) && !is.null(params$outlierWinHist)) {
-    plotly::subplot(params$outlierHist, params$outlierWinHist, shareY = FALSE, titleX = FALSE)
+    if (params$includeOutliers && !is.null(params$outlierHist) && !is.null(params$outlierWinHist)) {
+        cat("## Outliers Plots\n\n")  
+        cat("\n### Histograms of Variables and Winsorized Variables\n\n")
+        plotly::subplot(params$outlierHist, params$outlierWinHist, shareY = FALSE, titleX = FALSE)
   }
 } else {
   cat("No outlier data available or 'Outliers' check not selected.")
 }
-cat('</div>')
 ```
 
-###  Group Outliers Boxplots
 
-```{r outliers-box, eval=params$includeOutliers}
-cat('<div class="plot-block">')
+```{r outliers-box, eval=params$includeOutliers, class.output="plot-block"}
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
   if (params$includeOutliers && !is.null(params$outlierBox)) {
-    params$outlierBox
+      cat("\n### Group Outliers Boxplots\n\n")
+      params$outlierBox
   }
 } else {
-  cat("No outlier data available or 'Outliers' check not selected.")
+    cat("No outlier data available or 'Outliers' check not selected.")
 }
-cat('</div>')
 ```
 
-#  Enumerator
-
-##  Number of Submissions
 
 ```{r enumerator-table-1, eval=params$includeEnumerator}
-cat('<div class="datatable-block">')
 if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) {
-  DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
+    cat("# Enumerator\n\n")
+    cat("## Number of Submissions\n\n")
+    cat('<div class="datatable-block">')
+    DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
 cat('</div>')
 ```
 
-###  Cumulative Number of Submissions
 
-```{r enumerator-graph, eval=params$includeEnumerator}
-cat('<div class="plot-block">')
+```{r enumerator-graph, eval=params$includeEnumerator, class.output="plot-block"}
 if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) {
-  if (params$includeEnumerator && !is.null(params$enumeratorDailySubsPlot)) {
-    params$enumeratorDailySubsPlot
+    if (params$includeEnumerator && !is.null(params$enumeratorDailySubsPlot)) {
+        cat("\n### Cumulative Number of Submissions\n\n")
+       params$enumeratorDailySubsPlot
   }
-} else {
+} else { 
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
-cat('</div>')
 ```
 
-##  Average by Enumerator
 
 ```{r enumerator-table-2, eval=params$includeEnumerator}
-cat('<div class="datatable-block">')
 if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
-  DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE))
+    cat("\n## Average by Enumerator\n\n")
+    cat('<div class="datatable-block">')
+    DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No enumerator data available or 'Enumerator' check not selected.")
 }
 cat('</div>')
+
 ```
 
-#  Administrative Unit Testing
 
-##  Number of Submissions
 
 ```{r admin-table, eval=params$includeAdmin}
-cat('<div class="datatable-block">')
+
 if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
-  DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE))
+    cat("# Administrative Unit Testing\n\n")
+    cat("## Number of Submissions\n\n")
+    cat('<div class="datatable-block">')
+    DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No admin data available or 'Administrative' check not selected.")
 }
 cat('</div>')
 ```
 
-###  Cumulative Number of Submissions
 
-```{r admin-graph, eval=params$includeAdmin}
-cat('<div class="plot-block">')
+```{r admin-graph, eval=params$includeAdmin, class.output="plot-block"}
+
 if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
   if (params$includeAdmin && !is.null(params$adminDailySubsPlot)) {
-    params$adminDailySubsPlot
+      cat("\n### Cumulative Number of Submissions\n\n")
+      params$adminDailySubsPlot
   }
 } else {
   cat("No admin data available or 'Administrative' check not selected.")
 }
-cat('</div>')
+
 ```
 
-#  Unit of Observation-Level Testing
-
-##  Number of Submissions
 
 ```{r unit-table, eval=params$includeUnit}
-cat('<div class="datatable-block">')
+
 if (!is.null(params$unitData) && nrow(params$unitData) > 0) {
-  DT::datatable(params$unitData, options = list(pageLength = 5, scrollX = TRUE))
+    cat("# Unit of Observation-Level Testing\n\n")
+    cat("## Number of Submissions\n\n")
+    cat('<div class="datatable-block">')
+    DT::datatable(params$unitData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
   cat("No unit data available or 'Unit of Observation-Level' check not selected.")
 }

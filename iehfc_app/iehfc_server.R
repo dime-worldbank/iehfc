@@ -229,11 +229,12 @@
           checkboxGroupInput(
               "check_select", "Select High-Frequency Checks",
               choiceNames = list(
-                  "Duplicates", "Outliers", "Enumerator-Level", "Administrative Unit-Level",
-                  "Unit of Observation-Level", "Survey Programming"
+                  "Duplicates", "Outliers", "Enumerator-Level", "Administrative Unit-Level","Unit of Observation-Level"
+                  #"Unit of Observation-Level", "Survey Programming"
               ),
               choiceValues = list(
-                  "duplicate", "outlier", "enumerator", "admin", "unit", "programming"
+                  "duplicate", "outlier", "enumerator", "admin", "unit"
+                  #, "programming"
               ),
               selected = if (!is.null(imported_para_dataset())) {
                   selected_rows <- c(imported_para_dataset()$Check)
@@ -1042,13 +1043,13 @@
       
         ### Survey Programming Check Setup ----
       
-      output$programming_setup <- renderUI(
-          card(
-              card_header("Survey Programming Check Setup"),
-              "Under construction!"
-          )
-      )
-      
+      # output$programming_setup <- renderUI(
+      #     card(
+      #         card_header("Survey Programming Check Setup"),
+      #         "Under construction!"
+      #     )
+      # )
+      # 
         ### Setup Tab Setup ----
       
       output$setup_tab_nodata <- renderUI({
@@ -1404,28 +1405,87 @@
       
 # See server_scripts/outliers.R for details on outputs creation
       
-      output$outlier_output <- renderUI({
-          if("outlier" %in% selected_checks()) {
-              tagList(
+      output$outlier_table_output <- renderUI({
+          if (length(current_indiv_outlier_vars) > 0 || length(current_group_outlier_vars) > 0) {
               card(
+                  card_header(
+                      span("Outlier Table", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "Shows the detected outliers based on selected criteria.",
+                              placement = "auto"
+                          )
+                  ),
                   DTOutput("outlier_table"),
                   uiOutput("outlier_table_dl"),
                   full_screen = TRUE
-              ),
-              card(
-                  uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                  full_screen = TRUE,
-                  style = "display: flex; flex-direction: column;padding: 50px;"
-              ),
-              card(
-                  uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                  full_screen = TRUE,
               )
-      )
           } else {
-              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+              NULL
           }
       })
+      
+      output$indiv_histogram_output <- renderUI({
+          if (!is.null(current_indiv_outlier_vars) && length(current_indiv_outlier_vars) > 0) {
+              card(
+                  card_header(
+                      span("Individual Outlier Histogram", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "Displays a histogram of individual outliers to identify any abnormal distributions.",
+                              placement = "auto"
+                          )
+                  ),
+                  uiOutput("indiv_combined_histogram_rendered"),
+                  full_screen = TRUE,
+                  style = "display: flex; flex-direction: column; padding: 50px;"
+              )
+          } else {
+              NULL
+          }
+      })
+      
+      output$group_boxplot_output <- renderUI({
+          if (!is.null(current_group_outlier_vars) && length(current_group_outlier_vars) > 0) {
+              card(
+                  card_header(
+                      span("Group Outlier Boxplot", bsicons::bs_icon("question-circle-fill")) %>%
+                          tooltip(
+                              "Displays a boxplot of group outliers to highlight variability across groups.",
+                              placement = "auto"
+                          )
+                  ),
+                  uiOutput("group_boxplot_rendered"),
+                  full_screen = TRUE
+              )
+          } else {
+              NULL
+          }
+      })
+      
+      outlier_output_components <- reactive({
+          case_when(
+              length(current_indiv_outlier_vars) > 0 & length(current_group_outlier_vars) > 0 ~ list(
+                  c("outlier_table_output", "indiv_histogram_output", "group_boxplot_output")
+              ),
+              length(current_indiv_outlier_vars) > 0 ~ list(
+                  c("outlier_table_output", "indiv_histogram_output")
+              ),
+              length(current_group_outlier_vars) > 0 ~ list(
+                  c("outlier_table_output", "group_boxplot_output")
+              ),
+              TRUE ~ list()
+          ) %>%
+              unlist()
+      })
+      
+      output$outlier_output <- renderUI({
+          if (length(outlier_output_components()) > 0) {
+              tagList(purrr::map(outlier_output_components(), ~ uiOutput(.x)))
+          } else {
+              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup\" tab."
+          }
+      })
+      
+      
       
       output$outlier_table_for_dl <- downloadHandler(
           filename = "outlier_table.csv",
@@ -1694,23 +1754,6 @@
           "Please click on the \"Run HFCs\" button in the \"Check Selection and Setup\" tab to display outputs."
       })
       
-      output$output_tab_data <- renderUI({
-          # Wrap the navset_tab and the download button in a tagList
-          tagList(
-              # Place the download button at the top
-              downloadButton("full_report_dl", "Download Consolidated Report"),
-              # Your existing navset_tab structure with panels
-              navset_tab(
-                  nav_panel("Duplicates", uiOutput("duplicate_output")),
-                  nav_panel("Outliers", uiOutput("outlier_output")),
-                  nav_panel("Enumerator", uiOutput("enumerator_output")),
-                  nav_panel("Admin Level", uiOutput("admin_output")),
-                  nav_panel("Tracking", uiOutput("unit_output")),
-                  nav_panel("Programming", "Under construction!")
-              )
-              # If you want the download button at the bottom, move it here after the navset_tab
-          )
-      })
       
       output$output_tab <- renderUI({
           if (is.null(hfc_dataset())) {
@@ -1718,29 +1761,31 @@
           } else if (is.null(input$run_hfcs) || input$run_hfcs == 0) {
               return(uiOutput("output_tab_norun"))
           } else {
-              navset_tab(
-                  if ("duplicate" %in% selected_checks()) {
-                      nav_panel("Duplicates", uiOutput("duplicate_output"))
-                  },
-                  if ("outlier" %in% selected_checks()) {
-                      nav_panel("Outliers", uiOutput("outlier_output"))
-                  },
-                  if ("enumerator" %in% selected_checks()) {
-                      nav_panel("Enumerator", uiOutput("enumerator_output"))
-                  },
-                  if ("admin" %in% selected_checks()) {
-                      nav_panel("Admin Level", uiOutput("admin_output"))
-                  },
-                  if ("unit" %in% selected_checks()) {
-                      nav_panel("Tracking", uiOutput("unit_output"))
-                  },
-                  if ("programming" %in% selected_checks()) {
-                  nav_panel("Programming", "Under construction!")
-                  }
+              tagList(
+                  downloadButton("full_report_dl", "Download Consolidated Report"),
+                  navset_tab(
+                      if ("duplicate" %in% selected_checks()) {
+                          nav_panel("Duplicates", uiOutput("duplicate_output"))
+                      },
+                      if ("outlier" %in% selected_checks()) {
+                          nav_panel("Outliers", uiOutput("outlier_output"))
+                      },
+                      if ("enumerator" %in% selected_checks()) {
+                          nav_panel("Enumerator", uiOutput("enumerator_output"))
+                      },
+                      if ("admin" %in% selected_checks()) {
+                          nav_panel("Admin Level", uiOutput("admin_output"))
+                      },
+                      if ("unit" %in% selected_checks()) {
+                          nav_panel("Tracking", uiOutput("unit_output"))
+                      # },
+                      # if ("programming" %in% selected_checks()) {
+                      #     nav_panel("Programming", "Under construction!")
+                      }
+                  )
               )
           }
       })
-      
      
       
       
@@ -1779,16 +1824,12 @@
               includeEnumerator <- "enumerator" %in% selected_checks()
               enumeratorSubsData <- NULL 
               enumeratorAveData <- NULL 
-              #enumeratorPlotPath <- NULL  # Initialize as NULL
               enumeratorDailySubsPlot <- NULL
               
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
-                  
-                  enumeratorDailySubsPlot <- if (includeEnumerator) {
-                      enumerator_daily_subs_plot()
-                  }
+                  enumeratorDailySubsPlot <-enumerator_daily_subs_plot()
               }
               
               # 4. Check if 'admin' check is selected
@@ -1796,6 +1837,7 @@
               
               # Prepare the dataset only if enum check is selected
               adminData <- NULL
+              adminDailySubsPlot <- NULL
               if (includeAdmin) {
                   adminData <- isolate(admin_subs_dataset())
                   
