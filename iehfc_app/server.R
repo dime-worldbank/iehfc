@@ -305,7 +305,7 @@
           
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
               dataset <- dataset %>%
-                  dplyr::dplyr::dplyr::select(-all_of(selected_id_var()))
+                  dplyr::select(-all_of(selected_id_var()))
           }
           
           # if (!is.null(current_duplicate_var()) && current_duplicate_var() != "") {
@@ -434,14 +434,14 @@
           selectizeInput(
               "indiv_outlier_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  dplyr::dplyr::select(
+                  dplyr::select(
                       -all_of(selected_id_var()[selected_id_var() != ""]) # Everything but the ID variable
                   ) %>%
-                  dplyr::dplyr::select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(indiv_outlier_vars()[indiv_outlier_vars() != ""]),
                       !any_of(indiv_outlier_vars()[indiv_outlier_vars() != ""])
                   ) %>%
-                  dplyr::dplyr::select(where(is.numeric)) %>%
+                  dplyr::select(where(is.numeric)) %>%
                   names(), 
               selected = current_indiv_outlier_vars(),
               multiple = TRUE,
@@ -457,10 +457,10 @@
               choices = {dataset <- hfc_dataset()
 
               if (!is.null(selected_id_var()) && selected_id_var() != "") {
-                  dataset <- dataset %>% dplyr::dplyr::select(-all_of(selected_id_var()))
+                  dataset <- dataset %>% dplyr::select(-all_of(selected_id_var()))
               }
                   dataset %>%
-                      dplyr::dplyr::select(where(is.numeric)) %>%
+                      dplyr::select(where(is.numeric)) %>%
                   names() %>%
                   tibble(var = .) %>%
                   filter(
@@ -471,7 +471,7 @@
                   ) %>%
                   group_by(group) %>%
                       filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
-                  dplyr::dplyr::select(group) %>%
+                  dplyr::select(group) %>%
                   distinct() %>%
                   pull()}, 
               selected = current_group_outlier_vars(),
@@ -490,15 +490,15 @@
                   dataset <- hfc_dataset()
                   
                   if (!is.null(selected_id_var()) && selected_id_var() != "") {
-                      dataset <- dataset %>% dplyr::dplyr::select(-all_of(selected_id_var()))
+                      dataset <- dataset %>% dplyr::select(-all_of(selected_id_var()))
                   }
                   
                   dataset %>%
-                  dplyr::dplyr::select(
+                  dplyr::select(
                       -any_of(indiv_outlier_vars()),
                       -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
                   ) %>%
-                  dplyr::dplyr::select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(outlier_extra_vars()),
                       !any_of(outlier_extra_vars())
                   ) %>%
@@ -670,14 +670,14 @@
           selectizeInput(
               "enumerator_ave_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  dplyr::dplyr::select(
+                  dplyr::select(
                       -all_of(enumerator_var()[enumerator_var() != ""])
                   ) %>%
-                  dplyr::dplyr::select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
                       !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                   ) %>%
-                  dplyr::dplyr::select(where(is.numeric)) %>%
+                  dplyr::select(where(is.numeric)) %>%
                   names(), 
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
@@ -691,7 +691,7 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      dplyr::dplyr::select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
+                      dplyr::select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
                               dplyr::select_if(lubridate::is.Date) %>%
                               names()
               ),
@@ -706,7 +706,7 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      dplyr::dplyr::select(
+                      dplyr::select(
                           -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
                       dplyr::select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
@@ -843,10 +843,10 @@
           selectizeInput(
               "admin_super_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  dplyr::dplyr::select(
+                  dplyr::select(
                       -all_of(admin_var()[admin_var() != ""])
                   ) %>%
-                  dplyr::dplyr::select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(admin_super_vars()[admin_super_vars() != ""]),
                       !any_of(admin_super_vars()[admin_super_vars() != ""])
                   ) %>%
@@ -863,7 +863,7 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      dplyr::dplyr::select(
+                      dplyr::select(
                           -all_of(admin_var()[admin_var() != ""])) %>%
                       dplyr::select_if(lubridate::is.Date) %>%
                       names()
@@ -879,7 +879,7 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      dplyr::dplyr::select(
+                      dplyr::select(
                           -all_of(admin_var()[admin_var() != ""])) %>%
                       dplyr::select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
                       
@@ -990,10 +990,10 @@
           selectizeInput(
               "unit_extra_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  dplyr::dplyr::select(
+                  dplyr::select(
                       -all_of(unit_var()[unit_var() != ""]) 
                   ) %>%
-                  dplyr::dplyr::select(
+                  dplyr::select(
                       all_of(unit_extra_vars()[unit_extra_vars() != ""]), 
                       !any_of(unit_extra_vars()[unit_extra_vars() != ""]) 
                   ) %>%
