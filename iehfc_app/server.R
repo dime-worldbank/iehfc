@@ -473,7 +473,7 @@
                       filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                   dplyr::select(group) %>%
                   distinct() %>%
-                  pull()}, 
+                  dplyr::pull()}, 
               selected = current_group_outlier_vars(),
               multiple = TRUE,
               options = list('dropdownParent' = 'body')
@@ -1184,7 +1184,7 @@
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) %>% 
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) 
               combined_df <- rbind(combined_df, para7)
           }
           
@@ -1494,7 +1494,7 @@
       })
       
       enumerator_output_components <- reactive({
-          case_when(
+          dplyr::case_when(
               enumerator_date_var() != "" & length(enumerator_ave_vars()) > 0 ~ list(
                   c("enumerator_subs_table_output", "enumerator_subs_plot_output", "enumerator_ave_vars_table_output")
               ),
@@ -1602,7 +1602,7 @@
       })
       
       admin_output_components <- reactive({
-          case_when(
+          dplyr::case_when(
               admin_date_var() != "" ~ list(
                   c("admin_subs_table_output", "admin_subs_plot_output")
               ),

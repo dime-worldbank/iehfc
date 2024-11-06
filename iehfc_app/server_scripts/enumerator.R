@@ -22,7 +22,7 @@
           summarize(
               num_submissions = n()
           ) %>%
-          ungroup()
+          dplyr::ungroup()
   }) %>%
   bindEvent(input$run_hfcs)
   
@@ -35,11 +35,11 @@
                       across(enumerator_complete_var(), ~ .x == 1 | .x == "Yes"), na.rm = TRUE
                   )
               ) %>%
-              ungroup()
+              dplyr::ungroup()
       } else {
           tibble() %>% # So that it merges without error, but does not add information
               mutate(
-                  !!enumerator_var() := case_when(
+                  !!enumerator_var() := dplyr::case_when(
                       class(hfc_dataset()[[enumerator_var()]]) == "character" ~ list(NA_character_),
                       class(hfc_dataset()[[enumerator_var()]]) == "integer"   ~ list(NA_integer_),
                       class(hfc_dataset()[[enumerator_var()]]) == "numeric"   ~ list(NA_real_),
@@ -67,8 +67,8 @@
               summarize(
                   num_submissions = n()
               ) %>%
-              ungroup() %>%
-              arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
+              dplyr::ungroup() %>%
+              dplyr::arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
               pivot_wider(
                   names_from  = date_var_formatted,
                   values_from = num_submissions
@@ -76,7 +76,7 @@
       } else {
           tibble() %>% # So that it merges without error, but does not add information
               mutate(
-                  !!enumerator_var() := case_when(
+                  !!enumerator_var() := dplyr::case_when(
                       class(hfc_dataset()[[enumerator_var()]]) == "character" ~ list(NA_character_),
                       class(hfc_dataset()[[enumerator_var()]]) == "integer"   ~ list(NA_integer_),
                       class(hfc_dataset()[[enumerator_var()]]) == "numeric"   ~ list(NA_real_),
@@ -103,7 +103,7 @@
           summarize(
               num_submissions = n()
           ) %>%
-          ungroup() %>%
+          dplyr::ungroup() %>%
           group_by(
               !!sym(enumerator_var())
           ) %>%
@@ -112,8 +112,8 @@
                   ifelse(is.na(num_submissions), 0, num_submissions) # Need to do this because cumsum() doesn't have an 'na.rm' argument
               )
           ) %>%
-          ungroup() %>%
-          arrange(date_var_formatted) # To ensure that the dates are in the right order
+          dplyr::ungroup() %>%
+          dplyr::arrange(date_var_formatted) # To ensure that the dates are in the right order
       
       # Set up highlighting individual enumerators
       
@@ -162,7 +162,7 @@
                   ~ round(mean(.x, na.rm = TRUE), digits = 2)
               )
           ) %>%
-          ungroup()
+          dplyr::ungroup()
   }) %>%
   bindEvent(input$run_hfcs)
   

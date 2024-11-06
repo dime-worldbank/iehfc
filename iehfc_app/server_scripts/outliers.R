@@ -37,12 +37,12 @@
               ~ hfc_dataset() %>%
                   group_by(!!sym(selected_id_var())) %>%
                   mutate(
-                      !!selected_id_var() := case_when(
+                      !!selected_id_var() := dplyr::case_when(
                           n() > 1 ~ paste0(!!sym(selected_id_var()), "_", row_number()),
                           TRUE    ~ as.character(!!sym(selected_id_var()))
                       )
                   ) %>%
-                  ungroup() %>%
+                  dplyr::ungroup() %>%
                   mutate(
                       across(
                           matches(paste0("^", .x, "$")), ~ mean(.x, na.rm = TRUE), .names = "mean"
@@ -114,12 +114,12 @@
               ~ hfc_dataset() %>%
                   group_by(!!sym(selected_id_var())) %>%
                   mutate(
-                      !!selected_id_var() := case_when(
+                      !!selected_id_var() := dplyr::case_when(
                           n() > 1 ~ paste0(!!sym(selected_id_var()), "_", row_number()),
                           TRUE    ~ as.character(!!sym(selected_id_var()))
                       )
                   ) %>%
-                  ungroup() %>%
+                  dplyr::ungroup() %>%
                   dplyr::select(
                       any_of(selected_id_var()), any_of(outlier_extra_vars()), matches(paste0("^", .x, "_{0,1}[0-9]+$"))
                   ) %>%
@@ -158,7 +158,7 @@
   
   outlier_dataset <- reactive({
       bind_rows(indiv_outlier_dataset(), group_outlier_dataset()) %>%
-          arrange(!!sym(selected_id_var()), issue_var)
+          dplyr::arrange(!!sym(selected_id_var()), issue_var)
   }) %>%
   bindEvent(input$run_hfcs)
   

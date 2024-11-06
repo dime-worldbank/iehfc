@@ -24,7 +24,7 @@
           summarize(
               num_submissions = n()
           ) %>%
-          ungroup()
+          dplyr::ungroup()
   }) %>%
   bindEvent(input$run_hfcs)
   
@@ -39,11 +39,11 @@
                       across(admin_complete_var(), ~ .x == 1 | .x == "Yes"), na.rm = TRUE
                   )
               ) %>%
-              ungroup()
+              dplyr::ungroup()
       } else {
           tibble() %>% # So that it merges without error, but does not add information
               mutate(
-                  !!admin_var() := case_when(
+                  !!admin_var() := dplyr::case_when(
                       class(hfc_dataset()[[admin_var()]]) == "character" ~ list(NA_character_),
                       class(hfc_dataset()[[admin_var()]]) == "integer"   ~ list(NA_integer_),
                       class(hfc_dataset()[[admin_var()]]) == "numeric"   ~ list(NA_real_),
@@ -71,8 +71,8 @@
               summarize(
                   num_submissions = n()
               ) %>%
-              ungroup() %>%
-              arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
+              dplyr::ungroup() %>%
+              dplyr::arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
               pivot_wider(
                   names_from  = date_var_formatted,
                   values_from = num_submissions
@@ -80,7 +80,7 @@
       } else {
           tibble() %>% # So that it merges without error, but does not add information
               mutate(
-                  !!admin_var() := case_when(
+                  !!admin_var() := dplyr::case_when(
                       class(hfc_dataset()[[admin_var()]]) == "character" ~ list(NA_character_),
                       class(hfc_dataset()[[admin_var()]]) == "integer"   ~ list(NA_integer_),
                       class(hfc_dataset()[[admin_var()]]) == "numeric"   ~ list(NA_real_),
@@ -107,7 +107,7 @@
           summarize(
               num_submissions = n()
           ) %>%
-          ungroup() %>%
+          dplyr::ungroup() %>%
           group_by(
               across(any_of(admin_super_vars())), !!sym(admin_var())
           ) %>%
@@ -116,8 +116,8 @@
                   ifelse(is.na(num_submissions), 0, num_submissions) # Need to do this because cumsum() doesn't have an 'na.rm' argument
               )
           ) %>%
-          ungroup() %>%
-          arrange(date_var_formatted) # To ensure that the dates are in the right order
+          dplyr::ungroup() %>%
+          dplyr::arrange(date_var_formatted) # To ensure that the dates are in the right order
       
       # Set up highlighting individual admins
       
