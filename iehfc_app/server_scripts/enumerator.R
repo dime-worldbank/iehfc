@@ -52,7 +52,7 @@
   bindEvent(input$run_hfcs)
   
   enumerator_daily_subs_dataset <- reactive({
-      if(enumerator_date_var() != "") {
+      if (!is.null(enumerator_date_var()) && enumerator_date_var() != "") {
           hfc_dataset() %>%
               # Attempt to format date. This may need to be added to depending on reasonable formats to expect
               mutate(
@@ -89,7 +89,8 @@
   bindEvent(input$run_hfcs)
   
   enumerator_daily_subs_plot <- reactive({
-      plot_data <- hfc_dataset() %>%
+      if (!is.null(enumerator_date_var()) && enumerator_date_var() != "") {
+          plot_data <- hfc_dataset() %>%
           # Attempt to format date. This may need to be added to depending on reasonable formats to expect
           mutate(
               date_var_formatted = lubridate::parse_date_time(
@@ -143,7 +144,7 @@
       enumerator_daily_subs_ggplotly <- ggplotly(enumerator_daily_subs_ggplot, tooltip = c("color", "y"), width = NULL)
       
       highlight(enumerator_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
-        
+      }      
   })
   
   enumerator_subs_dataset <- reactive({
