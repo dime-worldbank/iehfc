@@ -12,11 +12,11 @@
 
   iehfc_server <- function(input, output, session) {
       
-      source(file.path(getwd(), "iehfc_app", "server_scripts", "duplicates.R"), local = TRUE)
-      source(file.path(getwd(), "iehfc_app", "server_scripts", "outliers.R"), local = TRUE)
-      source(file.path(getwd(), "iehfc_app", "server_scripts", "enumerator.R"), local = TRUE)
-      source(file.path(getwd(), "iehfc_app", "server_scripts", "admin.R"), local = TRUE)
-      source(file.path(getwd(), "iehfc_app", "server_scripts", "unit.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "duplicates.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "outliers.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "enumerator.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "admin.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "unit.R"), local = TRUE)
       
       
       observeEvent(
@@ -37,7 +37,7 @@
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          file_path <- file.path(getwd(), "iehfc_app", "test_data", "LWH_FUP2_raw_data.csv")
+          file_path <- file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv")
           too_many_cols <- ncol(ds) > 10000
           if(too_many_cols) {
               showNotification(
@@ -51,7 +51,7 @@
       })
       
       observeEvent(input$use_test_data, {
-          ds <- fread(file.path(getwd(), "iehfc_app", "test_data", "LWH_FUP2_raw_data.csv"))
+          ds <- fread(file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv"))
           hfc_dataset(ds)
       })
       
@@ -1796,7 +1796,7 @@
               
               
               # Render the R Markdown file with parameters
-              rmarkdown::render(file.path(getwd(), "iehfc_app", "server_scripts", "template_report.Rmd"), 
+              rmarkdown::render(file.path(getwd(),  "server_scripts", "template_report.Rmd"), 
               output_file = file,
               params = list(
                                     includeDuplicates = includeDuplicates,
