@@ -51,7 +51,7 @@
       })
       
       observeEvent(input$use_test_data, {
-          ds <- fread(file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv"))
+          ds <- data.table::fread(file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv"))
           hfc_dataset(ds)
       })
       
