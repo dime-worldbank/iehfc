@@ -1797,13 +1797,8 @@
               
               # Render the R Markdown file with parameters
               rmarkdown::render(file.path(getwd(), "iehfc_app", "server_scripts", "template_report.Rmd"), 
-<<<<<<< Updated upstream
               output_file = file,
               params = list(
-=======
-                        output_file = file, 
-                        params = list(
->>>>>>> Stashed changes
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,
