@@ -472,7 +472,7 @@
                   group_by(group) %>%
                       filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                   dplyr::select(group) %>%
-                  distinct() %>%
+                      dplyr::distinct() %>%
                   dplyr::pull()}, 
               selected = current_group_outlier_vars(),
               multiple = TRUE,

@@ -1,3 +1,5 @@
+library("ggplot2")
+
 # Outlier Data Quality Checks -- Construction ----
 
 ## Check setup -------------
