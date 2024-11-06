@@ -14,7 +14,7 @@ pacman::p_load(
       source(file.path(getwd(),  "server_scripts", "enumerator.R"), local = TRUE)
       source(file.path(getwd(),  "server_scripts", "admin.R"), local = TRUE)
       source(file.path(getwd(),  "server_scripts", "unit.R"), local = TRUE)
-      
+
       
       observeEvent(
           input$gotoTab, {
@@ -225,11 +225,12 @@ pacman::p_load(
           checkboxGroupInput(
               "check_select", "Select High-Frequency Checks",
               choiceNames = list(
-                  "Duplicates", "Outliers", "Enumerator-Level", "Administrative Unit-Level",
-                  "Unit of Observation-Level", "Survey Programming"
+                  "Duplicates", "Outliers", "Enumerator-Level", "Administrative Unit-Level","Unit of Observation-Level"
+                  #"Unit of Observation-Level", "Survey Programming"
               ),
               choiceValues = list(
-                  "duplicate", "outlier", "enumerator", "admin", "unit", "programming"
+                  "duplicate", "outlier", "enumerator", "admin", "unit"
+                  #, "programming"
               ),
               selected = if (!is.null(imported_para_dataset())) {
                   selected_rows <- c(imported_para_dataset()$Check)
@@ -1038,13 +1039,13 @@ pacman::p_load(
       
         ### Survey Programming Check Setup ----
       
-      output$programming_setup <- renderUI(
-          card(
-              card_header("Survey Programming Check Setup"),
-              "Under construction!"
-          )
-      )
-      
+      # output$programming_setup <- renderUI(
+      #     card(
+      #         card_header("Survey Programming Check Setup"),
+      #         "Under construction!"
+      #     )
+      # )
+      # 
         ### Setup Tab Setup ----
       
       output$setup_tab_nodata <- renderUI({
@@ -1070,17 +1071,56 @@ pacman::p_load(
           )
       })
       
+
+      
       output$setup_run_hfcs_button <- renderUI({
+          
+          # Initialize a list for missing fields messages
+          missing_fields <- list()
+          
+          # Check required fields and add to missing_fields list if any are missing
+          if (is.null(selected_id_var()) || selected_id_var() == "") {
+              missing_fields <- c(missing_fields, "Please select an ID Variable.")
+          }
+          
+          if ("outlier" %in% input$check_select && is.null(input$indiv_outlier_vars_select_var) && is.null(input$group_outlier_vars_select_var)) {
+              missing_fields <- c(missing_fields, "Please select Individual or Group Outlier Variables.")
+          }
+          
+          if ("enumerator" %in% input$check_select && is.null(input$enumerator_var_select_var)) {
+              missing_fields <- c(missing_fields, "Please select an Enumerator Variable.")
+          }
+          
+          if ("admin" %in% input$check_select && is.null(input$admin_var_select_var)) {
+              missing_fields <- c(missing_fields, "Please select an Admin Unit Variable.")
+          }
+          
+          if ("unit" %in% input$check_select && is.null(input$unit_var_select_var)) {
+              missing_fields <- c(missing_fields, "Please select a Unit of Observation Variable.")
+          }
+          
+          # Determine if all conditions are met
+          all_conditions_met <- length(missing_fields) == 0
+          
+          # Render the action button, enabled or disabled based on conditions
           tagList(
+              # Action button
               tags$div(
                   actionButton(
                       "run_hfcs",
                       "RUN HFCS",
                       icon("paper-plane"),
                       class = "btn btn-outline-primary btn-lg",
-                      disabled = if (is.null(selected_id_var()) || selected_id_var() == "") TRUE else FALSE  # Disable if no ID is selected
+                      disabled = !all_conditions_met  # Disable button if any conditions are not met
                   )
-              )
+              ),
+              
+              # Conditional error message
+              if (!all_conditions_met) {
+                  div(style = "color: red; font-size: 10pt; font-weight: bold; margin-top: 10px;",
+                      HTML(paste(missing_fields, collapse = "<br>"))
+                  )
+              }
           )
       })
       
@@ -1291,6 +1331,10 @@ pacman::p_load(
               type     = "message"
           )
       })
+
+      
+      
+
       
       output$setup_tab_data <- renderUI({
           layout_sidebar(
@@ -1322,11 +1366,7 @@ pacman::p_load(
                       ),
                       uiOutput("check_select"),
                   ),
-                  card(span("Run Checks", bsicons::bs_icon("question-circle-fill")) %>%
-                           tooltip(
-                               "Select an ID Variable to run checks.",
-                               placement = "auto"
-                           ),
+                  card(span("Run Checks"),
                       uiOutput("setup_run_hfcs_button")
                   ),
                   card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
@@ -1398,30 +1438,31 @@ pacman::p_load(
       
         ### Outlier Outputs ----
       
-# See server_scripts/outliers.R for details on outputs creation
-      
+
       output$outlier_output <- renderUI({
           if("outlier" %in% selected_checks()) {
               tagList(
-              card(
-                  DTOutput("outlier_table"),
-                  uiOutput("outlier_table_dl"),
-                  full_screen = TRUE
-              ),
-              card(
-                  uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                  full_screen = TRUE,
-                  style = "display: flex; flex-direction: column;padding: 50px;"
-              ),
-              card(
-                  uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                  full_screen = TRUE,
+                  card(
+                      DTOutput("outlier_table"),
+                      uiOutput("outlier_table_dl"),
+                      full_screen = TRUE
+                  ),
+                  card(
+                      uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+                      full_screen = TRUE,
+                      style = "display: flex; flex-direction: column;padding: 50px;"
+                  ),
+                  card(
+                      uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+                      full_screen = TRUE,
+                  )
               )
-      )
           } else {
               "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
       })
+      
+
       
       output$outlier_table_for_dl <- downloadHandler(
           filename = "outlier_table.csv",
@@ -1690,33 +1731,36 @@ pacman::p_load(
           "Please click on the \"Run HFCs\" button in the \"Check Selection and Setup\" tab to display outputs."
       })
       
-      output$output_tab_data <- renderUI({
-          # Wrap the navset_tab and the download button in a tagList
-          tagList(
-              # Place the download button at the top
-              downloadButton("full_report_dl", "Download Consolidated Report"),
-              # Your existing navset_tab structure with panels
-              navset_tab(
-                  nav_panel("Duplicates", uiOutput("duplicate_output")),
-                  nav_panel("Outliers", uiOutput("outlier_output")),
-                  nav_panel("Enumerator", uiOutput("enumerator_output")),
-                  nav_panel("Admin Level", uiOutput("admin_output")),
-                  nav_panel("Tracking", uiOutput("unit_output")),
-                  nav_panel("Programming", "Under construction!")
-              )
-              # If you want the download button at the bottom, move it here after the navset_tab
-          )
-      })
       
       output$output_tab <- renderUI({
-          if(is.null(hfc_dataset())) {
+          if (is.null(hfc_dataset())) {
               return(uiOutput("output_tab_nodata"))
-          } else if(is.null(input$run_hfcs)) {
-              return(uiOutput("output_tab_nocheck"))
-          } else if(input$run_hfcs == 0) {
+          } else if (is.null(input$run_hfcs) || input$run_hfcs == 0) {
               return(uiOutput("output_tab_norun"))
           } else {
-              return(uiOutput("output_tab_data"))
+              tagList(
+                  downloadButton("full_report_dl", "Download Consolidated Report"),
+                  navset_tab(
+                      if ("duplicate" %in% selected_checks()) {
+                          nav_panel("Duplicates", uiOutput("duplicate_output"))
+                      },
+                      if ("outlier" %in% selected_checks()) {
+                          nav_panel("Outliers", uiOutput("outlier_output"))
+                      },
+                      if ("enumerator" %in% selected_checks()) {
+                          nav_panel("Enumerator", uiOutput("enumerator_output"))
+                      },
+                      if ("admin" %in% selected_checks()) {
+                          nav_panel("Admin Level", uiOutput("admin_output"))
+                      },
+                      if ("unit" %in% selected_checks()) {
+                          nav_panel("Tracking", uiOutput("unit_output"))
+                      # },
+                      # if ("programming" %in% selected_checks()) {
+                      #     nav_panel("Programming", "Under construction!")
+                      }
+                  )
+              )
           }
       })
      
@@ -1729,6 +1773,7 @@ pacman::p_load(
               paste0("full-report-", Sys.Date(), ".html")
           },
           content = function(file) {
+              summary_data <- summary_card_data()
               # 1. Check if 'duplicate' check is selected
               includeDuplicates <- "duplicate" %in% selected_checks()
               duplicatesData <- NULL
@@ -1756,16 +1801,12 @@ pacman::p_load(
               includeEnumerator <- "enumerator" %in% selected_checks()
               enumeratorSubsData <- NULL 
               enumeratorAveData <- NULL 
-              #enumeratorPlotPath <- NULL  # Initialize as NULL
               enumeratorDailySubsPlot <- NULL
               
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
-                  
-                  enumeratorDailySubsPlot <- if (includeEnumerator) {
-                      enumerator_daily_subs_plot()
-                  }
+                  enumeratorDailySubsPlot <-enumerator_daily_subs_plot()
               }
               
               # 4. Check if 'admin' check is selected
@@ -1773,6 +1814,7 @@ pacman::p_load(
               
               # Prepare the dataset only if enum check is selected
               adminData <- NULL
+              adminDailySubsPlot <- NULL
               if (includeAdmin) {
                   adminData <- isolate(admin_subs_dataset())
                   
@@ -1793,9 +1835,10 @@ pacman::p_load(
               
               
               # Render the R Markdown file with parameters
-              rmarkdown::render(file.path(getwd(),  "server_scripts", "template_report.Rmd"), 
-              output_file = file,
-              params = list(
+
+              rmarkdown::render(file.path(getwd(),  "server_scripts", "template_report.Rmd"), output_file = file,
+                                params = list(
+                                    summaryData = summary_data,
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,
