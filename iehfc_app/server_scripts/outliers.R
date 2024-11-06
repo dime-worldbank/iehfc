@@ -94,9 +94,9 @@
                   
                 {
                   if (method == "sd") {
-                      select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, sd, low_limit, high_limit)
+                      dplyr::select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, sd, low_limit, high_limit)
                   } else {
-                      select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, iqr, low_limit, high_limit)
+                      dplyr::select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, iqr, low_limit, high_limit)
                   }
                 }
               
@@ -120,7 +120,7 @@
                       )
                   ) %>%
                   ungroup() %>%
-                  select(
+                  dplyr::select(
                       any_of(selected_id_var()), any_of(outlier_extra_vars()), matches(paste0("^", .x, "_{0,1}[0-9]+$"))
                   ) %>%
                   pivot_longer(
@@ -146,9 +146,9 @@
                   ) %>%
                   {
                       if (method == "sd") {
-                          select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, sd, low_limit, high_limit)
+                          dplyr::select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, sd, low_limit, high_limit)
                       } else {
-                          select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, iqr, low_limit, high_limit)
+                          dplyr::select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value, mean, iqr, low_limit, high_limit)
                       }
                   }
           ) %>%
@@ -263,7 +263,7 @@
 
     generate_boxplot <- function(dataset, group) {
       variable_group <- dataset %>%
-          select(matches(paste0("^", group, "_{0,1}[0-9]+$"))) %>%
+          dplyr::select(matches(paste0("^", group, "_{0,1}[0-9]+$"))) %>%
           pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value")
 
 
@@ -321,7 +321,7 @@
       selected_vars <- current_indiv_outlier_vars()
       
       plot_data_long <- plot_data %>%
-          select(all_of(selected_vars)) %>%
+          dplyr::select(all_of(selected_vars)) %>%
           pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
       
       ggplot_obj <- ggplot(plot_data_long, aes(x = value)) +
@@ -343,7 +343,7 @@
       selected_vars <- current_indiv_outlier_vars()
       
       plot_data_long <- plot_data %>%
-          select(all_of(selected_vars)) %>%
+          dplyr::select(all_of(selected_vars)) %>%
           pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
       
       ggplot_obj <- ggplot(plot_data_long, aes(x = value)) +
@@ -365,7 +365,7 @@
       selected_groups <- group_outlier_vars()  
       
       plot_data <- plot_data %>%
-          select(matches(paste0("^", paste(selected_groups, collapse = "|"), "_{0,1}[0-9]*$"))) %>%
+          dplyr::select(matches(paste0("^", paste(selected_groups, collapse = "|"), "_{0,1}[0-9]*$"))) %>%
           pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value") %>%
           mutate(group = sub("_.*", "", issue_var))  
       
