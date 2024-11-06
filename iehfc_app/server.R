@@ -14,6 +14,8 @@ pacman::p_load(
       source(file.path(getwd(),  "server_scripts", "enumerator.R"), local = TRUE)
       source(file.path(getwd(),  "server_scripts", "admin.R"), local = TRUE)
       source(file.path(getwd(),  "server_scripts", "unit.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "summary.R"), local = TRUE)
+      
 
       
       observeEvent(
