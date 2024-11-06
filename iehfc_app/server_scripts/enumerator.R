@@ -170,7 +170,7 @@
       enumerator_subs_dataset(), fillContainer = TRUE
   )
   
-  output$enumerator_daily_subs_plot_rendered <- renderPlotly(
+  output$enumerator_daily_subs_plot_rendered <- plotly::renderPlotly(
       enumerator_daily_subs_plot()
   )
   

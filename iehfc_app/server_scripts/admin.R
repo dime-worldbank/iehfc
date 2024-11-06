@@ -163,7 +163,7 @@
       admin_subs_dataset(), fillContainer = TRUE
   )
   
-  output$admin_daily_subs_plot_rendered <- renderPlotly(
+  output$admin_daily_subs_plot_rendered <- plotly::renderPlotly(
       admin_daily_subs_plot()
   )
   

@@ -253,8 +253,8 @@
               var <- selected_vars[i]
               histograms <- indiv_combined_histograms(var)
 
-              output[[paste0("histogram_with_", i)]] <- renderPlotly(histograms$with)
-              output[[paste0("histogram_without_", i)]] <- renderPlotly(histograms$without)
+              output[[paste0("histogram_with_", i)]] <- plotly::renderPlotly(histograms$with)
+              output[[paste0("histogram_without_", i)]] <- plotly::renderPlotly(histograms$without)
           })
       }
   })
@@ -307,7 +307,7 @@
               group <- selected_groups[i]
               plots <- group_boxplots(group)
 
-              output[[paste0("boxplot_", i)]] <- renderPlotly({ plots$box })
+              output[[paste0("boxplot_", i)]] <- plotly::renderPlotly({ plots$box })
           })
       }
   })
