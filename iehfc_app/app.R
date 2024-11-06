@@ -8,11 +8,11 @@
 
   pacman::p_load(
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, conflicted, bit64
   )
   
+  conflict_prefer("select", "dplyr")
 
-  
   ## 2. Load Custom Functions ----
 
 # Reminder — Currently, this project works with an .Rproj file. Open the project directly from the .Rproj

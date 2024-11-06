@@ -1105,7 +1105,7 @@
       parameter_dataset <- reactive({
           # Initialize an empty data frame
           combined_df <- data.frame(Parameter = character(0), Name = character(0), Value = character(0))
-          current_datetime <- now()
+          current_datetime <- lubridate::now()
           
           # Check if each parameter is selected and add it to the combined data frame
           
