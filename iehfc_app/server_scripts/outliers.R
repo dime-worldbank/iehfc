@@ -1,4 +1,7 @@
-library("ggplot2")
+pacman::p_load(
+    shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
+    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64
+)
 
 # Outlier Data Quality Checks -- Construction ----
 
@@ -170,7 +173,12 @@ library("ggplot2")
   
   
   custom_winsorize <- function(data, var) {
-      data[[var]] <- DescTools::Winsorize(data[[var]], val = quantile(data[[var]], probs = c(0.05, 0.95), na.rm = TRUE))
+      lower <- quantile(data[[var]], probs = 0.05, na.rm = TRUE)
+      upper <- quantile(data[[var]], probs = 0.95, na.rm = TRUE)
+      
+      data[[var]][data[[var]] < lower] <- lower
+      data[[var]][data[[var]] > upper] <- upper
+      
       return(data)
   }
   

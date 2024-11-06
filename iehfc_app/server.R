@@ -1,10 +1,7 @@
-
-
-  library(shiny)
-  library(bslib)
-  library(DT)
-  library(bsicons)
-  library(shinydashboard)
+pacman::p_load(
+    shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
+    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64
+)
   
   # Increase maximum file upload size
   
