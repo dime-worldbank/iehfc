@@ -1796,7 +1796,8 @@
               
               
               # Render the R Markdown file with parameters
-              rmarkdown::render(file.path(getwd(), "iehfc_app", "server_scripts", "template_report.Rmd"), output_file = file),
+              rmarkdown::render(file.path(getwd(), "iehfc_app", "server_scripts", "template_report.Rmd"), 
+              output_file = file,
               params = list(
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
