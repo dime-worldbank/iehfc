@@ -305,7 +305,7 @@
           
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
               dataset <- dataset %>%
-                  select(-all_of(selected_id_var()))
+                  dplyr::select(-all_of(selected_id_var()))
           }
           
           # if (!is.null(current_duplicate_var()) && current_duplicate_var() != "") {

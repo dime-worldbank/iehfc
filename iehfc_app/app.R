@@ -11,7 +11,6 @@
       shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, conflicted, bit64
   )
   
-  conflict_prefer("select", "dplyr")
 
   ## 2. Load Custom Functions ----
 
