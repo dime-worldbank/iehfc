@@ -12,11 +12,11 @@
 
   iehfc_server <- function(input, output, session) {
       
-      source(here("iehfc_app", "server_scripts", "duplicates.R"), local = TRUE)
-      source(here("iehfc_app", "server_scripts", "outliers.R"),   local = TRUE)
-      source(here("iehfc_app", "server_scripts", "enumerator.R"), local = TRUE)
-      source(here("iehfc_app", "server_scripts", "admin.R"),      local = TRUE)
-      source(here("iehfc_app", "server_scripts", "unit.R"),       local = TRUE)
+      source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
+      source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
+      source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
+      source("iehfc_app/server_scripts/admin.R",      local = TRUE)
+      source("iehfc_app/server_scripts/unit.R",       local = TRUE)
       
       observeEvent(
           input$gotoTab, {
@@ -50,7 +50,7 @@
       })
       
       observeEvent(input$use_test_data, {
-          ds <- fread(here("iehfc_app", "test_data", "LWH_FUP2_raw_data.csv"), na.strings = "")
+          ds <- fread("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
           hfc_dataset(ds)
       })
       
@@ -1795,7 +1795,7 @@
               
               
               # Render the R Markdown file with parameters
-              rmarkdown::render(here("iehfc_app", "server_scripts", "template_report.Rmd"), output_file = file,
+              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
                                 params = list(
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
