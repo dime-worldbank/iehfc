@@ -22,7 +22,7 @@
 
   shiny::addResourcePath(prefix = "res", directoryPath = file.path(getwd(), "iehfc_app", "www"))
   
-  source(file.path(getwd(), "R", "iehfc_app.R"))
+  source(file.path(getwd(), "iehfc_app", "R", "iehfc_app.R"))
   
   ## 3. Run Application ----
 

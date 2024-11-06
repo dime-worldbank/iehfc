@@ -37,7 +37,7 @@
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          ds <- fread(file.path(getwd(), "test_data", "LWH_FUP2_raw_data.csv"), na.strings = "")
+          file_path <- file.path(getwd(), "iehfc_app", "test_data", "LWH_FUP2_raw_data.csv")
           too_many_cols <- ncol(ds) > 10000
           if(too_many_cols) {
               showNotification(
@@ -51,7 +51,7 @@
       })
       
       observeEvent(input$use_test_data, {
-          ds <- fread("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
+          ds <- fread(file.path(getwd(), "iehfc_app", "test_data", "LWH_FUP2_raw_data.csv"))
           hfc_dataset(ds)
       })
       
@@ -1797,8 +1797,13 @@
               
               # Render the R Markdown file with parameters
               rmarkdown::render(file.path(getwd(), "iehfc_app", "server_scripts", "template_report.Rmd"), 
+<<<<<<< Updated upstream
               output_file = file,
               params = list(
+=======
+                        output_file = file, 
+                        params = list(
+>>>>>>> Stashed changes
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,
