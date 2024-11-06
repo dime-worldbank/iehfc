@@ -12,11 +12,12 @@
 
   iehfc_server <- function(input, output, session) {
       
-      source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
-      source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
-      source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
-      source("iehfc_app/server_scripts/admin.R",      local = TRUE)
-      source("iehfc_app/server_scripts/unit.R",       local = TRUE)
+      source(file.path(getwd(), "iehfc_app", "server_scripts", "duplicates.R"), local = TRUE)
+      source(file.path(getwd(), "iehfc_app", "server_scripts", "outliers.R"), local = TRUE)
+      source(file.path(getwd(), "iehfc_app", "server_scripts", "enumerator.R"), local = TRUE)
+      source(file.path(getwd(), "iehfc_app", "server_scripts", "admin.R"), local = TRUE)
+      source(file.path(getwd(), "iehfc_app", "server_scripts", "unit.R"), local = TRUE)
+      
       
       observeEvent(
           input$gotoTab, {
@@ -36,7 +37,7 @@
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          ds <- fread(hfc_file()$datapath, na.strings = c("", "NA_character_", "NA"))
+          ds <- fread(file.path(getwd(), "test_data", "LWH_FUP2_raw_data.csv"), na.strings = "")
           too_many_cols <- ncol(ds) > 10000
           if(too_many_cols) {
               showNotification(
@@ -1795,8 +1796,8 @@
               
               
               # Render the R Markdown file with parameters
-              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
-                                params = list(
+              rmarkdown::render(file.path(getwd(), "iehfc_app", "server_scripts", "template_report.Rmd"), output_file = file),
+              params = list(
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
                                     includeOutliers = includeOutliers,

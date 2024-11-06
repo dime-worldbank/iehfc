@@ -20,10 +20,10 @@
 # your file explorer. If you would rather not use the .Rproj file, you will need to set the working
 # directory using `setwd(...)`, with `...` being the file path that leads you to the `iehfc` folder.
 
-  shiny::addResourcePath(prefix = "res", directoryPath = "iehfc_app/www")
-
-  source("R/iehfc_app.R")
-
+  shiny::addResourcePath(prefix = "res", directoryPath = file.path(getwd(), "iehfc_app", "www"))
+  
+  source(file.path(getwd(), "R", "iehfc_app.R"))
+  
   ## 3. Run Application ----
 
 # If you want to launch the iehfc application, you just need to type in `iehfc_app()` in your console after having
