@@ -1,22 +1,4 @@
-# Enumerator Data Quality Checks -- Construction ----
-
-  enumerator_var <- reactive({
-      input$enumerator_var_select_var
-  })
-  
-  enumerator_ave_vars <- reactive({
-      input$enumerator_ave_vars_select_var
-  })
-  
-  enumerator_date_var <- reactive({
-      input$enumerator_date_var_select_var
-  })
-  
-  enumerator_complete_var <- reactive({
-      input$enumerator_complete_var_select_var
-  })
-  
-  enumerator_total_subs_dataset <- reactive({
+ enumerator_total_subs_dataset <- reactive({
       hfc_dataset() %>%
           group_by(!!sym(enumerator_var())) %>%
           summarize(
@@ -52,7 +34,7 @@
   bindEvent(input$run_hfcs)
   
   enumerator_daily_subs_dataset <- reactive({
-      if (!is.null(enumerator_date_var()) && enumerator_date_var() != "") {
+      if(enumerator_date_var() != "") {
           hfc_dataset() %>%
               # Attempt to format date. This may need to be added to depending on reasonable formats to expect
               mutate(
@@ -89,8 +71,7 @@
   bindEvent(input$run_hfcs)
   
   enumerator_daily_subs_plot <- reactive({
-      if (!is.null(enumerator_date_var()) && enumerator_date_var() != "") {
-          plot_data <- hfc_dataset() %>%
+      plot_data <- hfc_dataset() %>%
           # Attempt to format date. This may need to be added to depending on reasonable formats to expect
           mutate(
               date_var_formatted = lubridate::parse_date_time(
@@ -141,10 +122,10 @@
               legend.position = "none"
           )
       
-      enumerator_daily_subs_ggplotly <- ggplotly(enumerator_daily_subs_ggplot, tooltip = c("color", "y"), width = NULL)
+      enumerator_daily_subs_ggplotly <- ggplotly(enumerator_daily_subs_ggplot, tooltip = c("color", "y"))
       
       highlight(enumerator_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
-      }      
+        
   })
   
   enumerator_subs_dataset <- reactive({
@@ -177,83 +158,4 @@
   
   output$enumerator_ave_vars_table <- renderDT(
       enumerator_ave_vars_dataset(), fillContainer = TRUE
-  )
-  
-  
-  ##### Download enumerator codes ----
- output$enumerator_r_exp <- downloadHandler(
-      filename = function() {
-          "enumerator_run.R"
-      },
-      content = function(file) {
-          # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/enumerator_run.R"
-          
-          # Read the initial script content
-          initial_content <- readLines(initial_script)
-          
-          # Prepend the additional code
-          additional_code <- paste(
-              "    #----------------------------------------------------\n",
-              "    #    This is code sample for enumerators check. \n",
-              "    #---------------------------------------------------- \n",
-              "\n",
-              "\n",
-              "# Remember to load your dataset \n",
-              "hfc_dataset <- \n",
-              "\n",
-              "# Enumerator Variables \n",
-              "enumerator_var <- ", paste0("\"", input$enumerator_var_select_var, "\"", collapse = ", "), "\n",
-              "enumerator_ave_vars <- c(", paste0("\"", input$enumerator_ave_vars_select_var, "\"", collapse = ", "), ")\n",
-              "enumerator_date_var <- ", paste0("\"", input$enumerator_date_var_select_var, "\"", collapse = ", "), "\n",
-              "enumerator_complete_var <- ", paste0("\"", input$enumerator_complete_var_select_var, "\"", collapse = ", "), "\n",
-              "\n",
-              sep = ""
-          )
-          
-          # Combine the additional code and the initial script content
-          combined_content <- c(additional_code, initial_content)
-          
-          # Write the combined content to the final file
-          writeLines(combined_content, file)
-      }
-  )
-  
-  
-  
-  
-  
-  output$enumerator_s_exp <- downloadHandler(
-      filename = function() {
-          "enumerator_run.do"
-      },
-      content = function(file) {
-          # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/enumerator_run.do"
-          
-          # Read the initial script content
-          initial_content <- readLines(initial_script)
-          
-          # Prepend the additional code
-          additional_code <- paste(
-              "    /*----------------------------------------------------\n",
-              "           This is code sample for enumerator check. \n",
-              "    -----------------------------------------------------*/ \n",
-              "\n",
-              "\n",
-              "    * Define the enumerator variables\n",
-              "       local enumerator_var ", paste0(input$enumerator_var_select_var, collapse = " "), "\n",
-              "       local enumerator_ave_vars ", paste0(input$enumerator_ave_vars_select_var, collapse = " "), "\n",
-              "       local enumerator_date_var ", paste0(input$enumerator_date_var_select_var, collapse = " "), "\n",
-              "       local enumerator_complete_var ", paste0(input$enumerator_complete_var_select_var, collapse = " "), "\n",
-              "\n",
-              sep = ""
-          )
-          
-          # Combine the additional code and the initial script content
-          combined_content <- c(additional_code, initial_content)
-          
-          # Write the combined content to the final file
-          writeLines(combined_content, file)
-      }
   )
