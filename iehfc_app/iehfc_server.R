@@ -10,8 +10,6 @@ library(shinydashboard)
 
 options(shiny.maxRequestSize = 100 * (1024^2))
 
-
-
 iehfc_server <- function(input, output, session) {
     
     source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
@@ -19,7 +17,6 @@ iehfc_server <- function(input, output, session) {
     source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
     source("iehfc_app/server_scripts/admin.R",      local = TRUE)
     source("iehfc_app/server_scripts/unit.R",       local = TRUE)
-    
     
     observeEvent(
         input$gotoTab, {
@@ -29,8 +26,6 @@ iehfc_server <- function(input, output, session) {
             )
         }
     )
-    
-    
     
     ## Upload Tab ----
     
@@ -171,6 +166,59 @@ iehfc_server <- function(input, output, session) {
         imported_para_dataset(para_ds)
     })
     
+    ### Select ID Variable ----
+    
+    selected_id_var <- reactiveVal()
+    
+    observe({
+        id_var_imported <- imported_para_dataset()[imported_para_dataset()$Parameter == "id_select_var", "Value"]
+        if (!is.null(id_var_imported)) {
+            selected_id_var(id_var_imported)
+            updateSelectizeInput(session, "id_select_var", selected = id_var_imported)
+        }
+    })
+    
+    observe({
+        selected_id_var(input$id_select_var)
+    })
+    
+    output$id_select <- renderUI({
+        selectizeInput(
+            "id_select_var", 
+            label = "ID Variable", 
+            choices = c("", hfc_dataset() %>% names()),
+            selected = "",
+            options = list(
+                'dropdownParent' = 'body'
+            )
+        )
+    })
+    
+    observe({
+        updateSelectizeInput(session, "id_select_var", 
+                             choices = c("", hfc_dataset() %>% names()),
+                             selected = "")
+    })
+    
+    
+    observe({
+        if (!is.null(selected_id_var()) && selected_id_var() != "") {
+            updateActionButton(session, "run_hfcs", disabled = FALSE)
+            runjs("$('#run_hfcs').tooltip('hide')")
+        } else {
+            updateActionButton(session, "run_hfcs", disabled = TRUE)
+            runjs("$('#run_hfcs').tooltip('show')") 
+        }
+    })
+    
+    # Bring ID Variable from uploaded parameter dataset
+    observe({
+        id_select_var_imported <- 
+            imported_para_dataset()[imported_para_dataset()$Parameter == "id_select_var", "Value"]
+        if (!is.null(id_select_var_imported)) {
+            selected_id_var(id_select_var_imported)
+        }
+    })
     
     
     ### Check Selection ----
@@ -201,34 +249,22 @@ iehfc_server <- function(input, output, session) {
     
     
     
-    
     ### Duplicate Check Setup ----
     
     # Duplicate data quality checks:
     # Duplicate IDs
     # Additional variables for reference
     
-    current_duplicate_id_var     <- reactiveVal() # For storing current state of 'duplicate_id_select_var'
     current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
     
     # Bring duplicate variables from uploaded parameter dataset
     observe({
-        duplicate_id_select_var_imported <- 
-            imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_id_select_var", "Value"]
-        if (!is.null(duplicate_id_select_var_imported)) {
-            current_duplicate_id_var(duplicate_id_select_var_imported)
-        }
-        
         duplicate_extra_vars_imported <- 
             imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_extra_vars_select_var", "Value"]
         if (!is.null(duplicate_extra_vars_imported)) {
             current_duplicate_extra_vars(duplicate_extra_vars_imported)
+            updateSelectizeInput(session, "duplicate_extra_vars_select_var", selected = duplicate_extra_vars_imported)
         }
-    })
-    
-    # Observe any change in 'duplicate_id_select_var' and update current_duplicate_id_var
-    observe({
-        current_duplicate_id_var(input$duplicate_id_select_var)
     })
     
     # Observe any change in 'duplicate_extra_vars_select_var' and update current_duplicate_extra_vars
@@ -236,43 +272,57 @@ iehfc_server <- function(input, output, session) {
         current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
     })
     
-    observe({
-        updateSelectizeInput(session, "duplicate_id_select_var", 
-                             choices = hfc_dataset() %>% names,
-                             selected = current_duplicate_id_var()
-        )
-    })
+    
+    #The code below is for a dropdown that allows the user to select extra variables for duplicate check. It is hidden in the UI because the functionality is not complete. 
+    
+    # output$duplicate_select <- renderUI({
+    #     selectizeInput(
+    #         "duplicate_select_var", 
+    #         label = NULL, 
+    #         choices = character(0),  # Empty by default
+    #         selected = current_duplicate_var(),  # Preserve the selection if available
+    #         options = list('dropdownParent' = 'body')
+    #     )
+    # })
+    # 
+    # 
+    # observe({
+    #     # Update the selectizeInput only when hfc_dataset() is not NULL
+    #     if (!is.null(hfc_dataset())) {
+    #         updateSelectizeInput(session, "duplicate_select_var", 
+    #                              choices = hfc_dataset() %>%
+    #                                  select(-all_of(selected_id_var())) %>%
+    #                                  names(),
+    #                              selected = current_duplicate_var())
+    #     }
+    # })
     
     observe({
         updateSelectizeInput(
             session, "duplicate_extra_vars_select_var", 
             choices = hfc_dataset() %>% names(), 
             selected = current_duplicate_extra_vars()
-            )
+        )
         
     })
     
-    output$duplicate_id_select <- renderUI({
-        selectizeInput(
-            "duplicate_id_select_var", label = NULL, 
-            choices = hfc_dataset() %>% names,
-            selected = current_duplicate_id_var(),  # Preserve the selection
-            options = list('dropdownParent' = 'body')
-        )
-    })
-    
     output$duplicate_extra_vars_select <- renderUI({
+        dataset <- hfc_dataset()
+        
+        if (!is.null(selected_id_var()) && selected_id_var() != "") {
+            dataset <- dataset %>%
+                select(-all_of(selected_id_var()))
+        }
+        
+        # if (!is.null(current_duplicate_var()) && current_duplicate_var() != "") {
+        #     dataset <- dataset %>%
+        #         select(-all_of(current_duplicate_var()))  # exclude current_duplicate_var
+        # }
+        
         selectizeInput(
-            "duplicate_extra_vars_select_var", label = NULL,
-            choices = hfc_dataset() %>%
-                select(
-                    -all_of(duplicate_id_var()[duplicate_id_var() != ""]) # Everything but the ID variable
-                ) %>%
-                select( # Ensures that selection order is preserved
-                    all_of(duplicate_extra_vars()[duplicate_extra_vars() != ""]),
-                    !any_of(duplicate_extra_vars()[duplicate_extra_vars() != ""])
-                ) %>%
-                names(), 
+            "duplicate_extra_vars_select_var", 
+            label = NULL,
+            choices = names(dataset),
             selected = current_duplicate_extra_vars(),
             multiple = TRUE,
             options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
@@ -285,52 +335,42 @@ iehfc_server <- function(input, output, session) {
             height = "auto", fill = FALSE,
             full_screen = TRUE,
             card_header(
-                div(
-                    span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
-                        tooltip(
-                            "The duplicate check requires you to provide the variable you want to check for duplicates. You can add any additional variable you want to include in the output table",
-                            placement = "auto"
-                        ),
-                    downloadButton("duplicate_r_exp",
-                                   label = NULL,
-                                   shiny::img(src = "res/logo_r.png", height = "20px"),
-                                   class = "btn-light",
-                                   style = "float: right; margin-left: 10px;",
-                    ) %>% tooltip("Click to download R code", placement = "auto"),
-                    downloadButton("duplicate_s_exp",
-                                   label = NULL,
-                                   shiny::img(src = "res/logo_stata.svg", height = "20px"),
-                                   class = "btn-light",
-                                   style = "float: right; margin-left: 10px;"
-                    ) %>% tooltip("Click to download Stata code", placement = "auto")
-                )
+                span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                    tooltip(
+                        "The duplicate check checks the Dataset ID for duplicates. You can add any additional variable you want to include in the output table",
+                        placement = "auto"
+                    ),
+                downloadButton("duplicate_r_exp",
+                               label = NULL,
+                               shiny::img(src = "res/logo_r.png", height = "20px"),
+                               class = "btn-light",
+                               style = "float: right; margin-left: 10px;",
+                ) %>% tooltip("Click to download R code", placement = "auto"),
+                downloadButton("duplicate_s_exp",
+                               label = NULL,
+                               shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                               class = "btn-light",
+                               style = "float: right; margin-left: 10px;"
+                ) %>% tooltip("Click to download Stata code", placement = "auto")
             ),
             card_body(
                 fluidRow(
-                    column(6,
-                           span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                               tooltip(
-                                   "This is the variable that you want to check for duplicates (usually an ID intended to be uniquely identified)",
-                                   placement = "right"
-                               ),
-                           uiOutput("duplicate_id_select", style = "z-index: 1000;")
-                    ),
+                    # column(6, 
+                    #        span("Extra Variable to Check", bsicons::bs_icon("question-circle-fill")) %>%
+                    #            tooltip("This is an optional variable that you might want to check for duplicates, besides,the ID. Duplicate IDs are checked automatically.", 
+                    #                    placement = "right"),
+                    #        uiOutput("duplicate_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                    # ),
                     column(6,
                            span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                               tooltip(
-                                   "These are additional variables that you may want to display in the output table",
-                                   placement = "right"
-                               ),
-                           uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
+                               tooltip("These are additional variables that you may want to display in the output table", 
+                                       placement = "right"),
+                           uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                     )
-                    
                 )
             )
         )
     })
-    
-    
-    
     
     ### Outlier Check Setup ----
     
@@ -341,7 +381,6 @@ iehfc_server <- function(input, output, session) {
     
     current_indiv_outlier_vars <- reactiveVal() # For storing current state of 'indiv_outlier_vars_select_var'
     current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
-    current_outlier_id_var     <- reactiveVal() # For storing current state of 'outlier_id_select_var'
     current_outlier_extra_vars <- reactiveVal() # For storing current state of 'outlier_extra_vars_select_var'
     current_outlier_method     <- reactiveVal() # For storing current state of 'outlier_method'
     current_outlier_multiplier <- reactiveVal() # For storing current state of 'outlier_multiplier'
@@ -358,13 +397,10 @@ iehfc_server <- function(input, output, session) {
             imported_para_dataset()[imported_para_dataset()$Parameter == "group_outlier_vars_select_var", "Value"]
         if (!is.null(group_outlier_vars_select_var_imported)) {
             current_group_outlier_vars(group_outlier_vars_select_var_imported)
+            updateSelectizeInput(session, "group_outlier_vars_select_var", selected = group_outlier_vars_select_var_imported)
+            
         }
         
-        outlier_id_select_var_imported <- 
-            imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_id_select_var", "Value"]
-        if (!is.null(outlier_id_select_var_imported)) {
-            current_outlier_id_var(outlier_id_select_var_imported)
-        }
         
         outlier_extra_vars_select_var_imported <- 
             imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_extra_vars_select_var", "Value"]
@@ -396,10 +432,6 @@ iehfc_server <- function(input, output, session) {
         current_group_outlier_vars(input$group_outlier_vars_select_var)
     })
     
-    # Observe any change in 'indiv_outlier_vars_select_var' and update current_outlier_id_var
-    observe({
-        current_outlier_id_var(input$outlier_id_select_var)
-    })
     
     # Observe any change in 'indiv_outlier_vars_select_var' and update current_outlier_id_var
     observe({
@@ -416,12 +448,12 @@ iehfc_server <- function(input, output, session) {
         current_outlier_multiplier(input$outlier_multiplier)
     })
     
-    output$indiv_outlier_vars_select <- renderUI({ 
+    output$indiv_outlier_vars_select <- renderUI({
         selectizeInput(
             "indiv_outlier_vars_select_var", label = NULL,
             choices = hfc_dataset() %>%
                 select(
-                    -all_of(outlier_id_var()[outlier_id_var() != ""]) # Everything but the ID variable
+                    -all_of(selected_id_var()[selected_id_var() != ""]) # Everything but the ID variable
                 ) %>%
                 select( # Ensures that selection order is preserved
                     all_of(indiv_outlier_vars()[indiv_outlier_vars() != ""]),
@@ -442,7 +474,7 @@ iehfc_server <- function(input, output, session) {
                 session, "indiv_outlier_vars_select_var", 
                 choices = out_ind_dataset %>% 
                     select(
-                        -all_of(outlier_id_var()[outlier_id_var() != ""]) # Everything but the ID variable
+                        -all_of(selected_id_var()[selected_id_var() != ""]) # Everything but the ID variable
                     ) %>%
                     select(where(is.numeric)) %>%
                     names(), 
@@ -454,10 +486,12 @@ iehfc_server <- function(input, output, session) {
     output$group_outlier_vars_select <- renderUI({
         selectizeInput(
             "group_outlier_vars_select_var", label = NULL,
-            choices = hfc_dataset() %>%
-                select(
-                    -all_of(outlier_id_var()[outlier_id_var() != ""]) # Everything but the ID variable
-                ) %>%
+            choices = {dataset <- hfc_dataset()
+            
+            if (!is.null(selected_id_var()) && selected_id_var() != "") {
+                dataset <- dataset %>% select(-all_of(selected_id_var()))
+            }
+            dataset %>%
                 select(where(is.numeric)) %>%
                 names() %>%
                 tibble(var = .) %>%
@@ -471,7 +505,7 @@ iehfc_server <- function(input, output, session) {
                 filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                 select(group) %>%
                 distinct() %>%
-                pull(), 
+                pull()}, 
             selected = current_group_outlier_vars(),
             multiple = TRUE,
             options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
@@ -483,10 +517,12 @@ iehfc_server <- function(input, output, session) {
         if (!is.null(out_group_dataset)) {
             updateSelectizeInput(
                 session, "group_outlier_vars_select_var", label = NULL,
-                choices = out_group_dataset %>%
-                    select(
-                        -all_of(outlier_id_var()[outlier_id_var() != ""]) # Everything but the ID variable
-                    ) %>%
+                choices = {dataset <- hfc_dataset()
+                
+                if (!is.null(selected_id_var()) && selected_id_var() != "") {
+                    dataset <- dataset %>% select(-all_of(selected_id_var()))
+                }
+                dataset %>%
                     select(where(is.numeric)) %>%
                     names() %>%
                     tibble(var = .) %>%
@@ -500,44 +536,33 @@ iehfc_server <- function(input, output, session) {
                     filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                     select(group) %>%
                     distinct() %>%
-                    pull(), 
+                    pull()}, 
                 selected = current_group_outlier_vars()
             )
         }
     })
     
     
-    
-    output$outlier_id_select <- renderUI({
-        selectizeInput(
-            "outlier_id_select_var", label = NULL, 
-            choices = hfc_dataset() %>%
-                names(), 
-            selected = current_outlier_id_var(),
-            options = list('dropdownParent' = 'body')
-        )
-    })
-    
-    observe({
-        updateSelectizeInput(session, "outlier_id_select_var", 
-                             choices = hfc_dataset() %>% names,
-                             selected = current_outlier_id_var())
-    })
-    
     output$outlier_extra_vars_select <- renderUI({
         selectizeInput(
             "outlier_extra_vars_select_var", label = NULL,
-            choices = hfc_dataset() %>%
-                select(
-                    -all_of(outlier_id_var()[outlier_id_var() != ""]), # Everything but the ID variable or outlier variables
-                    -any_of(indiv_outlier_vars()),
-                    -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
-                ) %>%
-                select( # Ensures that selection order is preserved
-                    all_of(outlier_extra_vars()),
-                    !any_of(outlier_extra_vars())
-                ) %>%
-                names(), 
+            choices = {
+                dataset <- hfc_dataset()
+                
+                if (!is.null(selected_id_var()) && selected_id_var() != "") {
+                    dataset <- dataset %>% select(-all_of(selected_id_var()))
+                }
+                
+                dataset %>%
+                    select(
+                        -any_of(indiv_outlier_vars()),
+                        -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
+                    ) %>%
+                    select( # Ensures that selection order is preserved
+                        all_of(outlier_extra_vars()),
+                        !any_of(outlier_extra_vars())
+                    ) %>%
+                    names()},
             selected = current_outlier_extra_vars(),
             multiple = TRUE,
             options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
@@ -549,17 +574,23 @@ iehfc_server <- function(input, output, session) {
         if (!is.null(out_extra_dataset)) {
             updateSelectizeInput(
                 session, "outlier_extra_vars_select_var", label = NULL,
-                choices = out_extra_dataset %>%
-                    select(
-                        -all_of(outlier_id_var()[outlier_id_var() != ""]), # Everything but the ID variable or outlier variables
-                        -any_of(indiv_outlier_vars()),
-                        -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
-                    ) %>%
-                    select( # Ensures that selection order is preserved
-                        all_of(outlier_extra_vars()),
-                        !any_of(outlier_extra_vars())
-                    ) %>%
-                    names(), 
+                choices = {
+                    dataset <- hfc_dataset()
+                    
+                    if (!is.null(selected_id_var()) && selected_id_var() != "") {
+                        dataset <- dataset %>% select(-all_of(selected_id_var()))
+                    }
+                    
+                    dataset %>%
+                        select(
+                            -any_of(indiv_outlier_vars()),
+                            -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
+                        ) %>%
+                        select( # Ensures that selection order is preserved
+                            all_of(outlier_extra_vars()),
+                            !any_of(outlier_extra_vars())
+                        ) %>%
+                        names()}, 
                 selected = current_outlier_extra_vars()
             )
         }
@@ -614,28 +645,22 @@ iehfc_server <- function(input, output, session) {
             ),
             card_body(
                 fluidRow(
-                    column(6, 
-                           span("ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                               tooltip("This is the dataset's ID variable", 
-                                       placement = "right"),
-                           uiOutput("outlier_id_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                    ),
                     column(6,
                            span("Individual Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
                                tooltip("These need to be numeric variables. Use this if you have an individual variable you'd like to check for outliers", 
                                        placement = "right"),
                            uiOutput("indiv_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                    )
-                )
-            ),
-            card_body(
-                fluidRow(
+                    ),
                     column(6,
                            span("Grouped Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
                                tooltip("These need to be numeric variables. Use this if you have a set of variables you'd like to check for outliers together (e.g. inc_01, inc_02, etc.)", 
                                        placement = "right"),
                            uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                    ),
+                    )
+                )
+            ),
+            card_body(
+                fluidRow(
                     column(6,
                            span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
                                tooltip("These are additional variables that you may want to display in the output table", 
@@ -751,6 +776,7 @@ iehfc_server <- function(input, output, session) {
                     all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
                     !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                 ) %>%
+                select(where(is.numeric)) %>%
                 names(), 
             selected = current_enumerator_ave_vars(),
             multiple = TRUE,
@@ -771,6 +797,7 @@ iehfc_server <- function(input, output, session) {
                         all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
                         !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                     ) %>%
+                    select(where(is.numeric)) %>% 
                     names(), 
                 selected = current_enumerator_ave_vars()
             )
@@ -783,9 +810,8 @@ iehfc_server <- function(input, output, session) {
             choices = c(
                 "", # Provides no option as a possibility
                 hfc_dataset() %>%
-                    select(
-                        -all_of(enumerator_var()[enumerator_var() != ""])
-                    ) %>%
+                    select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
+                    select_if(lubridate::is.Date) %>%
                     names()
             ),
             selected = current_enumerator_date_var(),
@@ -802,6 +828,7 @@ iehfc_server <- function(input, output, session) {
                     select(
                         -all_of(enumerator_var()[enumerator_var() != ""])
                     ) %>%
+                    select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
                     names()
             ), 
             selected = current_enumerator_complete_var(),
@@ -961,16 +988,15 @@ iehfc_server <- function(input, output, session) {
         )
     })
     
-   
     observe({
         admin_dataset <- hfc_dataset()
         if (!is.null(admin_dataset)) {
             updateSelectizeInput(
                 session, "admin_super_vars_select_var", label = NULL,
                 choices = admin_dataset %>%
-                select(
-                    -all_of(admin_var()[admin_var() != ""])
-                ) %>%
+                    select(
+                        -all_of(admin_var()[admin_var() != ""])
+                    ) %>%
                     select( # Ensures that selection order is preserved
                         all_of(admin_super_vars()[admin_super_vars() != ""]),
                         !any_of(admin_super_vars()[admin_super_vars() != ""])
@@ -988,8 +1014,8 @@ iehfc_server <- function(input, output, session) {
                 "", # Provides no option as a possibility
                 hfc_dataset() %>%
                     select(
-                        -all_of(admin_var()[admin_var() != ""])
-                    ) %>%
+                        -all_of(admin_var()[admin_var() != ""])) %>%
+                    select_if(lubridate::is.Date) %>%
                     names()
             ),
             selected = current_admin_date_var(),
@@ -1004,8 +1030,9 @@ iehfc_server <- function(input, output, session) {
                 "", # Provides no option as a possibility
                 hfc_dataset() %>%
                     select(
-                        -all_of(admin_var()[admin_var() != ""])
-                    ) %>%
+                        -all_of(admin_var()[admin_var() != ""])) %>%
+                    select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
+                    
                     names()
             ), 
             selected = current_admin_complete_var(),
@@ -1139,16 +1166,15 @@ iehfc_server <- function(input, output, session) {
         )
     })
     
-    
     observe({
         unit_dataset <- hfc_dataset()
         if (!is.null(unit_dataset)) {
             updateSelectizeInput(
                 session, "unit_extra_vars_select_var", label = NULL,
                 choices = unit_dataset %>%
-                select(
-                    -all_of(unit_var()[unit_var() != ""]) 
-                ) %>%
+                    select(
+                        -all_of(unit_var()[unit_var() != ""]) 
+                    ) %>%
                     select(
                         all_of(unit_extra_vars()[unit_extra_vars() != ""]), 
                         !any_of(unit_extra_vars()[unit_extra_vars() != ""]) 
@@ -1159,7 +1185,6 @@ iehfc_server <- function(input, output, session) {
         }
     })
     
-    
     output$unit_setup <- renderUI({
         card(
             height = "auto", fill = FALSE,
@@ -1167,7 +1192,7 @@ iehfc_server <- function(input, output, session) {
             card_header(
                 span("Unit of Observation Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
                     tooltip(
-                        "Placeholder text",
+                        "The unit-of-observation-level check requires you to provide the variable that identifies the unit of observation.You can add any additional variable you want to include in the output table",
                         placement = "auto"
                     ),
                 downloadButton("unit_r_exp",
@@ -1186,9 +1211,9 @@ iehfc_server <- function(input, output, session) {
             card_body(
                 fluidRow(
                     column(6,
-                           span("Unit of Observation/ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                           span("Unit of Observation", bsicons::bs_icon("question-circle-fill")) %>%
                                tooltip(
-                                   "Placeholder text",
+                                   "This is the variable that identifies the unit of observation for each submission.Such variable could be the Dataset ID.",
                                    placement = "right"
                                ),
                            uiOutput("unit_var_select", style = "z-index: 1000;") # Set a high z-index to overlap other elements
@@ -1196,7 +1221,7 @@ iehfc_server <- function(input, output, session) {
                     column(6,
                            span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
                                tooltip(
-                                   "Placeholder text",
+                                   "These are additional variables that you might want to include in the output table",
                                    placement = "right"
                                ),
                            uiOutput("unit_extra_vars_select", style = "z-index: 1000;") # Set a high z-index to overlap other elements
@@ -1223,7 +1248,7 @@ iehfc_server <- function(input, output, session) {
     
     setup_check_list <- reactive({
         if(length(selected_checks()) == 0) { # No checks selected
-            "Please select the high-frequency check(s) you would like to perform from the list in the sidebar."
+            "Please select the ID variable and the high-frequency check(s) you would like to perform from the list in the sidebar."
         } else {
             selected_checks() %>%
                 purrr::map(
@@ -1241,13 +1266,31 @@ iehfc_server <- function(input, output, session) {
     })
     
     output$setup_run_hfcs_button <- renderUI({
-        actionButton(
-            "run_hfcs",
-            "RUN HFCS",
-            icon("paper-plane"),
-            class = "btn btn-outline-primary btn-lg"
+        tagList(
+            tags$div(
+                actionButton(
+                    "run_hfcs",
+                    "RUN HFCS",
+                    icon("paper-plane"),
+                    class = "btn btn-outline-primary btn-lg",
+                    disabled = if (is.null(selected_id_var()) || selected_id_var() == "") TRUE else FALSE  # Disable if no ID is selected
+                )
+            )
         )
     })
+    
+    observe({
+        if (!is.null(selected_id_var()) && selected_id_var() != "") {
+            updateActionButton(session, "run_hfcs", disabled = FALSE)
+        } else {
+            updateActionButton(session, "run_hfcs", disabled = TRUE)
+        }
+    })
+    
+    
+    
+    
+    
     
     ### Export parameters
     
@@ -1258,16 +1301,28 @@ iehfc_server <- function(input, output, session) {
         
         # Check if each parameter is selected and add it to the combined data frame
         
-        ## Duplicates
-        if (!is.null(input$duplicate_id_select_var)) {
-            para1 <- data.frame(Check = "duplicate",
-                                Parameter = "duplicate_id_select_var", 
-                                Name = "Duplicates ID variable", 
-                                Value = c(input$duplicate_id_select_var),
+        ## ID Variable
+        
+        if (!is.null(input$id_select_var)) {
+            para2 <- data.frame(Check = "",
+                                Parameter = "id_select_var", 
+                                Name = "ID Variable", 
+                                Value = c(input$id_select_var),
                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para1)
+            combined_df <-
+                rbind(combined_df, para2)
         }
         
+        ## Duplicates
+        # if (!is.null(input$duplicate_select_var)) {
+        #     para1 <- data.frame(Check = "duplicate",
+        #                         Parameter = "duplicate_select_var", 
+        #                         Name = "Duplicates ID variable", 
+        #                         Value = c(input$duplicate_select_var),
+        #                         Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+        #     combined_df <- rbind(combined_df, para1)
+        # }
+        # 
         if (!is.null(input$duplicate_extra_vars_select_var)) {
             para2 <- data.frame(Check = "duplicate",
                                 Parameter = "duplicate_extra_vars_select_var", 
@@ -1296,135 +1351,125 @@ iehfc_server <- function(input, output, session) {
             combined_df <- rbind(combined_df, para4)
         }
         
-        if (!is.null(input$outlier_id_select_var)) {
+        
+        if (!is.null(input$outlier_extra_vars_select_var)) {
             para5 <- data.frame(Check = "outlier",
-                                Parameter = "outlier_id_select_var", 
-                                Name = "Outlier ID variable", 
-                                Value = c(input$outlier_id_select_var),
+                                Parameter = "outlier_extra_vars_select_var", 
+                                Name = "Outlier additional variables", 
+                                Value = c(input$outlier_extra_vars_select_var),
                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
             combined_df <- rbind(combined_df, para5)
         }
         
-        if (!is.null(input$outlier_extra_vars_select_var)) {
+        if (!is.null(input$outlier_method)) {
             para6 <- data.frame(Check = "outlier",
-                                Parameter = "outlier_extra_vars_select_var", 
-                                Name = "Outlier ID variable", 
-                                Value = c(input$outlier_extra_vars_select_var),
+                                Parameter = "outlier_method", 
+                                Name = "Outlier method", 
+                                Value = c(input$outlier_method),
                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
             combined_df <- rbind(combined_df, para6)
         }
         
         if (!is.null(input$outlier_method)) {
             para7 <- data.frame(Check = "outlier",
-                                Parameter = "outlier_method", 
-                                Name = "Outlier method", 
-                                Value = c(input$outlier_method),
-                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para7)
-        }
-        
-        if (!is.null(input$outlier_method)) {
-            para8 <- data.frame(Check = "outlier",
                                 Parameter = "outlier_multiplier", 
                                 Name = "Outlier multiplier", 
                                 Value = c(input$outlier_multiplier),
                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para8)
+            combined_df <- rbind(combined_df, para7)
         }
-        
-    
         
         ## Enumerator level
         if (!is.null(input$enumerator_var_select_var)) {
-            para9 <- data.frame(Check = "enumerator",
+            para8 <- data.frame(Check = "enumerator",
                                 Parameter = "enumerator_var_select_var", 
                                 Name = "Enumerator variable", 
                                 Value = c(input$enumerator_var_select_var),
                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para9)
+            combined_df <- rbind(combined_df, para8)
         }
         
         if (!is.null(input$enumerator_ave_vars_select_var)) {
-            para10 <- data.frame(Check = "enumerator",
+            para9 <- data.frame(Check = "enumerator",
                                 Parameter = "enumerator_ave_vars_select_var", 
                                 Name = "Enumerator Average Value Variables", 
                                 Value = c(input$enumerator_ave_vars_select_var),
-                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para10)
+                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) %>% 
+                combined_df <- rbind(combined_df, para9)
         }
         
         if (!is.null(input$enumerator_date_var_select_var)) {
-            para11 <- data.frame(Check = "enumerator",
-                                Parameter = "enumerator_date_var_select_var", 
-                                Name = "Submission Date Variable", 
-                                Value = c(input$enumerator_date_var_select_var),
-                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para11)
+            para10 <- data.frame(Check = "enumerator",
+                                 Parameter = "enumerator_date_var_select_var", 
+                                 Name = "Submission Date Variable", 
+                                 Value = c(input$enumerator_date_var_select_var),
+                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+            combined_df <- rbind(combined_df, para10)
         }
         
         if (!is.null(input$enumerator_complete_var_select_var)) {
-            para12 <- data.frame(Check = "enumerator",
-                                Parameter = "enumerator_complete_var_select_var", 
-                                Name = "Submission Complete Variable", 
-                                Value = c(input$enumerator_complete_var_select_var),
-                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para12)
+            para11 <- data.frame(Check = "enumerator",
+                                 Parameter = "enumerator_complete_var_select_var", 
+                                 Name = "Submission Complete Variable", 
+                                 Value = c(input$enumerator_complete_var_select_var),
+                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+            combined_df <- rbind(combined_df, para11)
         }
         
         ## Admin level
         if (!is.null(input$admin_var_select_var)) {
-            para13 <- data.frame(Check = "admin",
+            para12 <- data.frame(Check = "admin",
                                  Parameter = "admin_var_select_var", 
                                  Name = "Administrative Unit Variable", 
                                  Value = c(input$admin_var_select_var),
                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para13)
+            combined_df <- rbind(combined_df, para12)
         }
         
         if (!is.null(input$admin_super_vars_select_var)) {
-            para14 <- data.frame(Check = "admin",
+            para13 <- data.frame(Check = "admin",
                                  Parameter = "admin_super_vars_select_var", 
                                  Name = "Higher-Level Administrative Unit Variables", 
                                  Value = c(input$admin_super_vars_select_var),
                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para14)
+            combined_df <- rbind(combined_df, para13)
         }
         
         if (!is.null(input$admin_date_var_select_var)) {
-            para15 <- data.frame(Check = "admin",
+            para14 <- data.frame(Check = "admin",
                                  Parameter = "admin_date_var_select_var", 
                                  Name = "Submission Date Variable", 
                                  Value = c(input$admin_date_var_select_var),
                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para15)
+            combined_df <- rbind(combined_df, para14)
         }
         
         if (!is.null(input$admin_complete_var_select_var)) {
-            para16 <- data.frame(Check = "admin",
+            para15 <- data.frame(Check = "admin",
                                  Parameter = "admin_complete_var_select_var", 
                                  Name = "Submission Complete Variable", 
                                  Value = c(input$admin_complete_var_select_var),
                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para16)
+            combined_df <- rbind(combined_df, para15)
         }
         
         ## Unit of Observation
         if (!is.null(input$unit_var_select_var)) {
-            para17 <- data.frame(Check = "unit",
+            para16 <- data.frame(Check = "unit",
                                  Parameter = "unit_var_select_var", 
-                                 Name = "Unit of Observation/ID Variable", 
+                                 Name = "Unit of Observation", 
                                  Value = c(input$unit_var_select_var),
                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para17)
+            combined_df <- rbind(combined_df, para16)
         }
         
         if (!is.null(input$unit_extra_vars_select_var)) {
-            para18 <- data.frame(Check = "unit",
+            para17 <- data.frame(Check = "unit",
                                  Parameter = "unit_extra_vars_select_var", 
                                  Name = "Unit Display Variables", 
                                  Value = c(input$unit_extra_vars_select_var),
                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para18)
+            combined_df <- rbind(combined_df, para17)
         }
         
         return(combined_df)
@@ -1468,6 +1513,17 @@ iehfc_server <- function(input, output, session) {
                 card(
                     card_header(
                         
+                        span("Select Dataset ID", bsicons::bs_icon("question-circle-fill")) %>%
+                            tooltip(
+                                "This is where you select the unique ID variable for your dataset obervations",
+                                placement = "auto"
+                            )
+                    ),
+                    uiOutput("id_select")
+                ),
+                card(
+                    card_header(
+                        
                         span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                             tooltip(
                                 "This is where you choose which data quality checks to run. 
@@ -1477,10 +1533,14 @@ iehfc_server <- function(input, output, session) {
                                 placement = "auto"
                             )
                     ),
-                    uiOutput("check_select")
+                    uiOutput("check_select"),
                 ),
-                card(
-                    uiOutput("setup_run_hfcs_button")
+                card(span("Run Checks", bsicons::bs_icon("question-circle-fill")) %>%
+                         tooltip(
+                             "Select an ID Variable to run checks.",
+                             placement = "auto"
+                         ),
+                     uiOutput("setup_run_hfcs_button")
                 ),
                 card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                          tooltip(
@@ -1522,8 +1582,6 @@ iehfc_server <- function(input, output, session) {
     
     ## Output Tab ----
     
-    
-    
     ### Duplicate Outputs ----
     
     # See server_scripts/duplicates.R for details on outputs creation
@@ -1557,10 +1615,21 @@ iehfc_server <- function(input, output, session) {
     
     output$outlier_output <- renderUI({
         if("outlier" %in% selected_checks()) {
-            card(
-                DTOutput("outlier_table"),
-                uiOutput("outlier_table_dl"),
-                full_screen = TRUE
+            tagList(
+                card(
+                    DTOutput("outlier_table"),
+                    uiOutput("outlier_table_dl"),
+                    full_screen = TRUE
+                ),
+                card(
+                    uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+                    full_screen = TRUE,
+                    style = "display: flex; flex-direction: column;padding: 50px;"
+                ),
+                card(
+                    uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+                    full_screen = TRUE,
+                )
             )
         } else {
             "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
@@ -1886,26 +1955,30 @@ iehfc_server <- function(input, output, session) {
             
             # Prepare the dataset only if outliers check is selected
             outliersData <- NULL
+            outlierHist <- NULL
+            outlierWinHist <- NULL
+            outlierBox <- NULL
             if (includeOutliers) {
                 outliersData <- isolate(outlier_dataset())
+                outlierHist <- export_outlier_histogram()
+                outlierWinHist <- export_outlier_win_histogram()
+                outlierBox <- export_outlier_boxplot()
             }
             
             # 3. Check if 'enumerator' check is selected
             includeEnumerator <- "enumerator" %in% selected_checks()
-            
-            includeEnumerator <- "enumerator" %in% selected_checks()
             enumeratorSubsData <- NULL 
             enumeratorAveData <- NULL 
-            enumeratorPlotPath <- NULL  # Initialize as NULL
+            #enumeratorPlotPath <- NULL  # Initialize as NULL
+            enumeratorDailySubsPlot <- NULL
             
             if (includeEnumerator) {
                 enumeratorSubsData <- isolate(enumerator_subs_dataset())
                 enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
                 
-                # Generate and save the Plotly plot
-                #  plot <- enumerator_daily_subs_plot()  # This function needs to generate a Plotly plot
-                # enumeratorPlotPath <- tempfile(fileext = ".html")  # Temporary HTML file path
-                # saveWidget(plot, enumeratorPlotPath, selfcontained = TRUE)
+                enumeratorDailySubsPlot <- if (includeEnumerator) {
+                    enumerator_daily_subs_plot()
+                }
             }
             
             # 4. Check if 'admin' check is selected
@@ -1915,6 +1988,10 @@ iehfc_server <- function(input, output, session) {
             adminData <- NULL
             if (includeAdmin) {
                 adminData <- isolate(admin_subs_dataset())
+                
+                adminDailySubsPlot <- if (includeAdmin) {
+                    admin_daily_subs_plot()
+                }
             }
             
             # 5. Check if 'unit' check is selected
@@ -1935,21 +2012,22 @@ iehfc_server <- function(input, output, session) {
                                   duplicatesData = duplicatesData,
                                   includeOutliers = includeOutliers,
                                   outliersData = outliersData, 
+                                  outlierHist = outlierHist,
+                                  outlierWinHist = outlierWinHist,
+                                  outlierBox = outlierBox,
                                   includeEnumerator = includeEnumerator, 
                                   enumeratorSubsData = enumeratorSubsData, 
                                   enumeratorAveData = enumeratorAveData, 
+                                  enumeratorDailySubsPlot = enumeratorDailySubsPlot,
                                   includeAdmin = includeAdmin, 
                                   adminData = adminData, 
+                                  adminDailySubsPlot = adminDailySubsPlot,
                                   includeUnit = includeUnit,
                                   unitData = unitData
                               ),
                               envir = new.env(parent = globalenv()))
         }
     )
-    
-    
-    
-    
     
 }
 

@@ -56,7 +56,7 @@
   bindEvent(input$run_hfcs)
   
   admin_daily_subs_dataset <- reactive({
-      if(admin_date_var() != "") {
+      if (!is.null(admin_date_var()) && admin_date_var() != "") {
           hfc_dataset() %>%
               # Attempt to format date. This may need to be added to depending on reasonable formats to expect
               mutate(
@@ -93,6 +93,7 @@
   bindEvent(input$run_hfcs)
   
   admin_daily_subs_plot <- reactive({
+      if (!is.null(admin_date_var()) && admin_date_var() != "") {
       plot_data <- hfc_dataset() %>%
           # Attempt to format date. This may need to be added to depending on reasonable formats to expect
           mutate(
@@ -149,7 +150,7 @@
       admin_daily_subs_ggplotly <- ggplotly(admin_daily_subs_ggplot, tooltip = c("color", "y"))
       
       highlight(admin_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
-      
+      }   
   })
   
   admin_subs_dataset <- reactive({
