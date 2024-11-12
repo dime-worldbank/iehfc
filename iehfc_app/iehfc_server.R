@@ -1271,21 +1271,21 @@
           }
           
           if (!is.null(input$outlier_method)) {
-              para6 <- data.frame(Check = "outlier",
+              para16 <- data.frame(Check = "outlier",
                                   Parameter = "outlier_method", 
                                   Name = "Outlier method", 
                                   Value = c(input$outlier_method),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-              combined_df <- rbind(combined_df, para6)
+              combined_df <- rbind(combined_df, para16)
           }
           
           if (!is.null(input$outlier_multiplier)) {
-              para7 <- data.frame(Check = "outlier",
+              para17 <- data.frame(Check = "outlier",
                                   Parameter = "outlier_multiplier", 
                                   Name = "Outlier multiplier", 
                                   Value = c(input$outlier_multiplier),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-              combined_df <- rbind(combined_df, para7)
+              combined_df <- rbind(combined_df, para17)
           }
           
           ## Enumerator level
@@ -1303,7 +1303,7 @@
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) %>% 
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para7)
           }
           
