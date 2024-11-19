@@ -1,24 +1,22 @@
+pacman::p_load(
+    shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
+    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64, rsconnect, shinycssloaders, httr,jsonlite
+)
 
-
-  library(shiny)
-  library(bslib)
-  library(DT)
-  library(bsicons)
-  library(shinydashboard)
-  
   # Increase maximum file upload size
   
   options(shiny.maxRequestSize = 100 * (1024^2))
 
   iehfc_server <- function(input, output, session) {
       
-      source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
-      source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
-      source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
-      source("iehfc_app/server_scripts/admin.R",      local = TRUE)
-      source("iehfc_app/server_scripts/unit.R",       local = TRUE)
-      source("iehfc_app/server_scripts/summary.R",       local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "duplicates.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "outliers.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "enumerator.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "admin.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "unit.R"), local = TRUE)
+      source(file.path(getwd(),  "server_scripts", "summary.R"), local = TRUE)
       
+
       
       observeEvent(
           input$gotoTab, {
@@ -38,7 +36,7 @@
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          ds <- fread(hfc_file()$datapath, na.strings = c("", "NA_character_", "NA"))
+          file_path <- file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv")
           too_many_cols <- ncol(ds) > 10000
           if(too_many_cols) {
               showNotification(
@@ -52,7 +50,7 @@
       })
       
       observeEvent(input$use_test_data, {
-          ds <- fread("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
+          ds <- data.table::fread(file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv"))
           hfc_dataset(ds)
       })
       
@@ -294,7 +292,7 @@
       #     if (!is.null(hfc_dataset())) {
       #         updateSelectizeInput(session, "duplicate_select_var", 
       #                              choices = hfc_dataset() %>%
-      #                                  select(-all_of(selected_id_var())) %>%
+      #                                  dplyr::select(-all_of(selected_id_var())) %>%
       #                                  names(),
       #                              selected = current_duplicate_var())
       #     }
@@ -307,12 +305,12 @@
           
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
               dataset <- dataset %>%
-                  select(-all_of(selected_id_var()))
+                  dplyr::select(-all_of(selected_id_var()))
           }
           
           # if (!is.null(current_duplicate_var()) && current_duplicate_var() != "") {
                       #     dataset <- dataset %>%
-                      #         select(-all_of(current_duplicate_var()))  # exclude current_duplicate_var
+                      #         dplyr::select(-all_of(current_duplicate_var()))  # exclude current_duplicate_var
                       # }
           
           selectizeInput(
@@ -436,14 +434,14 @@
           selectizeInput(
               "indiv_outlier_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  select(
+                  dplyr::select(
                       -all_of(selected_id_var()[selected_id_var() != ""]) # Everything but the ID variable
                   ) %>%
-                  select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(indiv_outlier_vars()[indiv_outlier_vars() != ""]),
                       !any_of(indiv_outlier_vars()[indiv_outlier_vars() != ""])
                   ) %>%
-                  select(where(is.numeric)) %>%
+                  dplyr::select(where(is.numeric)) %>%
                   names(), 
               selected = current_indiv_outlier_vars(),
               multiple = TRUE,
@@ -459,10 +457,10 @@
               choices = {dataset <- hfc_dataset()
 
               if (!is.null(selected_id_var()) && selected_id_var() != "") {
-                  dataset <- dataset %>% select(-all_of(selected_id_var()))
+                  dataset <- dataset %>% dplyr::select(-all_of(selected_id_var()))
               }
                   dataset %>%
-                      select(where(is.numeric)) %>%
+                      dplyr::select(where(is.numeric)) %>%
                   names() %>%
                   tibble(var = .) %>%
                   filter(
@@ -473,9 +471,9 @@
                   ) %>%
                   group_by(group) %>%
                       filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
-                  select(group) %>%
-                  distinct() %>%
-                  pull()}, 
+                  dplyr::select(group) %>%
+                      dplyr::distinct() %>%
+                  dplyr::pull()}, 
               selected = current_group_outlier_vars(),
               multiple = TRUE,
               options = list('dropdownParent' = 'body')
@@ -492,15 +490,15 @@
                   dataset <- hfc_dataset()
                   
                   if (!is.null(selected_id_var()) && selected_id_var() != "") {
-                      dataset <- dataset %>% select(-all_of(selected_id_var()))
+                      dataset <- dataset %>% dplyr::select(-all_of(selected_id_var()))
                   }
                   
                   dataset %>%
-                  select(
+                  dplyr::select(
                       -any_of(indiv_outlier_vars()),
                       -any_of(matches(paste0("^", group_outlier_vars(), "_{0,1}[0-9]+$")))
                   ) %>%
-                  select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(outlier_extra_vars()),
                       !any_of(outlier_extra_vars())
                   ) %>%
@@ -672,14 +670,14 @@
           selectizeInput(
               "enumerator_ave_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  select(
+                  dplyr::select(
                       -all_of(enumerator_var()[enumerator_var() != ""])
                   ) %>%
-                  select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(enumerator_ave_vars()[enumerator_ave_vars() != ""]),
                       !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                   ) %>%
-                  select(where(is.numeric)) %>%
+                  dplyr::select(where(is.numeric)) %>%
                   names(), 
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
@@ -693,8 +691,8 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
-                              select_if(lubridate::is.Date) %>%
+                      dplyr::select(-all_of(enumerator_var()[enumerator_var() != ""])) %>%
+                              dplyr::select_if(lubridate::is.Date) %>%
                               names()
               ),
               selected = current_enumerator_date_var(),
@@ -708,10 +706,10 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      select(
+                      dplyr::select(
                           -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
-                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
+                      dplyr::select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
                       names()
               ), 
               selected = current_enumerator_complete_var(),
@@ -845,10 +843,10 @@
           selectizeInput(
               "admin_super_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  select(
+                  dplyr::select(
                       -all_of(admin_var()[admin_var() != ""])
                   ) %>%
-                  select( # Ensures that selection order is preserved
+                  dplyr::select( # Ensures that selection order is preserved
                       all_of(admin_super_vars()[admin_super_vars() != ""]),
                       !any_of(admin_super_vars()[admin_super_vars() != ""])
                   ) %>%
@@ -865,9 +863,9 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      select(
+                      dplyr::select(
                           -all_of(admin_var()[admin_var() != ""])) %>%
-                      select_if(lubridate::is.Date) %>%
+                      dplyr::select_if(lubridate::is.Date) %>%
                       names()
               ),
               selected = current_admin_date_var(),
@@ -881,9 +879,9 @@
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
-                      select(
+                      dplyr::select(
                           -all_of(admin_var()[admin_var() != ""])) %>%
-                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
+                      dplyr::select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
                       
                       names()
               ), 
@@ -992,10 +990,10 @@
           selectizeInput(
               "unit_extra_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  select(
+                  dplyr::select(
                       -all_of(unit_var()[unit_var() != ""]) 
                   ) %>%
-                  select(
+                  dplyr::select(
                       all_of(unit_extra_vars()[unit_extra_vars() != ""]), 
                       !any_of(unit_extra_vars()[unit_extra_vars() != ""]) 
                   ) %>%
@@ -1146,7 +1144,7 @@
       parameter_dataset <- reactive({
           # Initialize an empty data frame
           combined_df <- data.frame(Parameter = character(0), Name = character(0), Value = character(0))
-          current_datetime <- now()
+          current_datetime <- lubridate::now()
           
           # Check if each parameter is selected and add it to the combined data frame
           
@@ -1225,7 +1223,7 @@
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) %>% 
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) 
               combined_df <- rbind(combined_df, para7)
           }
           
@@ -1536,7 +1534,7 @@
       })
       
       enumerator_output_components <- reactive({
-          case_when(
+          dplyr::case_when(
               enumerator_date_var() != "" & length(enumerator_ave_vars()) > 0 ~ list(
                   c("enumerator_subs_table_output", "enumerator_subs_plot_output", "enumerator_ave_vars_table_output")
               ),
@@ -1644,7 +1642,7 @@
       })
       
       admin_output_components <- reactive({
-          case_when(
+          dplyr::case_when(
               admin_date_var() != "" ~ list(
                   c("admin_subs_table_output", "admin_subs_plot_output")
               ),
@@ -1744,6 +1742,7 @@
           } else {
               tagList(
                   downloadButton("full_report_dl", "Download Consolidated Report"),
+                  actionButton("publish_report", "Publish Report"),
                   navset_tab(
                       if ("duplicate" %in% selected_checks()) {
                           nav_panel("Duplicates", uiOutput("duplicate_output"))
@@ -1772,101 +1771,241 @@
       
         ### Download consolidated report ----
 
+      report_path <- reactiveVal(NULL)
+
+      generateReport <- function(authorEmail = NULL) {
+          file <- tempfile(fileext = ".html")
+          
+          summary_data <- summary_card_data()
+          includeDuplicates <- "duplicate" %in% selected_checks()
+          duplicatesData <- if (includeDuplicates) isolate(duplicate_dataset()) else NULL
+          includeOutliers <- "outlier" %in% selected_checks()
+          outliersData <- if (includeOutliers) isolate(outlier_dataset()) else NULL
+          outlierHist <- if (includeOutliers) export_outlier_histogram() else NULL
+          outlierWinHist <- if (includeOutliers) export_outlier_win_histogram() else NULL
+          outlierBox <- if (includeOutliers) export_outlier_boxplot() else NULL
+          includeEnumerator <- "enumerator" %in% selected_checks()
+          enumeratorSubsData <- if (includeEnumerator) isolate(enumerator_subs_dataset()) else NULL
+          enumeratorAveData <- if (includeEnumerator) isolate(enumerator_ave_vars_dataset()) else NULL
+          enumeratorDailySubsPlot <- if (includeEnumerator) enumerator_daily_subs_plot() else NULL
+          includeAdmin <- "admin" %in% selected_checks()
+          adminData <- if (includeAdmin) isolate(admin_subs_dataset()) else NULL
+          adminDailySubsPlot <- if (includeAdmin) admin_daily_subs_plot() else NULL
+          includeUnit <- "unit" %in% selected_checks()
+          unitData <- if (includeUnit) isolate(unit_dataset()) else NULL
+          
+          rmarkdown::render(file.path(getwd(), "server_scripts", "template_report.Rmd"), 
+                            output_file = file,
+                            params = list(
+                                summaryData = summary_data,
+                                authorEmail = authorEmail,
+                                includeDuplicates = includeDuplicates,
+                                duplicatesData = duplicatesData,
+                                includeOutliers = includeOutliers,
+                                outliersData = outliersData, 
+                                outlierHist = outlierHist,
+                                outlierWinHist = outlierWinHist,
+                                outlierBox = outlierBox,
+                                includeEnumerator = includeEnumerator, 
+                                enumeratorSubsData = enumeratorSubsData, 
+                                enumeratorAveData = enumeratorAveData, 
+                                enumeratorDailySubsPlot = enumeratorDailySubsPlot,
+                                includeAdmin = includeAdmin, 
+                                adminData = adminData, 
+                                adminDailySubsPlot = adminDailySubsPlot,
+                                includeUnit = includeUnit,
+                                unitData = unitData
+                            ),
+                            envir = new.env(parent = globalenv()))
+          
+          report_path(file)
+      }
+      
+      downloadReport <- function() {
+          if (is.null(report_path())) {
+              generateReport()
+          }
+          return(report_path())
+      }
+      
+      
       output$full_report_dl <- downloadHandler(
           filename = function() {
               paste0("full-report-", Sys.Date(), ".html")
           },
           content = function(file) {
-              summary_data <- summary_card_data()
-              # 1. Check if 'duplicate' check is selected
-              includeDuplicates <- "duplicate" %in% selected_checks()
-              duplicatesData <- NULL
-              # Prepare the dataset only if duplicates check is selected
-              if (includeDuplicates) {
-                  # Use isolate to fetch the value of the reactive expression without triggering reactivity
-                  duplicatesData <- isolate(duplicate_dataset())
-              }
-              # 2. Check if 'outlier' check is selected
-              includeOutliers <- "outlier" %in% selected_checks()
-              
-              # Prepare the dataset only if outliers check is selected
-              outliersData <- NULL
-              outlierHist <- NULL
-              outlierWinHist <- NULL
-              outlierBox <- NULL
-              if (includeOutliers) {
-                  outliersData <- isolate(outlier_dataset())
-                  outlierHist <- export_outlier_histogram()
-                  outlierWinHist <- export_outlier_win_histogram()
-                  outlierBox <- export_outlier_boxplot()
-              }
-              
-              # 3. Check if 'enumerator' check is selected
-              includeEnumerator <- "enumerator" %in% selected_checks()
-              enumeratorSubsData <- NULL 
-              enumeratorAveData <- NULL 
-              enumeratorDailySubsPlot <- NULL
-              
-              if (includeEnumerator) {
-                  enumeratorSubsData <- isolate(enumerator_subs_dataset())
-                  enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
-                  enumeratorDailySubsPlot <-enumerator_daily_subs_plot()
-              }
-              
-              # 4. Check if 'admin' check is selected
-              includeAdmin <- "admin" %in% selected_checks()
-              
-              # Prepare the dataset only if enum check is selected
-              adminData <- NULL
-              adminDailySubsPlot <- NULL
-              if (includeAdmin) {
-                  adminData <- isolate(admin_subs_dataset())
-                  
-                  adminDailySubsPlot <- if (includeAdmin) {
-                      admin_daily_subs_plot()
-                  }
-              }
-              
-              # 5. Check if 'unit' check is selected
-              includeUnit <- "unit" %in% selected_checks()
-              
-              # Prepare the dataset only if enum check is selected
-              unitData <- NULL
-              if (includeUnit) {
-                  unitData <- isolate(unit_dataset())
-              }
-              
-              
-              
-              # Render the R Markdown file with parameters
-              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
-                                params = list(
-                                    summaryData = summary_data,
-                                    includeDuplicates = includeDuplicates,
-                                    duplicatesData = duplicatesData,
-                                    includeOutliers = includeOutliers,
-                                    outliersData = outliersData, 
-                                    outlierHist = outlierHist,
-                                    outlierWinHist = outlierWinHist,
-                                    outlierBox = outlierBox,
-                                    includeEnumerator = includeEnumerator, 
-                                    enumeratorSubsData = enumeratorSubsData, 
-                                    enumeratorAveData = enumeratorAveData, 
-                                    enumeratorDailySubsPlot = enumeratorDailySubsPlot,
-                                    includeAdmin = includeAdmin, 
-                                    adminData = adminData, 
-                                    adminDailySubsPlot = adminDailySubsPlot,
-                                    includeUnit = includeUnit,
-                                    unitData = unitData
-                                ),
-                                envir = new.env(parent = globalenv()))
+              showModal(modalDialog(
+                  title = "Generating Report",
+                  tags$div(style = "text-align: center;",
+                           shinycssloaders::withSpinner(tags$p("Please wait, your report is being generated..."))
+                  ),
+                  footer = NULL,
+                  easyClose = FALSE
+              ))
+              generateReport()
+              file.copy(downloadReport(), file)
+              removeModal()
+              showNotification("Report successfully downloaded!", type = "message")
           }
       )
       
+      ### Publish report ----
 
-     
       
+      observeEvent(input$publish_report, {
+          showModal(modalDialog(
+              title = "Publish Report",
+              tags$div(
+                  textInput("publication_name", "Report Name:", placeholder = "Enter a unique name for the report"),
+                  tags$small("The name should be at least 4 characters long. If you wish to update an existing report, enter the same name as the existing report."),
+                  style = "margin-bottom: 45px;"  
+              ),
+              tags$div(
+                  textInput("author_email", "Author Email:", placeholder = "Enter your World Bank email"),
+                  tags$small("Please enter a valid email address."),
+                  style = "margin-bottom: 45px;"  
+              ),
+              tags$div(
+                  tags$p("The report might take a few minutes to generate."),
+                  style = "margin-bottom: 10px;"  
+              ),
+              footer = tagList(
+                  modalButton("Cancel"),
+                  actionButton("confirm_publish", "Publish", enabled = FALSE)
+              )
+          ))
+      })
+      
+      
+      
+
+      
+      observe({
+          if (!is.null(input$publication_name) && nchar(input$publication_name) > 3 &&
+              !is.null(input$author_email) && grepl("@", input$author_email)) {
+              shinyjs::enable("confirm_publish")
+          } else {
+              shinyjs::disable("confirm_publish")
+          }
+      })
+      
+      
+      
+      deployment_confirmed <- reactiveVal(FALSE)
+      report_url_reactive <- reactiveVal("")
+      
+      server_url <- Sys.getenv("POSIT_SERVER_URL")
+      username <- Sys.getenv("POSIT_USERNAME")
+      api_key <- Sys.getenv("POSIT_API_KEY")
+
+      
+      observeEvent(input$confirm_publish, {
+          if (server_url == "" || username == "" || api_key == "") {
+              showNotification("Server configuration is missing in environment variables.", type = "error")
+              return()
+          }
+          
+          rsconnect::addServer(url = server_url, name = "my_server")
+          rsconnect::connectApiUser(server = "my_server", account = username, apiKey = api_key)
+          apps <- rsconnect::applications(server = "my_server")
+          existing_app <- subset(apps, name == input$publication_name)
+
+          
+          if (nrow(existing_app) > 0) {
+              showModal(modalDialog(
+                  title = "Confirmation Required",
+                  "A report with this name already exists. Do you want to update the existing report? If not, please go back and change the report name.",
+                  footer = tagList(
+                      modalButton("Cancel"),
+                      actionButton("confirm_overwrite", "Overwrite Existing Report")
+                  )
+              ))
+          } else {
+              deployment_confirmed(TRUE)
+          }
+      })
+      
+      
+      
+      observeEvent(input$confirm_overwrite, {
+          removeModal()
+          deployment_confirmed(TRUE)
+      })
+      
+      
+      report_url_reactive <- reactiveVal("")
+      
+      
+      observeEvent(deployment_confirmed(), {
+          if (deployment_confirmed()) {
+              deployment_confirmed(FALSE)
+              showModal(modalDialog(
+                  title = "Publishing Report",
+                  tags$div(style = "text-align: center;",
+                           shinycssloaders::withSpinner(uiOutput("deploy_status_message")),
+                           tags$div(id = "report_url_placeholder", uiOutput("report_url_output"), style = "margin-top: 15px;")
+                  ),
+                  footer = NULL, 
+                  easyClose = FALSE
+              ))
+              
+          generateReport(authorEmail = input$author_email )
+          file_to_deploy <- report_path()
+          response <- rsconnect::deployApp(
+              appDir = dirname(file_to_deploy),
+              appName = input$publication_name,
+              appFiles = basename(file_to_deploy),
+              launch.browser = FALSE,
+              forceUpdate = TRUE
+          )
+          
+          
+          apps <- rsconnect::applications(server = "my_server")
+          existing_app <- subset(apps, name == input$publication_name)
+          if (nrow(existing_app) > 0) {
+              report_url <- existing_app$url 
+              content_guid <- existing_app$guid
+              
+              update_url <- paste0(server_url, "/__api__/v1/content/", content_guid)
+              update_data <- list(access_type = "all")
+              
+              PATCH(
+                  update_url,
+                  body = toJSON(update_data, auto_unbox = TRUE),
+                  encode = "raw",
+                  add_headers(
+                      Authorization = paste("Key", api_key),
+                      `Content-Type` = "application/json"
+                  )
+              )
+              removeModal()
+              showModal(modalDialog(
+                  title = "Report Published",
+                  tags$p("The report has been successfully published! Please copy the report URL for future retrieval."),
+                  tags$a(href = report_url, "Click here to view your report", target = "_blank"),
+                  footer = modalButton("Close")
+              ))
+          } else {
+              report_url_reactive("Failed to retrieve the report URL. Check server details and try again.")
+              showNotification("Failed to retrieve the report URL. Check server details and try again.", type = "error")
+          }
+          
+          }
+      })
+      
+      output$report_url_output <- renderUI({
+          tags$p(report_url_reactive())
+      })
+      
+      observeEvent(input$close, {
+          report_url_reactive("")
+          report_path(NULL)
+      })
       
   }
   
+  
+  
+  
   iehfc_server
+  
