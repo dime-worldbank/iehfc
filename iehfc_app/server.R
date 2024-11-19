@@ -1857,7 +1857,7 @@ pacman::p_load(
               title = "Publish Report",
               tags$div(
                   textInput("publication_name", "Report Name:", placeholder = "Enter a unique name for the report"),
-                  tags$small("The name should be at least 4 characters long. If you wish to update an existing report, enter the same name as the existing report."),
+                  tags$small("The name should be at least 4 characters long, contain only alphanumeric characters, dashes (-), or underscores (_). If you wish to update an existing report, enter the same name as the existing report."),
                   style = "margin-bottom: 45px;"  
               ),
               tags$div(
@@ -1881,8 +1881,11 @@ pacman::p_load(
 
       
       observe({
-          if (!is.null(input$publication_name) && nchar(input$publication_name) > 3 &&
-              !is.null(input$author_email) && grepl("@", input$author_email)) {
+          if (!is.null(input$publication_name) && 
+              nchar(input$publication_name) > 3 && 
+              grepl("^[A-Za-z0-9_-]+$", input$publication_name) &&
+              !is.null(input$author_email) && 
+              grepl("@", input$author_email)) {
               shinyjs::enable("confirm_publish")
           } else {
               shinyjs::disable("confirm_publish")
