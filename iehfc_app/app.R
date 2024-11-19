@@ -8,9 +8,10 @@
 
   pacman::p_load(
       shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64, rsconnect, shinycssloaders, httr,jsonlite
   )
   
+
   ## 2. Load Custom Functions ----
 
 # Reminder — Currently, this project works with an .Rproj file. Open the project directly from the .Rproj
@@ -18,13 +19,15 @@
 # your file explorer. If you would rather not use the .Rproj file, you will need to set the working
 # directory using `setwd(...)`, with `...` being the file path that leads you to the `iehfc` folder.
 
-  shiny::addResourcePath(prefix = "res", directoryPath = "iehfc_app/www")
-
-  source("R/iehfc_app.R")
-
+  shiny::addResourcePath(prefix = "res", directoryPath = file.path(getwd(), "www"))
+  
+  source(file.path(getwd(),"R", "iehfc_app.R"))
+  
   ## 3. Run Application ----
 
 # If you want to launch the iehfc application, you just need to type in `iehfc_app()` in your console after having
 # run the iehfc_app.R script as done in part 2. You can do this anytime.
 
   iehfc_app()
+
+  
