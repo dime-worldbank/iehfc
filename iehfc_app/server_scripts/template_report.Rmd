@@ -10,8 +10,10 @@ output:
      number_sections: true
      theme: flatly
      css: "styles.css"
+runtime: shiny
 params: 
   summaryData: TRUE
+  authorEmail: NULL
   includeDuplicates: FALSE
   duplicatesData: NULL
   includeOutliers: FALSE
@@ -34,9 +36,19 @@ params:
 knitr::opts_chunk$set(echo = FALSE, results = 'asis')
 ```
 
+```{r contact, echo = FALSE, results='asis'}
+if (!is.null(params$authorEmail)) {
+  cat("**Contact details:**", params$authorEmail, "\n\n")
+}
+```
+
+
+
+
 ```{r summary, echo = FALSE, results='asis'}
 # 0. summary
 cat("# Summary\n\n")
+
 summary <- params$summaryData
   cat("* **Total Responses:**", summary$total_responses, "\n")
   cat("* **Complete Responses:**", summary$total_complete_responses, "\n")
@@ -47,13 +59,13 @@ summary <- params$summaryData
 
 
 ```{r duplicates-table, eval=params$includeDuplicates}
-cat("# Duplicates\n\n")
 if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
+    cat("# Duplicates\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
     
 } else {
-    cat('<div class="datatable-block">')
+     cat("# Duplicates\n\n")
     cat("No duplicate data available.")
 }
 cat('</div>')
@@ -61,12 +73,14 @@ cat('</div>')
 
 
 ```{r outliers-table, eval=params$includeOutliers}
-cat("# Outliers\n\n")
-cat("## Outliers for Selected Vars\n\n")
 if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
+    cat("# Outliers\n\n")
+    cat("## Outliers for Selected Vars\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$outliersData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
+    cat("# Outliers\n\n")
+    cat("## Outliers for Selected Vars\n\n")
     cat('<div class="datatable-block">')
     cat("No outlier data available.")
 }
@@ -98,12 +112,14 @@ if (!is.null(params$outliersData) && nrow(params$outliersData) > 0) {
 
 
 ```{r enumerator-table-1, eval=params$includeEnumerator}
-cat("# Enumerator\n\n")
-cat("## Number of Submissions\n\n")
 if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) {
+    cat("# Enumerator\n\n")
+    cat("## Number of Submissions\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$enumeratorSubsData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
+    cat("# Enumerator\n\n")
+    cat("## Number of Submissions\n\n")
     cat('<div class="datatable-block">')
     cat("No enumerator data available.")
 }
@@ -122,11 +138,12 @@ if (!is.null(params$enumeratorSubsData) && nrow(params$enumeratorSubsData) > 0) 
 
 
 ```{r enumerator-table-2, eval=params$includeEnumerator}
-cat("\n## Average by Enumerator\n\n")
 if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
+    cat("\n## Average by Enumerator\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
+    cat("\n## Average by Enumerator\n\n")
     cat('<div class="datatable-block">')
     cat("No enumerator data available.")
 }
@@ -136,11 +153,13 @@ cat('</div>')
 
 
 ```{r admin-table, eval=params$includeAdmin}
-cat("# Administrative Unit Testing\n\n")
-cat("## Number of Submissions\n\n")
+
 if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
+    cat("# Administrative Unit Testing\n\n")
+    cat("## Number of Submissions\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$adminData, options = list(pageLength = 5, scrollX = TRUE))
+    
 } else {
     cat("# Administrative Unit Testing\n\n")
     cat('<div class="datatable-block">')
@@ -162,12 +181,15 @@ if (!is.null(params$adminData) && nrow(params$adminData) > 0) {
 
 
 ```{r unit-table, eval=params$includeUnit}
-cat("# Unit of Observation-Level Testing\n\n")
-cat("## Number of Submissions\n\n")
+
 if (!is.null(params$unitData) && nrow(params$unitData) > 0) {
+    cat("# Unit of Observation-Level Testing\n\n")
+    cat("## Number of Submissions\n\n")
     cat('<div class="datatable-block">')
     DT::datatable(params$unitData, options = list(pageLength = 5, scrollX = TRUE))
+    
 } else {
+    cat("# Unit of Observation-Level Testing\n\n")
     cat('<div class="datatable-block">')
     cat("No unit data available.")
 }
