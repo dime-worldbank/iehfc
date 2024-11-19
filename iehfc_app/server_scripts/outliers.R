@@ -3,6 +3,7 @@ pacman::p_load(
     shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64
 )
 
+
 # Outlier Data Quality Checks -- Construction ----
 
 ## Check setup -------------
@@ -173,10 +174,14 @@ output$outlier_table <- renderDT(
 
 
 custom_winsorize <- function(data, var) {
-    data[[var]] <- DescTools::Winsorize(data[[var]], val = quantile(data[[var]], probs = c(0.05, 0.95), na.rm = TRUE))
+    lower <- quantile(data[[var]], probs = 0.05, na.rm = TRUE)
+    upper <- quantile(data[[var]], probs = 0.95, na.rm = TRUE)
+    
+    data[[var]][data[[var]] < lower] <- lower
+    data[[var]][data[[var]] > upper] <- upper
+    
     return(data)
 }
-
 
 
 winsorized_hfc_dataset <- reactive({
@@ -245,11 +250,11 @@ render_histogram_ui <- function(selected_vars) {
 output$indiv_combined_histogram_rendered <- renderUI({
     if (length(current_indiv_outlier_vars()) > 0) {
         tagList(
-        div(style = "position: absolute; top: 10px; right: 10px; font-size: 13px; color: gray;",
-            "Data winsorized at the 95% level, regardless of method and multiplier settings in the Check Selection and Setup tab."
-        ),
-        render_histogram_ui(current_indiv_outlier_vars())
-    )
+            div(style = "position: absolute; top: 10px; right: 10px; font-size: 13px; color: gray;",
+                "Data winsorized at the 95% level, regardless of method and multiplier settings in the Check Selection and Setup tab."
+            ),
+            render_histogram_ui(current_indiv_outlier_vars())
+        )
     }
 })
 
