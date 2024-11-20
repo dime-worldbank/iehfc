@@ -1,24 +1,18 @@
-  unit_dataset <- reactive({
-      hfc_dataset() %>%
-          # Address any duplicates if there are some remaining, although they should be dealt with by this point
-          group_by(!!sym(unit_var())) %>%
+  unit_dataset <-
+      hfc_dataset %>%
+          group_by(!!sym(unit_var)) %>%
           mutate(
-              !!unit_var() := case_when(
-                  n() > 1 ~ paste0(!!sym(unit_var()), "_", row_number()),
-                  TRUE    ~ as.character(!!sym(unit_var()))
+              !!unit_var := case_when(
+                  n() > 1 ~ paste0(!!sym(unit_var), "_", row_number()),
+                  TRUE    ~ as.character(!!sym(unit_var))
               )
           ) %>%
           ungroup() %>%
           select(
               all_of(
-                  c(unit_var(), unit_extra_vars())
+                  c(unit_var, unit_extra_vars)
               )
           ) %>%
           arrange(
-              !!sym(unit_var())
-          )
-  })
+              !!sym(unit_var))
   
-  output$unit_table <- renderDT(
-      unit_dataset(), fillContainer = TRUE, options = list(paging = FALSE)
-  )

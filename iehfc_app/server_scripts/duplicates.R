@@ -46,13 +46,17 @@
               "    #---------------------------------------------------- \n",
               "\n",
               "\n",
-              "# Remember to load your dataset \n",
-              "hfc_dataset <- \n",
-              "\n",
+              "# Load required libraries using pacman\n",
+              "install.packages(\"pacman\")\n",
+              "pacman::p_load(dplyr, data.table)\n\n",
+              "# Load your dataset\n",
+              "# Replace this path with the actual path to your dataset\n",
+              "hfc_dataset <- fread(\"C:/path/to/your/file.csv\")\n\n",
               "# Define the duplicate variables\n",
-              "duplicate_id_var <- ", paste0("\"", input$duplicate_id_select_var, "\"", collapse = ", "), "\n",
-              "duplicate_extra_vars <- c(", paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "), ")\n",
-              "\n",
+              "selected_id_var <- \"", input$id_select_var, "\"\n",
+              "duplicate_extra_vars <- c(", 
+              paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "), 
+              ")\n\n",
               sep = ""
           )
           
