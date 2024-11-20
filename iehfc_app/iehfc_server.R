@@ -205,11 +205,11 @@
       
       observe({
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              updateActionButton(session, "run_hfcs", disabled = FALSE)
-              runjs("$('#run_hfcs').tooltip('hide')")
+              enable("run_hfcs")  
+              runjs("$('#run_hfcs').tooltip('hide')")  
           } else {
-              updateActionButton(session, "run_hfcs", disabled = TRUE)
-              runjs("$('#run_hfcs').tooltip('show')") 
+              disable("run_hfcs") 
+              runjs("$('#run_hfcs').tooltip('show')")  
           }
       })
       
@@ -1188,11 +1188,12 @@
           )
       })
       
+      
       observe({
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              updateActionButton(session, "run_hfcs", disabled = FALSE)
+              enable("run_hfcs")
           } else {
-              updateActionButton(session, "run_hfcs", disabled = TRUE)
+              disable("run_hfcs")
           }
       })
 
