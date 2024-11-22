@@ -54,7 +54,7 @@
               "\n",
               "\n",
               "# Load required libraries using pacman\n",
-              "install.packages(\"pacman\")\n",
+              "if (!requireNamespace(\"pacman\", quietly = TRUE)) {install.packages(\"pacman\")}\n",
               "pacman::p_load(dplyr, data.table)\n\n",
               "# Load your dataset\n",
               "# Replace this path with the actual path to your dataset\n",

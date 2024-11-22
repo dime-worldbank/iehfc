@@ -181,7 +181,46 @@
   
   
 
-
+  output$enumerator_r_exp <- downloadHandler(
+      filename = function() {
+          "enumerator_run.R"
+      },
+      content = function(file) {
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/enumerator_run.R"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
+              "    #----------------------------------------------------\n",
+              "    #    This is code sample for enumerator check. \n",
+              "    #---------------------------------------------------- \n",
+              "\n",
+              "\n",
+              "# Load required libraries using pacman\n",
+              "if (!requireNamespace(\"pacman\", quietly = TRUE)) {install.packages(\"pacman\")}\n",
+              "pacman::p_load(dplyr, tidyr, lubridate, ggplot2, plotly, data.table)\n\n",
+              "# Load your dataset\n",
+              "# Replace this path with the actual path to your dataset\n",
+              "hfc_dataset <- fread(\"C:/path/to/your/file.csv\")\n\n",
+              "# Define the enumerator variables\n",
+              "enumerator_var <- ", paste0("\"", input$enumerator_var_select_var, "\"", collapse = " "), "\n",
+              "enumerator_ave_vars <- c(", paste0("\"", input$enumerator_ave_vars_select_var, "\"", collapse = ", "), ")\n",
+              "enumerator_date_var <- ", paste0("\"", input$enumerator_date_var_select_var, "\"", collapse = " "), "\n",
+              "enumerator_complete_var <- ", paste0("\"", input$enumerator_complete_var_select_var, "\"", collapse = " "), "\n",
+              "\n",
+              sep = ""
+          )
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
+      }
+  )
 
 
 output$enumerator_s_exp <- downloadHandler(
