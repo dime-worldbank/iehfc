@@ -168,7 +168,12 @@ output$outlier_table <- renderDT(
 
 
 custom_winsorize <- function(data, var) {
-    data[[var]] <- DescTools::Winsorize(data[[var]], val = quantile(data[[var]], probs = c(0.05, 0.95), na.rm = TRUE))
+    lower <- quantile(data[[var]], probs = 0.05, na.rm = TRUE)
+    upper <- quantile(data[[var]], probs = 0.95, na.rm = TRUE)
+    
+    data[[var]][data[[var]] < lower] <- lower
+    data[[var]][data[[var]] > upper] <- upper
+    
     return(data)
 }
 
