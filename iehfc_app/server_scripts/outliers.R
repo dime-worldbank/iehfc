@@ -500,7 +500,7 @@ output$outlier_s_exp <- downloadHandler(
             "    * Define the outlier variables\n",
             "       local indiv_outlier_vars \"", paste0(input$indiv_outlier_vars_select_var, collapse = " "), "\"\n",
             "       local group_outlier_vars \"", paste0(input$group_outlier_vars_select_var, collapse = " "), "\"\n",
-            "       local outlier_id_var \"", paste0(input$outlier_id_select_var, collapse = " "), "\"\n",
+            "       local selected_id_var \"", paste0(input$id_select_var, collapse = " "), "\"\n",
             "       local outlier_extra_vars \"", paste0(input$outlier_extra_vars_select_var, collapse = " "), "\"\n",
             "       local outlier_method_selected \"", paste0(input$outlier_method, collapse = " "), "\"\n",
             "       local outlier_multiplier_selected \"", paste0(input$outlier_multiplier, collapse = " "), "\"\n",

@@ -90,7 +90,7 @@
               "\n",
               "\n",
               "    * Define the duplicate variables\n",
-              "       local duplicate_id_var ", paste0(input$duplicate_id_select_var, collapse = " "), "\n",
+              "       local selected_id_var ", paste0(input$id_select_var, collapse = " "), "\n",
               "       local duplicate_extra_vars ", paste0(input$duplicate_extra_vars_select_var, collapse = " "), "\n",
               "\n",
               sep = ""
