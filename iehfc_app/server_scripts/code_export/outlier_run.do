@@ -1,6 +1,6 @@
-      * Install winsor2 command
-	  cap which winsor2 
-	  if _rc ssc install winsor2
+	* Install winsor2 command
+	cap which winsor2 
+	if _rc ssc install winsor2
 	 
 	* Create unique id, in case the id variable is not unique
     tostring `selected_id_var', replace 
@@ -129,8 +129,7 @@
     list `selected_id_var' `outlier_extra_vars' issue_var value mean `outlier_method_selected' low_limit high_limit, sepby(issue_var) 
     order `selected_id_var' `outlier_extra_vars' issue_var value  mean `outlier_method_selected' low_limit high_limit 
 	
-	x
-	
+		
     * Export to CSV
     export delimited using "outlier_table.csv", replace 
 
