@@ -1162,19 +1162,19 @@
           all_conditions_met <- length(missing_fields) == 0
           
           # Render the action button, enabled or disabled based on conditions
+          hfcbutton <- actionButton(
+              "run_hfcs",
+              "RUN HFCS",
+              icon("paper-plane"),
+              class = "btn btn-outline-primary btn-lg"
+          )
+          
+          if (!all_conditions_met) {
+              hfcbutton <- tagAppendAttributes(hfcbutton, disabled = "disabled")
+          }
+          
           tagList(
-              # Action button
-              tags$div(
-                  actionButton(
-                      "run_hfcs",
-                      "RUN HFCS",
-                      icon("paper-plane"),
-                      class = "btn btn-outline-primary btn-lg",
-                      disabled = !all_conditions_met  # Disable button if any conditions are not met
-                  )
-              ),
-              
-              # Conditional error message
+              tags$div(hfcbutton),
               if (!all_conditions_met) {
                   div(style = "color: red; font-size: 10pt; font-weight: bold; margin-top: 10px;",
                       HTML(paste(missing_fields, collapse = "<br>"))
