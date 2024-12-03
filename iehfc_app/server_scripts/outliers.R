@@ -447,7 +447,7 @@ output$outlier_r_exp <- downloadHandler(
     },
     content = function(file) {
         # Save the initial script to a temporary file
-        initial_script <- "iehfc_app/server_scripts/code_export/outlier_run.R"
+        initial_script <- file.path(getwd(), "server_scripts", "code_export", "outlier_run.R")
         
         # Read the initial script content
         initial_content <- readLines(initial_script)
@@ -495,7 +495,7 @@ output$outlier_s_exp <- downloadHandler(
     },
     content = function(file) {
         # Save the initial script to a temporary file
-        initial_script <- "iehfc_app/server_scripts/code_export/outlier_run.do"
+        initial_script <- file.path(getwd(), "server_scripts", "code_export", "outlier_run.do")
         
         # Read the initial script content
         initial_content <- readLines(initial_script)

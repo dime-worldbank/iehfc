@@ -40,7 +40,7 @@ pacman::p_load(
       },
       content = function(file) {
           # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/duplicate_run.R"
+          initial_script <- file.path(getwd(), "server_scripts", "code_export", "duplicate_run.R")
           
           # Read the initial script content
           initial_content <- readLines(initial_script)
@@ -83,7 +83,7 @@ pacman::p_load(
       },
       content = function(file) {
           # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/duplicate_run.do"
+          initial_script <- file.path(getwd(), "server_scripts", "code_export", "duplicate_run.do")
           
           # Read the initial script content
           initial_content <- readLines(initial_script)
