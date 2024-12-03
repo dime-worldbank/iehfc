@@ -1166,6 +1166,7 @@
               "run_hfcs",
               "RUN HFCS",
               icon("paper-plane"),
+              disabled = !all_conditions_met,
               class = "btn btn-outline-primary btn-lg"
           )
           
