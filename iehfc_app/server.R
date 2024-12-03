@@ -712,7 +712,11 @@ pacman::p_load(
       output$enumerator_date_var_select <- renderUI({
           dataset <- hfc_dataset() %>%
               select(-all_of(enumerator_var()[enumerator_var() != ""])) 
-          valid_cols <- colnames(dataset)[sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
+          valid_cols <- colnames(dataset)[
+              sapply(dataset, function(col) {
+                  lubridate::is.Date(col) ||
+                      (is.character(col) && !all(is.na(lubridate::ymd(col, quiet = TRUE))))}) | grepl("(?i)date", colnames(dataset), perl = TRUE)
+          ]
           selectizeInput(
               "enumerator_date_var_select_var", label = NULL, 
               choices = c(
@@ -900,7 +904,10 @@ pacman::p_load(
           dataset <- hfc_dataset() %>%
               select(-all_of(admin_var()[admin_var() != ""]))
           valid_cols <- colnames(dataset)[
-              sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
+              sapply(dataset, function(col) {
+                  lubridate::is.Date(col) ||
+                      (is.character(col) && !all(is.na(lubridate::ymd(col, quiet = TRUE))))}) | grepl("(?i)date", colnames(dataset), perl = TRUE)
+          ]
           selectizeInput(
               "admin_date_var_select_var", label = NULL, 
               choices = c(
