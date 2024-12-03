@@ -172,4 +172,86 @@ pacman::p_load(
   output$admin_daily_subs_plot_rendered <- renderPlotly(
       admin_daily_subs_plot()
   )
+
+  
+  ##### Download admin codes ----
+  output$admin_r_exp <- downloadHandler(
+      filename = function() {
+          "admin_run.R"
+      },
+      content = function(file) {
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/admin_run.R"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
+              "    #----------------------------------------------------\n",
+              "    #    This is code sample for admin check. \n",
+              "    #---------------------------------------------------- \n",
+              "\n",
+              "\n",
+              "# Load required libraries using pacman\n",
+              "if (!requireNamespace(\"pacman\", quietly = TRUE)) {install.packages(\"pacman\")}\n",
+              "pacman::p_load(dplyr, tidyr, lubridate, ggplot2, plotly, data.table)\n\n",
+              "# Load your dataset\n",
+              "# Replace this path with the actual path to your dataset\n",
+              "hfc_dataset <- fread(\"C:/path/to/your/file.csv\")\n\n",
+              "# Define the admin variables\n",
+              "admin_var <- ", paste0("\"", input$admin_var_select_var, "\"", collapse = ", "), "\n",
+              "admin_super_vars <- c(", paste0("\"", input$admin_super_vars_select_var, "\"", collapse = ", "), ")\n",
+              "admin_date_var <- ", paste0("\"", input$admin_date_var_select_var, "\"", collapse = ", "), "\n",
+              "admin_complete_var <- ", paste0("\"", input$admin_complete_var_select_var, "\"", collapse = ", "), "\n",
+              "\n",
+              sep = ""
+          )
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
+      }
+  )
+  
+  
+  
+  
+  
+  output$admin_s_exp <- downloadHandler(
+      filename = function() {
+          "admin_run.do"
+      },
+      content = function(file) {
+          # Save the initial script to a temporary file
+          initial_script <- "iehfc_app/server_scripts/code_export/admin_run.do"
+          
+          # Read the initial script content
+          initial_content <- readLines(initial_script)
+          
+          # Prepend the additional code
+          additional_code <- paste(
+              "    /*----------------------------------------------------\n",
+              "           This is code sample for admin check. \n",
+              "    -----------------------------------------------------*/ \n",
+              "\n",
+              "\n",
+              "    * Define the admin variables\n",
+              "       local admin_var ", paste0(input$admin_var_select_var, collapse = " "), "\n",
+              "       local admin_super_vars ", paste0(input$admin_super_vars_select_var, collapse = " "), "\n",
+              "       local admin_date_var ", paste0(input$admin_date_var_select_var, collapse = " "), "\n",
+              "       local admin_complete_var ", paste0(input$admin_complete_var_select_var, collapse = " "), "\n",
+              "\n",
+              sep = ""
+          )
+          
+          # Combine the additional code and the initial script content
+          combined_content <- c(additional_code, initial_content)
+          
+          # Write the combined content to the final file
+          writeLines(combined_content, file)
+      }
+  )
   

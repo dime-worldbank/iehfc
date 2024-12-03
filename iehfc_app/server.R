@@ -203,11 +203,11 @@ pacman::p_load(
       
       observe({
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              updateActionButton(session, "run_hfcs", disabled = FALSE)
-              runjs("$('#run_hfcs').tooltip('hide')")
+              enable("run_hfcs")  
+              runjs("$('#run_hfcs').tooltip('hide')")  
           } else {
-              updateActionButton(session, "run_hfcs", disabled = TRUE)
-              runjs("$('#run_hfcs').tooltip('show')") 
+              disable("run_hfcs") 
+              runjs("$('#run_hfcs').tooltip('show')")  
           }
       })
       
@@ -319,7 +319,7 @@ pacman::p_load(
               choices = names(dataset),
               selected = current_duplicate_extra_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
@@ -333,8 +333,20 @@ pacman::p_load(
                       tooltip(
                           "The duplicate check checks the Dataset ID for duplicates. You can add any additional variable you want to include in the output table",
                           placement = "auto"
-                      )
-              ),
+                      ),
+              downloadButton("duplicate_r_exp",
+                             label = NULL,
+                             shiny::img(src = "res/logo_r.png", height = "20px"),
+                             class = "btn-light",
+                             style = "float: right; margin-left: 10px;",
+              ) %>% tooltip("Click to download R code", placement = "auto"),
+              downloadButton("duplicate_s_exp",
+                             label = NULL,
+                             shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                             class = "btn-light",
+                             style = "float: right; margin-left: 10px;"
+              ) %>% tooltip("Click to download Stata code", placement = "auto")
+          ),
               card_body(
                   fluidRow(
                       # column(6, 
@@ -445,7 +457,7 @@ pacman::p_load(
                   names(), 
               selected = current_indiv_outlier_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
@@ -476,7 +488,7 @@ pacman::p_load(
                   dplyr::pull()}, 
               selected = current_group_outlier_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
@@ -505,7 +517,7 @@ pacman::p_load(
                   names()},
               selected = current_outlier_extra_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
@@ -542,8 +554,20 @@ pacman::p_load(
                       tooltip(
                           "The outlier check requires you to provide (1) individual variables or groups of variables you want to check for outliers and (2) an ID variable to identify the observations containing outliers. You may also add any additional variables you want to include in the output table",
                           placement = "auto"
-                      )
-              ),
+                      ),
+              downloadButton("outlier_r_exp",
+                               label = NULL,
+                               shiny::img(src = "res/logo_r.png", height = "20px"),
+                               class = "btn-light",
+                               style = "float: right; margin-left: 10px;",
+                ) %>% tooltip("Click to download R code", placement = "auto"),
+                downloadButton("outlier_s_exp",
+                               label = NULL,
+                               shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                               class = "btn-light",
+                               style = "float: right; margin-left: 10px;"
+                ) %>% tooltip("Click to download Stata code", placement = "auto")
+            ),
               card_body(
                   fluidRow(
                       column(6,
@@ -681,11 +705,14 @@ pacman::p_load(
                   names(), 
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
       output$enumerator_date_var_select <- renderUI({
+          dataset <- hfc_dataset() %>%
+              select(-all_of(enumerator_var()[enumerator_var() != ""])) 
+          valid_cols <- colnames(dataset)[sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
           selectizeInput(
               "enumerator_date_var_select_var", label = NULL, 
               choices = c(
@@ -726,7 +753,19 @@ pacman::p_load(
                       tooltip(
                           "The enumerator check requires you to provide (1) the variable that identifies enumerators and (2) variables for which you'd like to see average values for each enumerator. You can include a submission date variable and a \"submission completeness\" variable",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("enumerator_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("enumerator_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -853,11 +892,15 @@ pacman::p_load(
                   names(), 
               selected = current_admin_super_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
       output$admin_date_var_select <- renderUI({
+          dataset <- hfc_dataset() %>%
+              select(-all_of(admin_var()[admin_var() != ""]))
+          valid_cols <- colnames(dataset)[
+              sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
           selectizeInput(
               "admin_date_var_select_var", label = NULL, 
               choices = c(
@@ -899,7 +942,19 @@ pacman::p_load(
                       tooltip(
                           "The administrative unit-level check requires you to (1) provide the variable that identifies the administrative unit and (2) higher-level administrative units that would help either locate or uniquely identify the administrative level of choice. You can include a submission date variable and a \"submission completeness\" variable",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("admin_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("admin_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -1000,7 +1055,7 @@ pacman::p_load(
                   names(), 
               selected = current_unit_extra_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body')
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
       
@@ -1014,7 +1069,19 @@ pacman::p_load(
                       tooltip(
                           "The unit-of-observation-level check requires you to provide the variable that identifies the unit of observation.You can add any additional variable you want to include in the output table",
                           placement = "auto"
-                      )
+                      ),
+                  downloadButton("unit_r_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;",
+                  ) %>% tooltip("Click to download R code", placement = "auto"),
+                  downloadButton("unit_s_exp",
+                                 label = NULL,
+                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 class = "btn-light",
+                                 style = "float: right; margin-left: 10px;"
+                  ) %>% tooltip("Click to download Stata code", placement = "auto")
               ),
               card_body(
                   fluidRow(
@@ -1105,19 +1172,20 @@ pacman::p_load(
           all_conditions_met <- length(missing_fields) == 0
           
           # Render the action button, enabled or disabled based on conditions
+          hfcbutton <- actionButton(
+              "run_hfcs",
+              "RUN HFCS",
+              icon("paper-plane"),
+              disabled = !all_conditions_met,
+              class = "btn btn-outline-primary btn-lg"
+          )
+          
+          if (!all_conditions_met) {
+              hfcbutton <- tagAppendAttributes(hfcbutton, disabled = "disabled")
+          }
+          
           tagList(
-              # Action button
-              tags$div(
-                  actionButton(
-                      "run_hfcs",
-                      "RUN HFCS",
-                      icon("paper-plane"),
-                      class = "btn btn-outline-primary btn-lg",
-                      disabled = !all_conditions_met  # Disable button if any conditions are not met
-                  )
-              ),
-              
-              # Conditional error message
+              tags$div(hfcbutton),
               if (!all_conditions_met) {
                   div(style = "color: red; font-size: 10pt; font-weight: bold; margin-top: 10px;",
                       HTML(paste(missing_fields, collapse = "<br>"))
@@ -1126,11 +1194,12 @@ pacman::p_load(
           )
       })
       
+      
       observe({
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              updateActionButton(session, "run_hfcs", disabled = FALSE)
+              enable("run_hfcs")
           } else {
-              updateActionButton(session, "run_hfcs", disabled = TRUE)
+              disable("run_hfcs")
           }
       })
 
@@ -1208,6 +1277,24 @@ pacman::p_load(
               combined_df <- rbind(combined_df, para5)
           }
           
+          if (!is.null(input$outlier_method)) {
+              para16 <- data.frame(Check = "outlier",
+                                  Parameter = "outlier_method", 
+                                  Name = "Outlier method", 
+                                  Value = c(input$outlier_method),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para16)
+          }
+          
+          if (!is.null(input$outlier_multiplier)) {
+              para17 <- data.frame(Check = "outlier",
+                                  Parameter = "outlier_multiplier", 
+                                  Name = "Outlier multiplier", 
+                                  Value = c(input$outlier_multiplier),
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+              combined_df <- rbind(combined_df, para17)
+          }
+          
           ## Enumerator level
           if (!is.null(input$enumerator_var_select_var)) {
               para6 <- data.frame(Check = "enumerator",
@@ -1223,7 +1310,7 @@ pacman::p_load(
                                   Parameter = "enumerator_ave_vars_select_var", 
                                   Name = "Enumerator Average Value Variables", 
                                   Value = c(input$enumerator_ave_vars_select_var),
-                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p")) 
+                                  Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para7)
           }
           
