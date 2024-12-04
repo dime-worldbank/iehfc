@@ -1161,6 +1161,10 @@
           # Determine if all conditions are met
           all_conditions_met <- length(missing_fields) == 0
           
+          # Ensure all_conditions_met is defined and not NULL 
+          
+         
+          
           # Render the action button, enabled or disabled based on conditions
           hfcbutton <- actionButton(
               "run_hfcs",
@@ -1169,10 +1173,6 @@
               disabled = !all_conditions_met,
               class = "btn btn-outline-primary btn-lg"
           )
-          
-          if (!all_conditions_met) {
-              hfcbutton <- tagAppendAttributes(hfcbutton, disabled = "disabled")
-          }
           
           tagList(
               tags$div(hfcbutton),
