@@ -16,6 +16,17 @@
   fluidPage(
       useShinyjs(),
       tags$head(
+          tags$style(HTML("
+            .quote-box {
+                background-color: #f3e6ff; /* Light purple background */
+                border-left: 5px solid #9E83CF; /* Darker purple border */
+                padding: 15px;
+                margin-top: 15px;
+                border-radius: 5px; /* Rounded corners */
+                font-style: italic; /* Italicized text for quotes */
+                color: #4b3d73; /* Complementary text color */
+            }
+        ")),
           tags$script(HTML('
             $(document).ready(function() {
                 $(".navbar .container-fluid .navbar-nav .dropdown .dropdown-menu").append(\'<li><a href="https://github.com/dime-worldbank/iehfc/blob/main/README.md" >Guides</a></li>\');

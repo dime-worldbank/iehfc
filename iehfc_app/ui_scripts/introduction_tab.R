@@ -19,7 +19,7 @@ introduction_tab <- shinydashboard::tabItem(
         column(
             width = 6,
             style = "display: flex; justify-content: flex-end; align-items: flex-end;",
-            shiny::img(src = "BULBS_purple.png", style = "width:180px; margin-right: 20px;"),
+            shiny::img(src = "Dime-Analytics_logo.png", style = "width:180px; margin-right: 20px;"),
             
             )
     ),
@@ -33,16 +33,20 @@ introduction_tab <- shinydashboard::tabItem(
             div(style = "text-align:left", tags$h3("The Need for IEHFC")),
             box(
                 width = 12, status = "success",
-                p("IEHFC arose from the pressing need to standardize and simplify high-frequency data checks in international development research. It aims to bridge the gap between the established necessity of these checks and the complexity involved in implementing them."),
+                p("IEHFC arose from the need to standardize and simplify high-frequency data checks in international development research. It aims to bridge the gap between the established necessity of these checks and the complexity involved in implementing them."),
                 p(
                     "Developed by the team at",
                     tags$a("DIME Analytics", href = "https://www.worldbank.org/en/research/dime/data-and-analytics"),
                     ", IEHFC aims to be a one-stop solution for researchers, providing easy-to-create, customizable, and shareable high-frequency check outputs.",
                     "For more information about high-frequency checks you can consult", tags$a("our wiki resource.", href = "https://dimewiki.worldbank.org/High_Frequency_Checks")
                 ),
-                p(
-                    "If you encounter any issues or have suggestions, please report them ", 
-                    tags$a("on our GitHub issues section.", href = "https://github.com/dime-worldbank/iehfc/issues")
+                div(
+                    class = "quote-box",
+                    p(
+                        tags$b("Note: "),
+                        "If you encounter any issues or have suggestions, please report them ",
+                        tags$a("on our GitHub issues section.", href = "https://github.com/dime-worldbank/iehfc/issues")
+                    )
                 )
             ),
             shiny::img(src = "WB_logo.png", style = "width: 200px; margin-top: 20px;")
