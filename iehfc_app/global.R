@@ -5,15 +5,16 @@
   ## 1. Load Packages ----
 
   if(!require(pacman)) install.packages("pacman")
-
+  pacman::p_load(shiny, version = "1.9.1")
+  
   pacman::p_load(
-      shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra
+      dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
+      shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra 
   )
   
   ## 2. Load Custom Functions ----
 
-# Reminder — Currently, this project works with an .Rproj file. Open the project directly from the .Rproj
+# Reminder — Currently, this project works with an .Rproj file. Open the project directfly from the .Rproj
 # file using the "File — Open Project..." option on RStudio or directly by clicking on the .Rproj file in
 # your file explorer. If you would rather not use the .Rproj file, you will need to set the working
 # directory using `setwd(...)`, with `...` being the file path that leads you to the `iehfc` folder.

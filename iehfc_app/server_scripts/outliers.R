@@ -168,7 +168,12 @@ output$outlier_table <- renderDT(
 
 
 custom_winsorize <- function(data, var) {
-    data[[var]] <- DescTools::Winsorize(data[[var]], val = quantile(data[[var]], probs = c(0.05, 0.95), na.rm = TRUE))
+    lower <- quantile(data[[var]], probs = 0.05, na.rm = TRUE)
+    upper <- quantile(data[[var]], probs = 0.95, na.rm = TRUE)
+    
+    data[[var]][data[[var]] < lower] <- lower
+    data[[var]][data[[var]] > upper] <- upper
+    
     return(data)
 }
 
@@ -192,7 +197,7 @@ calculate_bin_width <- function(data, var) {
     x <- data[[var]]
     n <- length(x)
     iqr_val <- IQR(x, na.rm = TRUE)
-    bin_width <- 2 * iqr_val / n^(1/3)
+    bin_width <- max(2 * iqr_val / n^(1/3), 1000)
     return(bin_width)
 }
 
@@ -428,3 +433,90 @@ export_outlier_boxplot <- reactive({
 #     export_outlier_win_histogram()
 # })
 # 
+
+
+##### Download outlier codes ----
+output$outlier_r_exp <- downloadHandler(
+    filename = function() {
+        "outlier_run.R"
+    },
+    content = function(file) {
+        # Save the initial script to a temporary file
+        initial_script <- "iehfc_app/server_scripts/code_export/outlier_run.R"
+        
+        # Read the initial script content
+        initial_content <- readLines(initial_script)
+        
+        # Prepend the additional code
+        additional_code <- paste(
+            "    #----------------------------------------------------\n",
+            "    #    This is code sample for outliers check. \n",
+            "    #---------------------------------------------------- \n",
+            "\n",
+            "\n",
+            "# Load required libraries using pacman\n",
+            "if (!requireNamespace(\"pacman\", quietly = TRUE)) {install.packages(\"pacman\")}\n",
+            "pacman::p_load(dplyr, tidyr, purrr, ggplot2, DescTools, data.table)\n",
+            "\n",
+            "# Load your dataset\n",
+            "# Replace this path with the actual path to your dataset\n",
+            "hfc_dataset <- fread(\"C:/path/to/your/file.csv\")\n\n",
+            "# Define the outlier variables\n",
+            "indiv_outlier_vars <- c(", paste0("\"", input$indiv_outlier_vars_select_var, "\"", collapse = ", "), ")\n",
+            "group_outlier_vars <- c(", paste0("\"", input$group_outlier_vars_select_var, "\"", collapse = ", "), ")\n",
+            "selected_id_var <- ", paste0("\"", input$id_select_var, "\"", collapse = ", "), "\n",
+            "outlier_extra_vars <- c(", paste0("\"", input$outlier_extra_vars_select_var, "\"", collapse = ", "), ")\n",
+            "outlier_method_selected <- ", paste0("\"", input$outlier_method, "\"", collapse = ", "), "\n",
+            "outlier_multiplier_selected <- ", paste0(input$outlier_multiplier, collapse = ", "), "\n",
+            "\n",
+            sep = ""
+        )
+        
+        # Combine the additional code and the initial script content
+        combined_content <- c(additional_code, initial_content)
+        
+        # Write the combined content to the final file
+        writeLines(combined_content, file)
+    }
+)
+
+
+
+
+
+output$outlier_s_exp <- downloadHandler(
+    filename = function() {
+        "outlier_run.do"
+    },
+    content = function(file) {
+        # Save the initial script to a temporary file
+        initial_script <- "iehfc_app/server_scripts/code_export/outlier_run.do"
+        
+        # Read the initial script content
+        initial_content <- readLines(initial_script)
+        
+        # Prepend the additional code
+        additional_code <- paste(
+            "    /*----------------------------------------------------\n",
+            "           This is code sample for outliers check. \n",
+            "    -----------------------------------------------------*/ \n",
+            "\n",
+            "\n",
+            "    * Define the outlier variables\n",
+            "       local indiv_outlier_vars \"", paste0(input$indiv_outlier_vars_select_var, collapse = " "), "\"\n",
+            "       local group_outlier_vars \"", paste0(input$group_outlier_vars_select_var, collapse = " "), "\"\n",
+            "       local selected_id_var \"", paste0(input$id_select_var, collapse = " "), "\"\n",
+            "       local outlier_extra_vars \"", paste0(input$outlier_extra_vars_select_var, collapse = " "), "\"\n",
+            "       local outlier_method_selected \"", paste0(input$outlier_method, collapse = " "), "\"\n",
+            "       local outlier_multiplier_selected \"", paste0(input$outlier_multiplier, collapse = " "), "\"\n",
+            "\n",
+            sep = ""
+        )
+        
+        # Combine the additional code and the initial script content
+        combined_content <- c(additional_code, initial_content)
+        
+        # Write the combined content to the final file
+        writeLines(combined_content, file)
+    }
+)
