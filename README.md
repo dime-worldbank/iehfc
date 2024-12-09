@@ -62,3 +62,21 @@ This is where you set up the content and parameters of the checks you want to ru
 
 ---
 **Under Construction** — Unit of Observation-Level Checks and Survey Logic Checks
+
+
+## iehfc Platform — Branches
+
+This repository is structured around two stable branches:
+
+- `main`: This is the primary branch intended for public releases. It contains the core features of the application that are available to all users.
+- `internal-distribution-main`: This branch includes additional features specifically designed for World Bank Staff and Consultants. These features are accessible only through the internal Posit Connect Server
+
+### Workflow for Contributors with Merge Permission
+
+To release new features, improvements, or bug fixes, follow these steps:
+
+1. Merge `main` into the development branch.
+2. Without deleting the development branch, merge it into the `main` branch.
+3. Merge `internal-distribution-main` into the development branch.
+4. Merge development into `internal-distribution-main`.
+5. Delete the development branch.
