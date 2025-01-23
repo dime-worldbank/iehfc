@@ -1,0 +1,37 @@
+Package: iehfc
+Title: High Freqency Checks Dashboard
+Version: 1
+Authors@R: 
+    c(
+      person("Maria Reyes", "Retana Torre", email = "your.email@example.com", role = c("aut", "cre")),
+      person("Marina", "Visintini", email = "marina.visintini@gmail.com", role = "ctb"),
+      person("Mehrab", "Ali", email = "mehrab.ali@arced.foundation", role = "ctb"),
+      person("Marc Andrea", "Fiorina", email = "contributor3@example.com", role = "ctb")
+      person("Marc Andrea", "Fiorina", email = "contributor3@example.com", role = "ctb")
+    )
+Description: IEHFC is designed to be an intuitive platform that streamlines the data checking process. It features a sequential tab design that guides users through data uploading, check selection, parameter setup, and viewing the results.
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Imports: 
+    dplyr,
+    tidyr,
+    stringr,
+    lubridate,
+    purrr,
+    ggplot2,
+    janitor,
+    data.table,
+    DT,
+    remotes,
+    bsicons,
+    shinydashboard,
+    shinyjs,
+    markdown,
+    htmlwidgets,
+    webshot,
+    plotly,
+    bslib,
+    kableExtra    
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
