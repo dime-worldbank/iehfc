@@ -36,22 +36,41 @@ pacman::p_load(
       hfc_dataset <- reactiveVal()
       
       observeEvent(input$hfc_file, {
-          file_path <- file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv")
-          ds <- data.table::fread(file_path)
-          too_many_cols <- ncol(ds) > 10000
-          if(too_many_cols) {
-              showNotification(
-                  "Your dataset has more than 10,000 variables. Unfortunately, the platform currently cannot handle such a large dataset. Please create a subset of your dataset and try again.",
-                  duration = NULL,
-                  type     = "error"
-              )
+          req(input$hfc_file)
+          
+          file_path <- input$hfc_file$datapath
+          ds <- tryCatch(
+              data.table::fread(file_path),
+              error = function(e) {
+                  showNotification(paste("Error reading the uploaded file:", e$message), type = "error")
+                  return(NULL)
+              }
+          )
+          
+          if (!is.null(ds)) {
+              if (ncol(ds) > 10000) {
+                  showNotification(
+                      "Your dataset has more than 10,000 variables. Unfortunately, the platform currently cannot handle such a large dataset. Please create a subset of your dataset and try again.",
+                      duration = NULL,
+                      type = "error"
+                  )
+              } else {
+                  hfc_dataset(ds) 
+              }
           }
-          req(!too_many_cols)
-          hfc_dataset(ds)
       })
       
       observeEvent(input$use_test_data, {
-          ds <- data.table::fread(file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv"))
+          test_file_path <- file.path(getwd(), "test_data", "LWH_FUP2_raw_data.csv")
+          
+          ds <- tryCatch(
+              data.table::fread(test_file_path),
+              error = function(e) {
+                  showNotification("Error loading test data. Please check the file location.", type = "error")
+                  return(NULL)
+              }
+          )
+          
           hfc_dataset(ds)
       })
       
