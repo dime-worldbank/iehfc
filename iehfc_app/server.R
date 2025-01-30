@@ -37,6 +37,7 @@ pacman::p_load(
       
       observeEvent(input$hfc_file, {
           file_path <- file.path(getwd(),  "test_data", "LWH_FUP2_raw_data.csv")
+          ds <- data.table::fread(file_path)
           too_many_cols <- ncol(ds) > 10000
           if(too_many_cols) {
               showNotification(
