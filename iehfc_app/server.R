@@ -48,13 +48,21 @@ pacman::p_load(
           )
           
           if (!is.null(ds)) {
-              if (ncol(ds) > 10000) {
+              duplicated_cols <- names(ds)[duplicated(names(ds))]
+              
+              if (length(duplicated_cols) > 0) {
+                  showNotification(
+                      paste("The uploaded dataset has duplicate column names:", paste(duplicated_cols, collapse = ", "), ". Please ensure columns have unique names"),
+                      duration = NULL,
+                      type = "error"
+                  )
+              } else if (ncol(ds) > 10000) {
                   showNotification(
                       "Your dataset has more than 10,000 variables. Unfortunately, the platform currently cannot handle such a large dataset. Please create a subset of your dataset and try again.",
                       duration = NULL,
                       type = "error"
                   )
-              } else {
+              }  else {
                   hfc_dataset(ds) 
               }
           }
