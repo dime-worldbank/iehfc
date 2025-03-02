@@ -14,6 +14,7 @@
   source("ui_scripts/introduction_tab.R")
 
   fluidPage(
+      includeCSS("www/styles.css"),
       useShinyjs(),
       tags$head(
           tags$style(HTML("

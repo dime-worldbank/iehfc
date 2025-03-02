@@ -1,0 +1,19 @@
+/* styles.css */
+
+.card {
+  overflow: visible !important; /* Ensure that the dropdown can overflow the card element */
+}
+
+.card-body {
+  overflow: visible !important; /* Ensure the dropdown can overflow the card-body element */
+}
+
+.ui-output {
+  overflow: visible !important; /* Ensure the dropdown can overflow the ui-output element */
+}
+
+.selectize-dropdown-content {
+  max-height: 300px; /* Adjust the height as needed */
+  overflow-y: auto;  /* Add a vertical scrollbar if the content exceeds the max height */
+  z-index: 1050; /* Ensure the dropdown appears above other elements */
+}
