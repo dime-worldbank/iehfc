@@ -34,7 +34,7 @@
                 g mean = r(mean) 
                 g issue_var = "`var'" 
                 g value = `var' 
-				loc bin_width = (2 * r(sd)) / (`=_N'^(1/3))
+				loc bin_width = (3.5 * r(sd)) / (`=_N'^(1/3))
 				
 				winsor2 `var', cuts(5 95) suffix(_win)
 				
