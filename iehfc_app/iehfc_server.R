@@ -322,7 +322,7 @@
       observe({
           current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
       })
-      
+
 
       #The code below is for a dropdown that allows the user to select extra variables for duplicate check. It is hidden in the UI because the functionality is not complete. 
       
@@ -358,25 +358,22 @@
                   select(-all_of(selected_id_var()))
           }
           
-          # if (!is.null(current_duplicate_var()) && current_duplicate_var() != "") {
-                      #     dataset <- dataset %>%
-                      #         select(-all_of(current_duplicate_var()))  # exclude current_duplicate_var
-                      # }
-          
           selectizeInput(
               "duplicate_extra_vars_select_var", 
               label = NULL,
               choices = names(dataset),
               selected = current_duplicate_extra_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+             )
           )
       })
       
       
       output$duplicate_setup <- renderUI({
           card(
-              height = "auto", fill = FALSE,
+              height = "auto", fill = TRUE,
               full_screen = TRUE,
               card_header(
                   span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
@@ -409,7 +406,7 @@
                              span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
                                  tooltip("These are additional variables that you may want to display in the output table", 
                                          placement = "right"),
-                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                             uiOutput("duplicate_extra_vars_select")  # Set a high z-index to overlap other elements
                       )
                   )
               )
@@ -507,7 +504,9 @@
                   names(), 
               selected = current_indiv_outlier_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -538,7 +537,9 @@
                   pull()}, 
               selected = current_group_outlier_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -567,7 +568,9 @@
                   names()},
               selected = current_outlier_extra_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -579,7 +582,9 @@
               choices = c("iqr", "sd"), 
               selected = default_method,
               multiple = FALSE,
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -591,7 +596,9 @@
               choices = c("1.5", "3"), 
               selected = default_multiplier,
               multiple = FALSE,
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -755,7 +762,9 @@
                   names(), 
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -768,7 +777,9 @@
               label = NULL, 
               choices = c("", valid_cols),
               selected = current_enumerator_date_var(),
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -785,7 +796,9 @@
                       names()
               ), 
               selected = current_enumerator_complete_var(),
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -937,7 +950,9 @@
                   names(), 
               selected = current_admin_super_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -950,7 +965,9 @@
               "admin_date_var_select_var", label = NULL, 
               choices = c("", valid_cols),
               selected = current_admin_date_var(),
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -967,7 +984,9 @@
                       names()
               ), 
               selected = current_admin_complete_var(),
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -1069,7 +1088,9 @@
               choices = hfc_dataset() %>%
                   names(),
               selected = current_unit_var(),
-              options = list('dropdownParent' = 'body')
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
@@ -1093,7 +1114,9 @@
                   names(), 
               selected = current_unit_extra_vars(),
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                  'plugins' = list('remove_button')
+              )
           )
       })
       
