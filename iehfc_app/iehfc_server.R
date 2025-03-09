@@ -1597,16 +1597,20 @@
                       uiOutput("outlier_table_dl"),
                       full_screen = TRUE
                   ),
+                  if (!is.null(input$indiv_outlier_vars_select_var) && length(input$indiv_outlier_vars_select_var>0)) {
                   card(
                       uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
                       full_screen = TRUE,
                       style = "display: flex; flex-direction: column;padding: 50px;"
-                  ),
-                  card(
-                      uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                      full_screen = TRUE,
                   )
-              )
+                      },
+                  if (!is.null(input$group_outlier_vars_select_var) && length(input$group_outlier_vars_select_var>0)) {
+                      card(
+                          uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+                          full_screen = TRUE,
+                      )
+                  }
+            )
           } else {
               "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
