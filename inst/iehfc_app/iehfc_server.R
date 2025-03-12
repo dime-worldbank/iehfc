@@ -96,7 +96,8 @@
       })
 
       observeEvent(input$use_test_data, {
-          test_file_path <- file.path(getwd(), "test_data", "LWH_FUP2_raw_data.csv")
+        test_file_path <- system.file("test_data", "LWH_FUP2_raw_data.csv", package = "iehfc")
+
 
           ds <- tryCatch(
               data.table::fread(test_file_path),
