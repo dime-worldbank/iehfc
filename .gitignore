@@ -1,103 +1,112 @@
 ########################################################################
 #
-# Based on DIME .gitignore template. Follow the instructions in the URL
-# below to set up this template in your own repository
-# https://github.com/worldbank/dime-github-trainings/tree/master/GitHub-resources/DIME-GitHub-Templates
+# Git Ignore Template for an R Package with Shiny App
 #
-# Note that if you are using GitKraken, you need to use version 5.x or more
-# recent for this template to work properly
+# Based on DIME .gitignore template, modified for R package development.
+# Ensures necessary package files are included while ignoring unwanted files.
 #
 ########################################################################
 
 #######################
-# Start by ignoring everything, and below we are explicitly saying
-# what to not ignore
-*
+# R package essential files (Do NOT ignore)
+!DESCRIPTION
+!NAMESPACE
+!R/
+!man/
+!inst/
+!vignettes/
+!tests/
+!LICENSE
+!*.Rproj
+!*.R
+!*.Rmd
+!*.md
 
-#######################
-# List of files with GitHub functionality anywhere in the repo
-# that we do not want to ignore
-
-# These files include GitHub settings
-!.gitignore
-!.gitattributes
-
-# Keep markdown files used for documentation on GitHub
+# Keep package-related metadata
+!NEWS.md
 !README.md
-!CONTRIBUTING.md
-!LICENSE.*
+!cran-comments.md
 
 #######################
-# For performance reasons, if a folder is already ignored, then
-# GitHub does not check the content for that folder for matches
-# with additional rules. The line below includes folder in the
-# top folder (but not their content), so that anything matching
-# the rules below will still not be ignored.
-!*/
+# Ignore unnecessary files
+
+# RStudio project files & user settings
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Compiled package files
+/*.tar.gz
+/*.zip
+/*.Rcheck/
+/*.Rbuildignore
+
+# Temporary files
+*.log
+*.out
+*.aux
+*.toc
+*.lof
+*.lot
+*.gz
+*.tmp
+
+# Ignore object and cache files
+*.o
+*.so
+*.dll
+*.a
+*.d
+*.obj
+*.lib
+*.rds
+*.rda
+*.rdb
+*.rdx
+
+# Ignore documentation build artifacts
+docs/
+*.html
+*.pdf
 
 #######################
-# The following file types are code that should always be
-# included no matter where in the repository folder they are
-# located unless you explicitly ignore that folder
+# Ignore non-essential directories
 
-# Stata
-!/**/*.do
-!/**/*.ado
+# Git-related
+.DS_Store
+Thumbs.db
 
-# R
-!/**/*.R
-!/**/*.Rmd
-# Temporary
-!/**/*.Rproj
-
-# LaTeX
-!/**/*.tex
-!/**/*.bib
-
-# Python
-!/**/*.py
-!/**/*.ipynb
-# Still ignore .ipynb files in checkpoint folders
-.ipynb_checkpoints
-
-# Matlab
-!/**/*.m
-
-# Markdown
-!/**/*.md
-
-# Julia
-!/**/*.jl
-
-# CSS
-!/**/*.css
-
-# CSV (this will be removed eventually)
-!/**/*.csv
-
-# Images
-!/**/*.png
-!/**/*.svg
+# Python notebooks (except in package)
+.ipynb_checkpoints/
 
 #######################
-# Include some additional file formats in any output folder. You might have
-# to change the name of the Output folder to whatever it is called in your
-# project, but we strongly recommend that you only include these files in
-# a subset of the folders where you are certain no private data is ever stored.
+# Ignore sensitive files
+
+# Passwords & API keys
+password.*
+passwords.*
+password/
+passwords/
+
+#######################
+# Keep specific folders for the Shiny app (ensure images and UI files are included)
+!inst/iehfc_app/
+!inst/iehfc_app/www/
+!inst/iehfc_app/server_scripts/
+!inst/iehfc_app/ui_scripts/
+
+# Allow image and UI files
+!inst/iehfc_app/www/*.png
+!inst/iehfc_app/www/*.svg
+!inst/iehfc_app/www/*.jpg
+!inst/iehfc_app/www/*.ico
+!inst/iehfc_app/www/*.css
+
+#######################
+# Output and Generated Files
 !/**/Output/**/*.txt
 !/**/Output/**/*.csv
 !/**/Output/**/*.xml
 !/**/Output/**/*.eps
 !/**/Output/**/*.svg
-
-#######################
-# Include all the files with passwords or tokens here. All files named
-# password or passwords are with this template ignored no matter which
-# format you are using. Additionally, all content in any folder called
-# password or passwords are also ignored. NOTE that your project might be
-# using different names and then you must edit the lines below accordingly.
-password.*
-passwords.*
-password/
-passwords/
-.Rproj.user
