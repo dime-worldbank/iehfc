@@ -3,19 +3,19 @@
   enumerator_var <- reactive({
       input$enumerator_var_select_var
   })
-  
+
   enumerator_ave_vars <- reactive({
       input$enumerator_ave_vars_select_var
   })
-  
+
   enumerator_date_var <- reactive({
       input$enumerator_date_var_select_var
   })
-  
+
   enumerator_complete_var <- reactive({
       input$enumerator_complete_var_select_var
   })
-  
+
   enumerator_total_subs_dataset <- reactive({
       hfc_dataset() %>%
           group_by(!!sym(enumerator_var())) %>%
@@ -25,7 +25,7 @@
           ungroup()
   }) %>%
   bindEvent(input$run_hfcs)
-  
+
   enumerator_complete_subs_dataset <- reactive({
       if(enumerator_complete_var() != "") {
           hfc_dataset() %>%
@@ -50,7 +50,7 @@
       }
   }) %>%
   bindEvent(input$run_hfcs)
-  
+
   enumerator_daily_subs_dataset <- reactive({
       if (!is.null(enumerator_date_var()) && enumerator_date_var() != "") {
           hfc_dataset() %>%
@@ -87,7 +87,7 @@
       }
   }) %>%
   bindEvent(input$run_hfcs)
-  
+
   enumerator_daily_subs_plot <- reactive({
       if (!is.null(enumerator_date_var()) && enumerator_date_var() != "") {
           plot_data <- hfc_dataset() %>%
@@ -115,9 +115,9 @@
           ) %>%
           ungroup() %>%
           arrange(date_var_formatted) # To ensure that the dates are in the right order
-      
+
       # Set up highlighting individual enumerators
-      
+
       enumerator_daily_subs_ggplot <- plot_data %>%
           mutate(
               !!enumerator_var() := factor(!!sym(enumerator_var()))
@@ -140,20 +140,20 @@
           theme(
               legend.position = "none"
           )
-      
+
       enumerator_daily_subs_ggplotly <- ggplotly(enumerator_daily_subs_ggplot, tooltip = c("color", "y"), width = NULL)
-      
+
       highlight(enumerator_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
-      }      
+      }
   })
-  
+
   enumerator_subs_dataset <- reactive({
       enumerator_total_subs_dataset() %>%
           left_join(enumerator_complete_subs_dataset()) %>%  # Works because is empty tibble if not "complete" variable is selected
           left_join(enumerator_daily_subs_dataset())
   }) %>%
   bindEvent(input$run_hfcs)
-  
+
   enumerator_ave_vars_dataset <- reactive({
       hfc_dataset() %>%
           group_by(!!sym(enumerator_var())) %>%
@@ -166,20 +166,20 @@
           ungroup()
   }) %>%
   bindEvent(input$run_hfcs)
-  
+
   output$enumerator_subs_table <- renderDT(
       enumerator_subs_dataset(), fillContainer = TRUE
   )
-  
+
   output$enumerator_daily_subs_plot_rendered <- renderPlotly(
       enumerator_daily_subs_plot()
   )
-  
+
   output$enumerator_ave_vars_table <- renderDT(
       enumerator_ave_vars_dataset(), fillContainer = TRUE
   )
-  
-  
+
+
 
   output$enumerator_r_exp <- downloadHandler(
       filename = function() {
@@ -187,11 +187,11 @@
       },
       content = function(file) {
           # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/enumerator_run.R"
-          
+          initial_script <- system.file("iehfc_app/server_scripts/code_export/enumerator_run.R", package = "iehfc")
+
           # Read the initial script content
           initial_content <- readLines(initial_script)
-          
+
           # Prepend the additional code
           additional_code <- paste(
               "    #----------------------------------------------------\n",
@@ -213,10 +213,10 @@
               "\n",
               sep = ""
           )
-          
+
           # Combine the additional code and the initial script content
           combined_content <- c(additional_code, initial_content)
-          
+
           # Write the combined content to the final file
           writeLines(combined_content, file)
       }
@@ -228,12 +228,13 @@ output$enumerator_s_exp <- downloadHandler(
         "enumerator_run.do"
     },
     content = function(file) {
+
         # Save the initial script to a temporary file
-        initial_script <- "iehfc_app/server_scripts/code_export/enumerator_run.do"
-        
+        initial_script <- system.file("iehfc_app/server_scripts/code_export/enumerator_run.do", package = "iehfc")
+
         # Read the initial script content
         initial_content <- readLines(initial_script)
-        
+
         # Prepend the additional code
         additional_code <- paste(
             "    /*----------------------------------------------------\n",
@@ -249,10 +250,10 @@ output$enumerator_s_exp <- downloadHandler(
             "\n",
             sep = ""
         )
-        
+
         # Combine the additional code and the initial script content
         combined_content <- c(additional_code, initial_content)
-        
+
         # Write the combined content to the final file
         writeLines(combined_content, file)
     }
