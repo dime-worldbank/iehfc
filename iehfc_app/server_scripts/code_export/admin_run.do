@@ -2,8 +2,8 @@
 
        * Check variables
             if !mi("`admin_complete_var'") {
-                qui ta `admin_complete_var'
-                if r(r)>2 {
+                capture assert `admin_complete_var' == 0 | `admin_complete_var' == 1
+                if _rc {
                     n di as err "Submission Complete Variable must be a 1/0 variable."
                     exit
                 }
@@ -75,8 +75,13 @@
         }
 
         if mi("`admin_date_var'") {
-            collapse (first) num_submissions=submissions `num_complete_submissions'=`complete', by(`admin_var' `admin_super_vars')
-            order `admin_var' `admin_super_vars' num_submissions `num_complete_submissions'
+			if !mi("`complete'") {
+				collapse (first) num_submissions=submissions `num_complete_submissions'=`complete', by(`admin_var' `admin_super_vars')
+            }
+			if mi("`complete'") {
+				collapse (first) num_submissions=submissions, by(`admin_var' `admin_super_vars')
+            }
+			order `admin_var' `admin_super_vars' num_submissions `num_complete_submissions'
         }
 
         list, table  abbreviate(22)
