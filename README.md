@@ -77,10 +77,6 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 - View results through interactive tables and visualizations.
 - Download reports summarizing identified issues and recommendations.
 
-## 📚 Documentation
-
-For detailed documentation, visit the [GitHub repository](https://github.com/dime-worldbank/iehfc).
-
 ## 🤝 Contributing
 
 We welcome contributions! If you have feature requests or encounter issues, please open an issue on [GitHub](https://github.com/dime-worldbank/iehfc/issues).
