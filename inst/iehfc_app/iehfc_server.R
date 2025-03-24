@@ -1941,10 +1941,13 @@
               # 1. Check if 'duplicate' check is selected
               includeDuplicates <- "duplicate" %in% selected_checks()
               duplicatesData <- NULL
+              duplicatesMultiData <- NULL
               # Prepare the dataset only if duplicates check is selected
               if (includeDuplicates) {
                   # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   duplicatesData <- isolate(duplicate_dataset())
+                  duplicatesMultiData <- isolate(duplicate_multi_dataset())
+
               }
               # 2. Check if 'outlier' check is selected
               includeOutliers <- "outlier" %in% selected_checks()

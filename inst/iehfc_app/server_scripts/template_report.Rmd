@@ -14,6 +14,7 @@ params:
   summaryData: TRUE
   includeDuplicates: FALSE
   duplicatesData: NULL
+  duplicatesMultiData: NULL
   includeOutliers: FALSE
   outliersData: NULL
   outlierHist: NULL
@@ -48,15 +49,24 @@ summary <- params$summaryData
 
 ```{r duplicates-table, eval=params$includeDuplicates}
 if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
-    cat("# Duplicates\n\n")
-    cat('<div class="datatable-block">')
-    DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
-    
+  cat("# Duplicates (By ID)\n\n")
+  cat('<div class="datatable-block">')
+  DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
+  cat('</div>\n\n')
 } else {
-     cat("# Duplicates\n\n")
-    cat("No duplicate data available.")
+  cat("# Duplicates (By ID)\n\n")
+  cat("No duplicate data available.\n\n")
 }
-cat('</div>')
+
+if (!is.null(params$duplicatesMultiData) && nrow(params$duplicatesMultiData) > 0) {
+  cat("# Duplicates (Across Variables)\n\n")
+  cat('<div class="datatable-block">')
+  DT::datatable(params$duplicatesMultiData, options = list(pageLength = 5, scrollX = TRUE))
+  cat('</div>\n\n')
+} else {
+  cat("# Duplicates (Across Variables)\n\n")
+  cat("No observation-wide duplicate data available.\n\n")
+}
 ```
 
 
