@@ -1,3 +1,5 @@
+    * ---- Identify duplicates based on id ----
+
     * Sort and identify duplicates
        duplicates tag `selected_id_var', gen(_dup)
 
@@ -11,4 +13,22 @@
 
     * Export to CSV
        export delimited using "duplicate_table.csv", replace
+
+
+
+    * ---- Identify duplicates based on multiple user-specified variables ----
+    
+    * Sort and identify duplicates
+        duplicates tag `duplicate_multi_vars', gen(_multi_dup)
+        
+    * Filter out duplicates
+       keep if _multi_dup > 0
+       sort `duplicate_multi_vars', stable
+
+    * Keep only the relevant columns
+       keep `selected_id_var' `duplicate_multi_vars'
+       list `selected_id_var' `duplicate_multi_vars', sepby(`duplicate_multi_vars')
+
+    * Export to CSV
+       export delimited using "duplicate_multi_table.csv", replace
 
