@@ -1,64 +1,95 @@
-# `iehfc`
-Welcome to the `iehfc` platform by DIME Analytics!
+# 📦 IEHFC: High-Frequency Data Quality Checks
 
-The `iehfc` platform is a Shiny Dashboard that simplifies the process of setting up data quality checks. `iehfc` provides easy-to-create, customizable, and shareable high-frequency check outputs.
+## 📄 Overview
 
-This platform is currently under construction. If you find any issues or have any suggestions, please open an issue and let us know!
+The **IEHFC** package, developed by **DIME Analytics**, is a Shiny-based application designed to facilitate high-frequency data quality assessments in survey datasets. This tool provides an interactive dashboard to detect data inconsistencies, duplicate records, outliers, and other integrity issues, ensuring robust data quality control.
 
-## Contents
+**Note**: This package is in Beta version; expect updates. 
 
-This repository will eventually be converted into a functional R package, which will contain:
-- R scripts with functions to run simple high-frequency checks on datasets
-- An iehfc Shiny dashboard to allow users to engage with the functions in an interactive manner.
+### ✨ Key Features
 
-## iehfc Platform — Current Use Instructions
+- **Data Upload & Inspection**: Users can upload datasets in `.csv` format and inspect data before running quality checks.
+- **Automated Quality Checks**: The platform provides built-in functions for identifying duplicates, detecting outliers, and assessing enumerator performance.
+- **Customizable Reports**: Users can generate and export reports summarizing data integrity checks.
+- **Collaborative Analysis**: The tool allows for easy sharing of quality control outputs with research teams.
 
-NOTE — Work still needs to be done to create a fully independent set of scripts that can find each other on any individual's local setup. For now, the user is requested to **open the `iehfc.Rproj` file**, which will automatically set up the correct working directory for any user.
+## 🛠️ Installation
 
-1. Either (a) clone the `iehfc` repository using Github Desktop or equivalent or (b) download the files into a standalone folder
-2. Open `iehfc.Rproj`
-3. Run `iehfc_app/global.R`. This should install the required packages and launch the `iehfc` application. If at any point you want to relaunch the `iehfc` application after closing it, you can run `iehfc_app()` in the console.
+To install the package directly from GitHub, execute the following commands in R:
 
-## iehfc Platform — Quick Guide
+```r
+# Install devtools if not already installed
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 
-Once you have managed to open the `iehfc` Shiny Dashboard, you can follow the steps below to obtain your data quality check outputs. The `iehfc` Platform is composed of three principal tabs.
+# Install IEHFC from GitHub
+devtools::install_github("dime-worldbank/iehfc", ref = "create-package")
+```
 
-### Upload Data
+### ❗ Troubleshooting Installation Issues
 
-This is where you can upload the dataset whose quality you want to check and inspect its contents. You can either upload your own dataset or use the provided test dataset. Currently, the platform only supports .csv files. Once you have successfully loaded your dataset, you can move to the next tab.
+- If you encounter errors related to the `promises` package, restart your R session and reinstall `promises` manually:
+  ```r
+  install.packages("promises")
+  ```
+- Ensure you have the latest version of R and RStudio installed.
+- Check for dependency issues and update outdated packages using:
+  ```r
+  update.packages(ask = FALSE)
+  ```
 
-### Check Selection and Setup
+## 🚀 Launching the IEHFC Application
 
-This is where you set up the content and parameters of the checks you want to run. There are currently four available types of checks, with two more under construction.
+After installation, launch the **IEHFC** Shiny dashboard by running:
+
+```r
+library(iehfc)
+iehfc_app()
+```
+
+This will open the application in your default web browser, enabling interactive data quality analysis and visualization.
+
+## 🧭 Quick Guide
+
+Once the dashboard is open, follow these steps to conduct data quality checks:
+
+### 1️⃣ Upload Data
+
+- Import a dataset in `.csv` format for validation.
+- Preview the dataset before applying checks.
+
+### 2️⃣ Select and Configure Checks
+
+- **Duplicate Checks**: Verify whether an ID variable is uniquely identified. Provide the name of the ID variable and any additional variables to assist in resolving duplicates. The output is a table of duplicate observations.
+
+- **Outlier Detection**: Identify outliers in individual numeric variables or in grouped variables using common prefixes (e.g., `income_01`, `income_02`, etc.). The platform detects values more than three standard deviations from the mean. Future versions will allow custom thresholds. The output is a table listing all identified outliers.
+
+- **Enumerator Checks**: Assess enumerator performance during data collection. Specify the enumerator ID variable, numeric variables to summarize, and (optionally) a submission date and a completeness indicator. Outputs include:
+  1. Submission counts per enumerator (with daily breakdown if a date is provided),
+  2. Average values of specified variables by enumerator, and
+  3. A cumulative submissions graph if a date is provided.
+
+- **Administrative Unit Checks**: Monitor submissions across geographic areas (e.g., villages). Specify the main administrative unit variable and optionally higher-level geographic identifiers. You may also provide submission dates and completeness indicators. Outputs include:
+  1. Submission counts per unit and per day (if applicable), and
+  2. A cumulative submissions graph if a date is provided.
+
+### 3️⃣ Review and Export Results
+
+- View results through interactive tables and visualizations.
+- Download reports summarizing identified issues and recommendations.
+
+## 🤝 Contributing
+
+We welcome contributions! If you have feature requests or encounter issues, please open an issue on [GitHub](https://github.com/dime-worldbank/iehfc/issues).
+
+## 📝 License
+
+This package is distributed under the **MIT License**.
 
 ---
-**Duplicate Checks** — Allows you to verify whether an ID variable is uniquely identified.
-- Please provide the name of the variable, as well as any additional variables that would help address the duplicates in the outputs.
-- The output is a table with the duplicate observations.
 
----
-**Outlier Checks** — Allows you to check whether an individual variable or a group of variables has any outliers.
-- You can provide the names of individual (numeric) variables to check for outliers.
-- You can also provide a common prefix (e.g. "income" for "income_01", "income_02", etc.) for a group of (numeric) variables whose aggregated values you would like to check for outliers. This is particularly useful if you have the same indicator divided into multiple variables, such as income for multiple household members, for instance.
-- The platform currently considers values that are over three standard deviations from the mean to be outliers. In the next version of the platform, the user will be able to set manual limits or adjust the distance to define outliers.
-- You'll need to provide the dataset's ID variable and can add additional variables here as well.
-- The output is a table with a row for each identified outlier.
+👥 **Authors:**
 
----
-**Enumerator Checks** — Allows you to check average values and progress for individual enumerators if you are conducting primary data collection.
-- Please provide the variable that identifies the enumerator in the dataset.
-- You can then add (numeric) variables for which you'd like to see the average value per enumerator. This can be useful to check whether an enumerator has an unusually different set of values to the others.
-- You can also add a submission date variable. This is strongly encouraged. This allows you to see the number of submissions per enumerator per day, and thus to track their progress.
-- You can also add a "complete submission" variable. This will allow you to see the percentage of complete submissions per enumerator.
-- The outputs are (1) a table with submissions per enumerator and — if a submission date was provided — submissions per day, (2) a table with average values of variables per enumerator if variables were provided in the "Enumerator Average Value Variable" fields, and (3) a graph showing cumulative submissions per enumerator if a submission date was provided.
+- DIME Analytics Team
 
----
-**Administrative Unit-Level Checks** — Allows you to check submissions and progress for individual administrative units (e.g. villages) in your dataset.
-- Please provide the variable that identifies the administrative unit of interest in the dataset.
-- You can then add additional, higher-level administrative units (e.g. if you administrative unit of interest is "village", these could be "district" and "county") that would help either locate your administrative units of interest or uniquely identify them.
-- You can also add a submission date variable. This is strongly encouraged. This allows you to see the number of submissions per administrative unit per day, and thus to track their progress.
-- You can also add a "complete submission" variable. This will allow you to see the percentage of complete submissions per administrative unit.
-- The outputs are (1) a table with submissions per administrative unit and — if a submission date was provided — submissions per day and (2) a graph showing cumulative submissions per administrative unit if a submission date was provided.
+For inquiries, visit [DIME Analytics](https://www.worldbank.org/en/research/dime/data-and-analytics).
 
----
-**Under Construction** — Unit of Observation-Level Checks and Survey Logic Checks
