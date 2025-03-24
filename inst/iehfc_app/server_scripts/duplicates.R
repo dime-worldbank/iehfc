@@ -1,55 +1,48 @@
-# Unit of Observation-Level Data Quality Checks -- Construction ----
+# Duplicate Data Quality Checks -- Construction ----
 
-  unit_var <- reactive({
-      input$unit_var_select_var
+  duplicate_var <- reactive({
+      input$duplicate_select_var
   })
-  
-  unit_extra_vars <- reactive({
-      input$unit_extra_vars_select_var
+
+  duplicate_extra_vars <- reactive({
+      input$duplicate_extra_vars_select_var
   })
-  
-  unit_dataset <- reactive({
+
+
+
+  duplicate_dataset <- reactive({
       hfc_dataset() %>%
-          # Address any duplicates if there are some remaining, although they should be dealt with by this point
-          group_by(!!sym(unit_var())) %>%
-          mutate(
-              !!unit_var() := case_when(
-                  n() > 1 ~ paste0(!!sym(unit_var()), "_", row_number()),
-                  TRUE    ~ as.character(!!sym(unit_var()))
-              )
-          ) %>%
+          group_by(!!sym(selected_id_var())) %>%
+          filter(n() > 1) %>%
           ungroup() %>%
           select(
               all_of(
-                  c(unit_var(), unit_extra_vars())
+                  c(selected_id_var(), duplicate_extra_vars())
               )
-          ) %>%
-          arrange(
-              !!sym(unit_var())
           )
-  })
-  
-  output$unit_table <- renderDT(
-      unit_dataset(), fillContainer = TRUE, options = list(paging = FALSE)
+  }) %>%
+      bindEvent(input$run_hfcs)
+
+  output$duplicate_table <- renderDT(
+      duplicate_dataset(), fillContainer = TRUE
   )
-  
-  
-  ##### Download unit codes ----
-  output$unit_r_exp <- downloadHandler(
+
+  ##### Download duplicate codes ----
+  output$duplicate_r_exp <- downloadHandler(
       filename = function() {
-          "unit_run.R"
+          "duplicate_run.R"
       },
       content = function(file) {
           # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/unit_run.R"
-          
+          initial_script <- system.file("iehfc_app/server_scripts/code_export/duplicate_run.R", package = "iehfc")
+
           # Read the initial script content
           initial_content <- readLines(initial_script)
-          
+
           # Prepend the additional code
           additional_code <- paste(
               "    #----------------------------------------------------\n",
-              "    #    This is code sample for unit check. \n",
+              "    #    This is code sample for duplicates check. \n",
               "    #---------------------------------------------------- \n",
               "\n",
               "\n",
@@ -59,55 +52,54 @@
               "# Load your dataset\n",
               "# Replace this path with the actual path to your dataset\n",
               "hfc_dataset <- fread(\"C:/path/to/your/file.csv\")\n\n",
-              "# Define the tracking variables\n",
-              "unit_var <- ", paste0("\"", input$unit_var_select_var, "\"", collapse = ", "), "\n",
-              "unit_extra_vars <- c(", paste0("\"", input$unit_extra_vars_select_var, "\"", collapse = ", "), ")\n",
-              "\n",
+              "# Define the duplicate variables\n",
+              "selected_id_var <- \"", input$id_select_var, "\"\n",
+              "duplicate_extra_vars <- c(", paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "),
+              ")\n\n",
               sep = ""
           )
-          
+
           # Combine the additional code and the initial script content
           combined_content <- c(additional_code, initial_content)
-          
+
           # Write the combined content to the final file
           writeLines(combined_content, file)
       }
   )
-  
-  
-  
-  
-  
-  output$unit_s_exp <- downloadHandler(
+
+
+
+
+
+  output$duplicate_s_exp <- downloadHandler(
       filename = function() {
-          "unit_run.do"
+          "duplicate_run.do"
       },
       content = function(file) {
           # Save the initial script to a temporary file
-          initial_script <- "iehfc_app/server_scripts/code_export/unit_run.do"
-          
+          initial_script <- system.file("iehfc_app/server_scripts/code_export/duplicate_run.do", package = "iehfc")
+
           # Read the initial script content
           initial_content <- readLines(initial_script)
-          
+
           # Prepend the additional code
           additional_code <- paste(
               "    /*----------------------------------------------------\n",
-              "           This is code sample for unit check. \n",
+              "           This is code sample for duplicates check. \n",
               "    -----------------------------------------------------*/ \n",
               "\n",
               "\n",
-              "    * Define the unit variables\n",
-              "       local unit_var ", paste0(input$unit_var_select_var, collapse = " "), "\n",
-              "       local unit_extra_vars ", paste0(input$unit_extra_vars_select_var, collapse = " "), "\n",
+              "    * Define the duplicate variables\n",
+              "       local selected_id_var ", paste0(input$id_select_var, collapse = " "), "\n",
+              "       local duplicate_extra_vars ", paste0(input$duplicate_extra_vars_select_var, collapse = " "), "\n",
               "\n",
               sep = ""
           )
-          
+
           # Combine the additional code and the initial script content
           combined_content <- c(additional_code, initial_content)
-          
+
           # Write the combined content to the final file
           writeLines(combined_content, file)
       }
   )
-  

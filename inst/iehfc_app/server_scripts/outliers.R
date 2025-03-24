@@ -48,27 +48,27 @@ indiv_outlier_dataset <- reactive({
                         matches(paste0("^", .x, "$")), ~ mean(.x, na.rm = TRUE), .names = "mean"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
-                        ~ if (method == "sd") sd(.x, na.rm = TRUE) else NaN, 
+                        matches(paste0("^", .x, "$")),
+                        ~ if (method == "sd") sd(.x, na.rm = TRUE) else NaN,
                         .names = "sd"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
-                        ~ if (method == "iqr") IQR(.x, na.rm = TRUE) else NaN, 
+                        matches(paste0("^", .x, "$")),
+                        ~ if (method == "iqr") IQR(.x, na.rm = TRUE) else NaN,
                         .names = "iqr"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
+                        matches(paste0("^", .x, "$")),
                         ~ if (method == "iqr") {
                             quantile(.x, probs = 0.25, na.rm = TRUE)
-                        } else NaN, 
+                        } else NaN,
                         .names = "p25"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
+                        matches(paste0("^", .x, "$")),
                         ~ if (method == "iqr") {
                             quantile(.x, probs = 0.75, na.rm = TRUE)
-                        } else NaN, 
+                        } else NaN,
                         .names = "p75"
                     ),
                     low_limit = if (method == "sd") {
@@ -91,7 +91,7 @@ indiv_outlier_dataset <- reactive({
                         mean:high_limit, ~ round(.x, digits = 0)
                     )
                 ) %>%
-                
+
                 {
                     if (method == "sd") {
                         select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, sd, low_limit, high_limit)
@@ -99,7 +99,7 @@ indiv_outlier_dataset <- reactive({
                         select(., any_of(selected_id_var()), any_of(outlier_extra_vars()), issue_var, value = matches(paste0("^", .x, "$")), mean, iqr, low_limit, high_limit)
                     }
                 }
-            
+
         ) %>%
         list_rbind()
 }) %>%
@@ -108,7 +108,7 @@ indiv_outlier_dataset <- reactive({
 group_outlier_dataset <- reactive({
     method <- outlier_method_selected()
     multiplier <- as.numeric(input$outlier_multiplier)
-    
+
     group_outlier_vars() %>%
         map(
             ~ hfc_dataset() %>%
@@ -170,10 +170,10 @@ output$outlier_table <- renderDT(
 custom_winsorize <- function(data, var) {
     lower <- quantile(data[[var]], probs = 0.05, na.rm = TRUE)
     upper <- quantile(data[[var]], probs = 0.95, na.rm = TRUE)
-    
+
     data[[var]][data[[var]] < lower] <- lower
     data[[var]][data[[var]] > upper] <- upper
-    
+
     return(data)
 }
 
@@ -215,10 +215,10 @@ generate_histogram <- function(dataset, var, bin_width, title_suffix) {
 indiv_combined_histograms <- function(var) {
     bin_width_with <- calculate_bin_width(hfc_dataset(), var)
     hist_with_outliers <- generate_histogram(hfc_dataset(), var, bin_width_with, "with outliers")
-    
+
     bin_width_without <- calculate_bin_width(winsorized_hfc_dataset(), var)
     hist_without_outliers <- generate_histogram(winsorized_hfc_dataset(), var, bin_width_without, title_suffix = "winsorized (95%)")
-    
+
     list(with = ggplotly(hist_with_outliers, tooltip = c("x", "y")),
          without = ggplotly(hist_without_outliers, tooltip = c("x", "y")))
 }
@@ -230,7 +230,7 @@ render_histogram_ui <- function(selected_vars) {
             lapply(1:length(selected_vars), function(i) {
                 var <- selected_vars[i]
                 histograms <- indiv_combined_histograms(var)
-                
+
                 fluidRow(
                     column(6, plotlyOutput(paste0("histogram_with_", i))),
                     column(6, plotlyOutput(paste0("histogram_without_", i)))
@@ -259,7 +259,7 @@ observe({
         lapply(1:length(selected_vars), function(i) {
             var <- selected_vars[i]
             histograms <- indiv_combined_histograms(var)
-            
+
             output[[paste0("histogram_with_", i)]] <- renderPlotly(histograms$with)
             output[[paste0("histogram_without_", i)]] <- renderPlotly(histograms$without)
         })
@@ -272,15 +272,15 @@ generate_boxplot <- function(dataset, group) {
     variable_group <- dataset %>%
         select(matches(paste0("^", group, "_{0,1}[0-9]+$"))) %>%
         pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value")
-    
-    
+
+
     ggplot(variable_group, aes(x = issue_var, y = value)) +
         geom_boxplot(fill = "#9e83cf", color = "black") +
         labs(title = paste("Boxplot for Group", group), x = "Variables", y = "Values") +
         theme_minimal() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
         scale_y_continuous(labels = scales::comma)
-    
+
 }
 
 group_boxplots <- function(group) {
@@ -294,7 +294,7 @@ render_boxplot_ui <- function(selected_groups) {
             lapply(1:length(selected_groups), function(i) {
                 group <- selected_groups[i]
                 boxplots <- group_boxplots(group)
-                
+
                 fluidRow(
                     column(12, plotlyOutput(paste0("boxplot_", i)))
                 ) %>% tagAppendAttributes(style = "margin: 40px 0 40px 0;")
@@ -313,7 +313,7 @@ observe({
         lapply(1:length(selected_groups), function(i) {
             group <- selected_groups[i]
             plots <- group_boxplots(group)
-            
+
             output[[paste0("boxplot_", i)]] <- renderPlotly({ plots$box })
         })
     }
@@ -327,11 +327,11 @@ export_outlier_histogram <- reactive({
     if (length(current_indiv_outlier_vars()) > 0) {
         plot_data <- hfc_dataset()
         selected_vars <- current_indiv_outlier_vars()
-        
+
         plot_data_long <- plot_data %>%
             select(all_of(selected_vars)) %>%
             pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
-        
+
         ggplot_obj <- ggplot(plot_data_long, aes(x = value)) +
             geom_histogram(binwidth = (max(plot_data_long$value, na.rm = TRUE) - min(plot_data_long$value, na.rm = TRUE)) / 30,
                            fill = "#9e83cf", color = "black") +
@@ -340,7 +340,7 @@ export_outlier_histogram <- reactive({
             scale_x_continuous(labels = scales::comma) +
             theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
             facet_wrap(~ variable, scales = "free", ncol = 1)
-        
+
         n_vars <- length(selected_vars)
         return(ggplotly(ggplot_obj, tooltip = c("x", "y"), height = 250*n_vars, width = 900)) %>%
             layout(margin = list(b = 100))
@@ -351,11 +351,11 @@ export_outlier_win_histogram <- reactive({
     if (length(current_indiv_outlier_vars()) > 0) {
         plot_data <- winsorized_hfc_dataset()
         selected_vars <- current_indiv_outlier_vars()
-        
+
         plot_data_long <- plot_data %>%
             select(all_of(selected_vars)) %>%
             pivot_longer(cols = everything(), names_to = "variable", values_to = "value")
-        
+
         ggplot_obj <- ggplot(plot_data_long, aes(x = value)) +
             geom_histogram(binwidth = (max(plot_data_long$value, na.rm = TRUE) - min(plot_data_long$value, na.rm = TRUE)) / 30,
                            fill = "#9e83cf", color = "black") +
@@ -364,7 +364,7 @@ export_outlier_win_histogram <- reactive({
             scale_x_continuous(labels = scales::comma) +
             theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
             facet_wrap(~ variable, scales = "free", ncol = 1, labeller = as_labeller(function(x) paste(x, "_95%_winsorized")))
-        
+
         n_vars <- length(selected_vars)
         return(ggplotly(ggplot_obj, tooltip = c("x", "y"), height = 250*n_vars, width = 900 )) %>%
             layout(margin = list(b = 100))
@@ -374,16 +374,16 @@ export_outlier_win_histogram <- reactive({
 export_outlier_boxplot <- reactive({
     if (length(group_outlier_vars()) > 0) {
         plot_data <- hfc_dataset()
-        selected_groups <- group_outlier_vars()  
-        
+        selected_groups <- group_outlier_vars()
+
         plot_data <- plot_data %>%
             select(matches(paste0("^", paste(selected_groups, collapse = "|"), "_{0,1}[0-9]*$"))) %>%
             pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value") %>%
-            mutate(group = sub("_.*", "", issue_var))  
-        
-        
+            mutate(group = sub("_.*", "", issue_var))
+
+
         ggplot_obj <- ggplot(plot_data, aes(x = issue_var, y = value)) +
-            geom_boxplot(fill = "#9e83cf", color = "black") + 
+            geom_boxplot(fill = "#9e83cf", color = "black") +
             theme_minimal() +
             theme(
                 axis.text.x = element_text(angle = 25, hjust = 1),
@@ -392,9 +392,9 @@ export_outlier_boxplot <- reactive({
             ) +
             labs(x = NULL, y = NULL) +
             scale_y_continuous(labels = scales::comma) +
-            facet_wrap(~ group, scales = "free", ncol = 1)  + 
+            facet_wrap(~ group, scales = "free", ncol = 1)  +
             theme(panel.spacing.x=unit(5, "lines"),panel.spacing.y=unit(5, "lines"))
-        
+
         n_groups <- length(selected_groups)
         ggplotly(ggplot_obj, tooltip = c("x", "y"), height = 350*n_groups, width = 900) %>%
             highlight(on = "plotly_hover", off = "plotly_doubleclick")
@@ -424,15 +424,15 @@ export_outlier_boxplot <- reactive({
 #         div(style = "height: 50px;")   # Blank space below the plots
 #     )
 # })
-# 
+#
 # output$histogram_with <- renderPlotly({
 #     export_outlier_histogram()
 # })
-# 
+#
 # output$histogram_without <- renderPlotly({
 #     export_outlier_win_histogram()
 # })
-# 
+#
 
 
 ##### Download outlier codes ----
@@ -442,11 +442,11 @@ output$outlier_r_exp <- downloadHandler(
     },
     content = function(file) {
         # Save the initial script to a temporary file
-        initial_script <- "iehfc_app/server_scripts/code_export/outlier_run.R"
-        
+        initial_script <- system.file("iehfc_app/server_scripts/code_export/outlier_run.R", package = "iehfc")
+
         # Read the initial script content
         initial_content <- readLines(initial_script)
-        
+
         # Prepend the additional code
         additional_code <- paste(
             "    #----------------------------------------------------\n",
@@ -471,10 +471,10 @@ output$outlier_r_exp <- downloadHandler(
             "\n",
             sep = ""
         )
-        
+
         # Combine the additional code and the initial script content
         combined_content <- c(additional_code, initial_content)
-        
+
         # Write the combined content to the final file
         writeLines(combined_content, file)
     }
@@ -490,11 +490,12 @@ output$outlier_s_exp <- downloadHandler(
     },
     content = function(file) {
         # Save the initial script to a temporary file
-        initial_script <- "iehfc_app/server_scripts/code_export/outlier_run.do"
-        
+
+        initial_script <- system.file("iehfc_app/server_scripts/code_export/outlier_run.do", package = "iehfc")
+
         # Read the initial script content
         initial_content <- readLines(initial_script)
-        
+
         # Prepend the additional code
         additional_code <- paste(
             "    /*----------------------------------------------------\n",
@@ -512,10 +513,10 @@ output$outlier_s_exp <- downloadHandler(
             "\n",
             sep = ""
         )
-        
+
         # Combine the additional code and the initial script content
         combined_content <- c(additional_code, initial_content)
-        
+
         # Write the combined content to the final file
         writeLines(combined_content, file)
     }
