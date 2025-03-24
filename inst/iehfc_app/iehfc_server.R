@@ -349,9 +349,9 @@
 
      output$duplicate_multi_vars_select <- renderUI({
           dataset <- hfc_dataset()
-   
+
           selectizeInput(
-              "duplicate_multi_vars_select_var", 
+              "duplicate_multi_vars_select_var",
               label = NULL,
               choices = names(dataset),
               selected = NULL,  # Start with no selection
@@ -359,7 +359,7 @@
               options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
-    
+
 
       output$duplicate_setup <- renderUI({
           card(
@@ -390,7 +390,7 @@
                              span("Display Variables for ID duplicate check", bsicons::bs_icon("question-circle-fill")) %>%
                                  tooltip("These are additional variables that you may want to display in the output table",
                                          placement = "right"),
-                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;") 
+                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
                       ),
                       column(6,
                              span("Observation-wide Duplicate Check", bsicons::bs_icon("question-circle-fill")) %>%
@@ -1589,7 +1589,7 @@
               write.csv(duplicate_multi_dataset(), file, row.names = FALSE)
           }
       )
-    
+
       output$duplicate_table_dl <- renderUI({
           downloadButton("duplicate_table_for_dl", label = "Download Table")
       })
@@ -1597,34 +1597,34 @@
     output$duplicate_multi_table_dl <- renderUI({
           downloadButton("duplicate_multi_table_for_dl", label = "Download Table")
       })
-    
+
         ### Outlier Outputs ----
 
 
-      output$outlier_output <- renderUI({
-          if("outlier" %in% selected_checks()) {
-              tagList(
-                  card(
-                      DTOutput("outlier_table"),
-                      uiOutput("outlier_table_dl"),
-                      full_screen = TRUE
-                  ),
-                if (!is.null(input$indiv_outlier_vars_select_var) && length(input$indiv_outlier_vars_select_var) > 0) {
-                  card(
-                      uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                      full_screen = TRUE,
-                      style = "display: flex; flex-direction: column;padding: 50px;"
-                  )},
-                if (!is.null(input$group_outlier_vars_select_var) && length(input$group_outlier_vars_select_var) > 0) {
-                  card(
-                      uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                      full_screen = TRUE,
-                  )
-              )}
-          } else {
-              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
-          }
-      })
+    output$outlier_output <- renderUI({
+      if("outlier" %in% selected_checks()) {
+        tagList(
+          card(
+            DTOutput("outlier_table"),
+            uiOutput("outlier_table_dl"),
+            full_screen = TRUE
+          ),
+          if (!is.null(input$indiv_outlier_vars_select_var) && length(input$indiv_outlier_vars_select_var) > 0) {
+            card(
+              uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+              full_screen = TRUE,
+              style = "display: flex; flex-direction: column;padding: 50px;"
+            )},
+          if (!is.null(input$group_outlier_vars_select_var) && length(input$group_outlier_vars_select_var) > 0) {
+            card(
+              uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+              full_screen = TRUE,
+            )}
+        )
+      } else {
+        "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+      }
+    })
 
 
 
@@ -2030,4 +2030,3 @@
 
   }
 
-  iehfc_server
