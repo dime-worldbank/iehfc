@@ -197,7 +197,7 @@ calculate_bin_width <- function(data, var) {
     x <- data[[var]]
     n <- length(x)
     iqr_val <- IQR(x, na.rm = TRUE)
-    bin_width <- max(2 * iqr_val / n^(1/3), 1000)
+    bin_width <- 3.5 * sd(x, na.rm = TRUE) / n^(1/3)
     return(bin_width)
 }
 
