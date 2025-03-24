@@ -2008,6 +2008,7 @@
                                     summaryData = summary_data,
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
+                                    duplicatesMultiData = duplicatesMultiData,
                                     includeOutliers = includeOutliers,
                                     outliersData = outliersData,
                                     outlierHist = outlierHist,
