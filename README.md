@@ -49,8 +49,9 @@ iehfc_app()
 This will open the application in your default web browser, enabling interactive data quality analysis and visualization.
 
 > 🖼️ The app looks like this:
-> 
-> ![](iehfc_app/www/iehfc_app.png)
+>
+> <img src="https://github.com/dime-worldbank/iehfc/raw/main/inst/iehfc_app/www/iehfc_app.png" width="50%" />
+
 
 ## 🧭 Quick Guide
 
