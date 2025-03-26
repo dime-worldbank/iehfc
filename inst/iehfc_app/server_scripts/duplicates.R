@@ -8,6 +8,11 @@
       input$duplicate_extra_vars_select_var
   })
 
+duplicate_multi_vars <- reactive({
+      input$duplicate_multi_vars_select_var
+  })
+
+
 
 
   duplicate_dataset <- reactive({
@@ -23,9 +28,32 @@
   }) %>%
       bindEvent(input$run_hfcs)
 
+
+
+  duplicate_multi_dataset <- reactive({
+      req(duplicate_multi_vars())  
+      dataset <- hfc_dataset()
+      
+      dataset %>%
+          group_by(across(all_of(duplicate_multi_vars()))) %>%
+          filter(n() > 1) %>%
+          ungroup() %>%
+          select(all_of(c(selected_id_var(), duplicate_multi_vars())))
+  }) %>%
+      bindEvent(input$run_hfcs)
+
+
+
   output$duplicate_table <- renderDT(
       duplicate_dataset(), fillContainer = TRUE
   )
+
+
+ output$duplicate_multi_table <- renderDT(
+      duplicate_multi_dataset(), fillContainer = TRUE
+  )
+
+
 
   ##### Download duplicate codes ----
   output$duplicate_r_exp <- downloadHandler(
@@ -55,6 +83,8 @@
               "# Define the duplicate variables\n",
               "selected_id_var <- \"", input$id_select_var, "\"\n",
               "duplicate_extra_vars <- c(", paste0("\"", input$duplicate_extra_vars_select_var, "\"", collapse = ", "),
+            ")\n",
+              "duplicate_multi_vars <- c(", paste0("\"", input$duplicate_multi_vars_select_var, "\"", collapse = ", "), 
               ")\n\n",
               sep = ""
           )
@@ -92,6 +122,7 @@
               "    * Define the duplicate variables\n",
               "       local selected_id_var ", paste0(input$id_select_var, collapse = " "), "\n",
               "       local duplicate_extra_vars ", paste0(input$duplicate_extra_vars_select_var, collapse = " "), "\n",
+            "       local duplicate_multi_vars ", paste0(input$duplicate_multi_vars_select_var, collapse = " "), "\n",
               "\n",
               sep = ""
           )

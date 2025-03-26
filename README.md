@@ -48,6 +48,10 @@ iehfc_app()
 
 This will open the application in your default web browser, enabling interactive data quality analysis and visualization.
 
+> 🖼️ The app looks like this:
+> 
+> ![](iehfc_app/www/iehfc_app.png)
+
 ## 🧭 Quick Guide
 
 Once the dashboard is open, follow these steps to conduct data quality checks:
@@ -55,13 +59,13 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 ### 1️⃣ Upload Data
 
 - Import a dataset in `.csv` format for validation.
-- Preview the dataset before applying checks.
+- Preview the dataset, variable names, and types before applying checks.
 
 ### 2️⃣ Select and Configure Checks
 
 - **Duplicate Checks**: Verify whether an ID variable is uniquely identified. Provide the name of the ID variable and any additional variables to assist in resolving duplicates. The output is a table of duplicate observations.
 
-- **Outlier Detection**: Identify outliers in individual numeric variables or in grouped variables using common prefixes (e.g., `income_01`, `income_02`, etc.). The platform detects values more than three standard deviations from the mean. Future versions will allow custom thresholds. The output is a table listing all identified outliers.
+- **Outlier Detection**: Identify outliers in individual numeric variables or in grouped variables using common prefixes (e.g., `income_01`, `income_02`, etc.). The platform lets the user decide between Standard Deviation or IQR. The output is a table listing all identified outliers, as well as graphs with individual and grouped outliers.
 
 - **Enumerator Checks**: Assess enumerator performance during data collection. Specify the enumerator ID variable, numeric variables to summarize, and (optionally) a submission date and a completeness indicator. Outputs include:
   1. Submission counts per enumerator (with daily breakdown if a date is provided),
@@ -76,6 +80,11 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 
 - View results through interactive tables and visualizations.
 - Download reports summarizing identified issues and recommendations.
+
+### 4️⃣ Extra Features
+
+- **Template Code Export**: You can download a template R or Stata script to replicate the checks programmatically. You’ll need to edit the variables to match your dataset.
+- **Parameter Upload**: After configuring checks, you can download your settings to reuse them later. Use "Upload Parameters" to automatically populate fields without needing to configure everything again.
 
 ## 🤝 Contributing
 

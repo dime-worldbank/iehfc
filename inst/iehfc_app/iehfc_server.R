@@ -331,39 +331,9 @@
       })
 
 
-      #The code below is for a dropdown that allows the user to select extra variables for duplicate check. It is hidden in the UI because the functionality is not complete.
-
-      # output$duplicate_select <- renderUI({
-      #     selectizeInput(
-      #         "duplicate_select_var",
-      #         label = NULL,
-      #         choices = character(0),  # Empty by default
-      #         selected = current_duplicate_var(),  # Preserve the selection if available
-      #         options = list('dropdownParent' = 'body')
-      #     )
-      # })
-      #
-      #
-      # observe({
-      #     # Update the selectizeInput only when hfc_dataset() is not NULL
-      #     if (!is.null(hfc_dataset())) {
-      #         updateSelectizeInput(session, "duplicate_select_var",
-      #                              choices = hfc_dataset() %>%
-      #                                  select(-all_of(selected_id_var())) %>%
-      #                                  names(),
-      #                              selected = current_duplicate_var())
-      #     }
-      # })
-
-
 
       output$duplicate_extra_vars_select <- renderUI({
           dataset <- hfc_dataset()
-
-          if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              dataset <- dataset %>%
-                  select(-all_of(selected_id_var()))
-          }
 
           selectizeInput(
               "duplicate_extra_vars_select_var",
@@ -374,6 +344,19 @@
               options = list(
                   'plugins' = list('remove_button')
              )
+          )
+      })
+
+     output$duplicate_multi_vars_select <- renderUI({
+          dataset <- hfc_dataset()
+
+          selectizeInput(
+              "duplicate_multi_vars_select_var",
+              label = NULL,
+              choices = names(dataset),
+              selected = NULL,  # Start with no selection
+              multiple = TRUE,
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
       })
 
@@ -403,17 +386,17 @@
           ),
               card_body(
                   fluidRow(
-                      # column(6,
-                      #        span("Extra Variable to Check", bsicons::bs_icon("question-circle-fill")) %>%
-                      #            tooltip("This is an optional variable that you might want to check for duplicates, besides,the ID. Duplicate IDs are checked automatically.",
-                      #                    placement = "right"),
-                      #        uiOutput("duplicate_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                      # ),
                       column(6,
-                             span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                             span("Display Variables for ID duplicate check", bsicons::bs_icon("question-circle-fill")) %>%
                                  tooltip("These are additional variables that you may want to display in the output table",
                                          placement = "right"),
-                             uiOutput("duplicate_extra_vars_select")  # Set a high z-index to overlap other elements
+                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
+                      ),
+                      column(6,
+                             span("Observation-wide Duplicate Check", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Select multiple variables to check for duplicate observations",
+                                         placement = "right"),
+                             uiOutput("duplicate_multi_vars_select", style = "z-index: 1000;")
                       )
                   )
               )
@@ -1572,10 +1555,21 @@
 
       output$duplicate_output <- renderUI({
           if("duplicate" %in% selected_checks()) {
-              card(
-                  DTOutput("duplicate_table"),
-                  uiOutput("duplicate_table_dl"),
-                  full_screen = TRUE
+              tagList(
+                  card(
+                      card_header("Duplicate Check Based on ID"),
+                      DTOutput("duplicate_table"),
+                      uiOutput("duplicate_table_dl"),
+                      full_screen = TRUE
+                  ),
+                  if (!is.null(input$duplicate_multi_vars_select_var) && length(input$duplicate_multi_vars_select_var) > 0) {
+                      card(
+                          card_header("Duplicate Check Across Selected Variables"),
+                          DTOutput("duplicate_multi_table"),
+                          uiOutput("duplicate_multi_table_dl"),
+                          full_screen = TRUE
+                      )
+                  }
               )
           } else {
               "If you would like to see Duplicate Checks, please select \"Duplicates\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
@@ -1589,35 +1583,48 @@
           }
       )
 
+    output$duplicate_multi_table_for_dl <- downloadHandler(
+          filename = "duplicate_multi_table.csv",
+          content = function(file) {
+              write.csv(duplicate_multi_dataset(), file, row.names = FALSE)
+          }
+      )
+
       output$duplicate_table_dl <- renderUI({
           downloadButton("duplicate_table_for_dl", label = "Download Table")
+      })
+
+    output$duplicate_multi_table_dl <- renderUI({
+          downloadButton("duplicate_multi_table_for_dl", label = "Download Table")
       })
 
         ### Outlier Outputs ----
 
 
-      output$outlier_output <- renderUI({
-          if("outlier" %in% selected_checks()) {
-              tagList(
-                  card(
-                      DTOutput("outlier_table"),
-                      uiOutput("outlier_table_dl"),
-                      full_screen = TRUE
-                  ),
-                  card(
-                      uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                      full_screen = TRUE,
-                      style = "display: flex; flex-direction: column;padding: 50px;"
-                  ),
-                  card(
-                      uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                      full_screen = TRUE,
-                  )
-              )
-          } else {
-              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
-          }
-      })
+    output$outlier_output <- renderUI({
+      if("outlier" %in% selected_checks()) {
+        tagList(
+          card(
+            DTOutput("outlier_table"),
+            uiOutput("outlier_table_dl"),
+            full_screen = TRUE
+          ),
+          if (!is.null(input$indiv_outlier_vars_select_var) && length(input$indiv_outlier_vars_select_var) > 0) {
+            card(
+              uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+              full_screen = TRUE,
+              style = "display: flex; flex-direction: column;padding: 50px;"
+            )},
+          if (!is.null(input$group_outlier_vars_select_var) && length(input$group_outlier_vars_select_var) > 0) {
+            card(
+              uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+              full_screen = TRUE,
+            )}
+        )
+      } else {
+        "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+      }
+    })
 
 
 
@@ -1934,10 +1941,13 @@
               # 1. Check if 'duplicate' check is selected
               includeDuplicates <- "duplicate" %in% selected_checks()
               duplicatesData <- NULL
+              duplicatesMultiData <- NULL
               # Prepare the dataset only if duplicates check is selected
               if (includeDuplicates) {
                   # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   duplicatesData <- isolate(duplicate_dataset())
+                  duplicatesMultiData <- isolate(duplicate_multi_dataset())
+
               }
               # 2. Check if 'outlier' check is selected
               includeOutliers <- "outlier" %in% selected_checks()
@@ -1998,6 +2008,7 @@
                                     summaryData = summary_data,
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
+                                    duplicatesMultiData = duplicatesMultiData,
                                     includeOutliers = includeOutliers,
                                     outliersData = outliersData,
                                     outlierHist = outlierHist,
@@ -2023,4 +2034,3 @@
 
   }
 
-  iehfc_server
