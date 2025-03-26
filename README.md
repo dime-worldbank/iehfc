@@ -31,11 +31,6 @@ devtools::install_github("dime-worldbank/iehfc")
   ```r
   install.packages("promises")
   ```
-- Ensure you have the latest version of R and RStudio installed.
-- Check for dependency issues and update outdated packages using:
-  ```r
-  update.packages(ask = FALSE)
-  ```
 
 ## 🚀 Launching the IEHFC Application
 
