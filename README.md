@@ -55,7 +55,7 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 ### 1️⃣ Upload Data
 
 - Import a dataset in `.csv` format for validation.
-- Preview the dataset before applying checks.
+- Preview the dataset, variable names, and types, before applying checks.
 
 ### 2️⃣ Select and Configure Checks
 
