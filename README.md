@@ -22,7 +22,7 @@ To install the package directly from GitHub, execute the following commands in R
 if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
 
 # Install IEHFC from GitHub
-devtools::install_github("dime-worldbank/iehfc", ref = "create-package")
+devtools::install_github("dime-worldbank/iehfc")
 ```
 
 ### ❗ Troubleshooting Installation Issues
