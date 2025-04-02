@@ -1,27 +1,40 @@
+#' Launch the IEHFC Shiny App
+#'
+#' This function starts the IEHFC Shiny application.
+#' @export
+iehfc_app <- function() {
 
+  requireNamespace("shiny", quietly = TRUE)
 
-  iehfc_app <- function() {
-      
-      shiny::addResourcePath(prefix = "res", directoryPath = "iehfc_app/www")
-      
-      extract_source <- function(filename) {
-          source(filename, local = parent.frame(), chdir = TRUE)$value
-      }
-      
-      req_packages <- c(
-          "pacman", "shiny", "dplyr", "tidyr", "purrr", "ggplot2", "janitor", "data.table", "DT",
-          "remotes", "bsicons", "shinydashboard", "shinyjs", "markdown",
-          "htmlwidgets", "plotly"
-      )
-      
-      if(sum(req_packages %in% (.packages())) != length(req_packages)) { # Means we need to run global.R to get packages, otherwise we're fine
-          extract_source("iehfc_app/global.R")
-      }
-      
-      shinyApp(
-          ui = extract_source("iehfc_app/iehfc_ui.R"),
-          server = extract_source("iehfc_app/iehfc_server.R")
-      )
-      
+  # Get the installed package path
+  app_dir <- system.file("iehfc_app", package = "iehfc")
+
+  # Ensure "www" directory is correctly registered
+  www_path <- system.file("iehfc_app/www", package = "iehfc")
+
+  if (nzchar(www_path) && dir.exists(www_path)) {
+    message("Registering www path: ", www_path)
+    shiny::addResourcePath("www", www_path)
+  } else {
+    warning("www/ directory not found in installed package: ", www_path)
   }
-  
+
+  # Check if the directory exists
+  if (app_dir == "") {
+    stop("The application directory is not found. Try reinstalling `iehfc`.", call. = FALSE)
+  }
+
+  # Function to load UI and server
+  extract_source <- function(filename) {
+    source(file.path(app_dir, filename), local = parent.frame(), chdir = TRUE)$value
+  }
+
+  # Run the Shiny app
+  shiny::shinyApp(
+    ui = extract_source("iehfc_ui.R"),
+    server = extract_source("iehfc_server.R")
+  )
+}
+
+
+

@@ -5,21 +5,27 @@
   library(DT)
   library(bsicons)
   library(shinydashboard)
-  
+  library(plotly)
+  library(dplyr)
+  library(tidyr)
+  library(purrr)
+  library(lubridate)
+  library(stringr)
+
   # Increase maximum file upload size
-  
+
   options(shiny.maxRequestSize = 100 * (1024^2))
 
   iehfc_server <- function(input, output, session) {
-      
-      source("iehfc_app/server_scripts/duplicates.R", local = TRUE)
-      source("iehfc_app/server_scripts/outliers.R",   local = TRUE)
-      source("iehfc_app/server_scripts/enumerator.R", local = TRUE)
-      source("iehfc_app/server_scripts/admin.R",      local = TRUE)
-      source("iehfc_app/server_scripts/unit.R",       local = TRUE)
-      source("iehfc_app/server_scripts/summary.R",       local = TRUE)
-      
-      
+
+    source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "duplicates.R"), local = TRUE)
+    source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "outliers.R"), local = TRUE)
+    source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "enumerator.R"), local = TRUE)
+    source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "admin.R"), local = TRUE)
+    source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "unit.R"), local = TRUE)
+    source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "summary.R"), local = TRUE)
+
+
       observeEvent(
           input$gotoTab, {
               # Use JavaScript to navigate to the selected tab
@@ -28,15 +34,15 @@
               )
           }
       )
-      
+
       ## Upload Tab ----
-      
+
       hfc_file <- reactive({
           input$hfc_file
       })
-      
+
       hfc_dataset <- reactiveVal()
-      
+
       # observeEvent(input$hfc_file, {
       #     ds <- fread(hfc_file()$datapath, na.strings = c("", "NA_character_", "NA"))
       #     too_many_cols <- ncol(ds) > 10000
@@ -50,15 +56,15 @@
       #     req(!too_many_cols)
       #     hfc_dataset(ds)
       # })
-      # 
+      #
       # observeEvent(input$use_test_data, {
       #     ds <- fread("test_data/LWH_FUP2_raw_data.csv", na.strings = "")
       #     hfc_dataset(ds)
       # })
-      
+
       observeEvent(input$hfc_file, {
           req(input$hfc_file)
-          
+
           file_path <- input$hfc_file$datapath
           ds <- tryCatch(
               data.table::fread(file_path),
@@ -67,10 +73,10 @@
                   return(NULL)
               }
           )
-          
+
           if (!is.null(ds)) {
               duplicated_cols <- names(ds)[duplicated(names(ds))]
-              
+
               if (length(duplicated_cols) > 0) {
                   showNotification(
                       paste("The uploaded dataset has duplicate column names:", paste(duplicated_cols, collapse = ", "), ". Please ensure columns have unique names"),
@@ -84,14 +90,15 @@
                       type = "error"
                   )
               }  else {
-                  hfc_dataset(ds) 
+                  hfc_dataset(ds)
               }
           }
       })
-      
+
       observeEvent(input$use_test_data, {
-          test_file_path <- file.path(getwd(), "test_data", "LWH_FUP2_raw_data.csv")
-          
+        test_file_path <- system.file("test_data", "LWH_FUP2_raw_data.csv", package = "iehfc")
+
+
           ds <- tryCatch(
               data.table::fread(test_file_path),
               error = function(e) {
@@ -99,29 +106,29 @@
                   return(NULL)
               }
           )
-          
+
           hfc_dataset(ds)
       })
-      
-      
+
+
       output$hfc_ds_display <- renderDT(
           hfc_dataset(), fillContainer = TRUE
       )
-      
+
       output$hfc_ds_names_types_display <- renderDT({
           hfc_ds_names_types <- hfc_dataset() %>%
               tibble::as_tibble() %>%
               dplyr::summarise_all(class) %>%
               tidyr::pivot_longer(cols = everything(), names_to = "Variable", values_to = "Type")
-          
+
           datatable(hfc_ds_names_types, options = list(pageLength = 10, scrollX = TRUE))
       })
-      
-      
+
+
       output$upload_tab_nodata <- renderUI({
           "Please either upload your dataset using the sidebar on the left or click on the \"Use Test Data\" button."
       })
-      
+
       output$upload_tab_data <- renderUI({
           layout_column_wrap(
               height = "120vh",
@@ -152,7 +159,7 @@
               )
           )
       })
-      
+
       output$upload_tab_body <- renderUI({
           if(is.null(hfc_dataset())) {
               return(uiOutput("upload_tab_nodata"))
@@ -160,7 +167,7 @@
               return(uiOutput("upload_tab_data"))
           }
       })
-      
+
       output$use_test_data_button <- renderUI({
           actionButton(
               "use_test_data",
@@ -170,7 +177,7 @@
               width = "100%"
           )
       })
-      
+
       output$upload_tab <- renderUI({
           layout_sidebar(
               height = "88vh",
@@ -199,27 +206,27 @@
               uiOutput("upload_tab_body")
           )
       })
-      
-      
+
+
       ## Setup Tab ----
-      
+
       ### Read from imported parameters
-      
+
       parameter_file <- reactive({
           input$parameter_file
       })
-      
+
       imported_para_dataset <- reactiveVal()
-      
+
       observeEvent(input$parameter_file, {
           para_ds <- read.csv(parameter_file()$datapath)
           imported_para_dataset(para_ds)
       })
-      
+
       ### Select ID Variable ----
-      
+
       selected_id_var <- reactiveVal()
-      
+
       observe({
           id_var_imported <- imported_para_dataset()[imported_para_dataset()$Parameter == "id_select_var", "Value"]
           if (!is.null(id_var_imported)) {
@@ -227,15 +234,15 @@
               updateSelectizeInput(session, "id_select_var", selected = id_var_imported)
           }
       })
-      
+
       observe({
           selected_id_var(input$id_select_var)
       })
-      
+
       output$id_select <- renderUI({
           selectizeInput(
-              "id_select_var", 
-              label = "ID Variable", 
+              "id_select_var",
+              label = "ID Variable",
               choices = c("", hfc_dataset() %>% names()),
               selected = "",
               options = list(
@@ -243,33 +250,33 @@
               )
           )
       })
-      
+
       observe({
-          updateSelectizeInput(session, "id_select_var", 
+          updateSelectizeInput(session, "id_select_var",
                                choices = c("", hfc_dataset() %>% names()),
                                selected = "")
       })
-      
-      
+
+
       observe({
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              enable("run_hfcs")  
-              runjs("$('#run_hfcs').tooltip('hide')")  
+              enable("run_hfcs")
+              runjs("$('#run_hfcs').tooltip('hide')")
           } else {
-              disable("run_hfcs") 
-              runjs("$('#run_hfcs').tooltip('show')")  
+              disable("run_hfcs")
+              runjs("$('#run_hfcs').tooltip('show')")
           }
       })
-      
+
       # Bring ID Variable from uploaded parameter dataset
       observe({
-          id_select_var_imported <- 
+          id_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "id_select_var", "Value"]
           if (!is.null(id_select_var_imported)) {
               selected_id_var(id_select_var_imported)
           }
       })
-   
+
 
       ### Check Selection ----
 
@@ -289,77 +296,47 @@
               } else {
                   selected_rows <- c("duplicate")  # Default selection if dataset is not created
               }
-              
+
           )
       })
-      
-      
+
+
       selected_checks <- reactive({
           input$check_select
       })
-      
 
-      
+
+
         ### Duplicate Check Setup ----
-      
+
       # Duplicate data quality checks:
           # Duplicate IDs
           # Additional variables for reference
-      
+
       current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
-      
+
       # Bring duplicate variables from uploaded parameter dataset
       observe({
-          duplicate_extra_vars_imported <- 
+          duplicate_extra_vars_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_extra_vars_select_var", "Value"]
           if (!is.null(duplicate_extra_vars_imported)) {
               current_duplicate_extra_vars(duplicate_extra_vars_imported)
               updateSelectizeInput(session, "duplicate_extra_vars_select_var", selected = duplicate_extra_vars_imported)
           }
       })
-      
+
       # Observe any change in 'duplicate_extra_vars_select_var' and update current_duplicate_extra_vars
       observe({
           current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
       })
 
 
-      #The code below is for a dropdown that allows the user to select extra variables for duplicate check. It is hidden in the UI because the functionality is not complete. 
-      
-      # output$duplicate_select <- renderUI({
-      #     selectizeInput(
-      #         "duplicate_select_var", 
-      #         label = NULL, 
-      #         choices = character(0),  # Empty by default
-      #         selected = current_duplicate_var(),  # Preserve the selection if available
-      #         options = list('dropdownParent' = 'body')
-      #     )
-      # })
-      # 
-      # 
-      # observe({
-      #     # Update the selectizeInput only when hfc_dataset() is not NULL
-      #     if (!is.null(hfc_dataset())) {
-      #         updateSelectizeInput(session, "duplicate_select_var", 
-      #                              choices = hfc_dataset() %>%
-      #                                  select(-all_of(selected_id_var())) %>%
-      #                                  names(),
-      #                              selected = current_duplicate_var())
-      #     }
-      # })
-      
-      
-      
+
       output$duplicate_extra_vars_select <- renderUI({
           dataset <- hfc_dataset()
-          
-          if (!is.null(selected_id_var()) && selected_id_var() != "") {
-              dataset <- dataset %>%
-                  select(-all_of(selected_id_var()))
-          }
-          
+
           selectizeInput(
-              "duplicate_extra_vars_select_var", 
+              "duplicate_extra_vars_select_var",
               label = NULL,
               choices = names(dataset),
               selected = current_duplicate_extra_vars(),
@@ -369,8 +346,21 @@
              )
           )
       })
-      
-      
+
+     output$duplicate_multi_vars_select <- renderUI({
+          dataset <- hfc_dataset()
+
+          selectizeInput(
+              "duplicate_multi_vars_select_var",
+              label = NULL,
+              choices = names(dataset),
+              selected = NULL,  # Start with no selection
+              multiple = TRUE,
+              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+          )
+      })
+
+
       output$duplicate_setup <- renderUI({
           card(
               height = "auto", fill = TRUE,
@@ -383,112 +373,112 @@
                       ),
               downloadButton("duplicate_r_exp",
                              label = NULL,
-                             shiny::img(src = "res/logo_r.png", height = "20px"),
+                             shiny::img(src = "www/logo_r.png", height = "20px"),
                              class = "btn-light",
                              style = "float: right; margin-left: 10px;",
               ) %>% tooltip("Click to download R code", placement = "auto"),
               downloadButton("duplicate_s_exp",
                              label = NULL,
-                             shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                             shiny::img(src = "www/logo_stata.svg", height = "20px"),
                              class = "btn-light",
                              style = "float: right; margin-left: 10px;"
               ) %>% tooltip("Click to download Stata code", placement = "auto")
           ),
               card_body(
                   fluidRow(
-                      # column(6, 
-                      #        span("Extra Variable to Check", bsicons::bs_icon("question-circle-fill")) %>%
-                      #            tooltip("This is an optional variable that you might want to check for duplicates, besides,the ID. Duplicate IDs are checked automatically.", 
-                      #                    placement = "right"),
-                      #        uiOutput("duplicate_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                      # ),
                       column(6,
-                             span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to display in the output table", 
+                             span("Display Variables for ID duplicate check", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("These are additional variables that you may want to display in the output table",
                                          placement = "right"),
-                             uiOutput("duplicate_extra_vars_select")  # Set a high z-index to overlap other elements
+                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
+                      ),
+                      column(6,
+                             span("Observation-wide Duplicate Check", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("Select multiple variables to check for duplicate observations",
+                                         placement = "right"),
+                             uiOutput("duplicate_multi_vars_select", style = "z-index: 1000;")
                       )
                   )
               )
           )
       })
-      
+
         ### Outlier Check Setup ----
-      
-        # Outlier data quality checks: 
+
+        # Outlier data quality checks:
           # "Individual" outlier checks -- check individual variable for outliers
           # "Group" outlier checks -- check group of variables (e.g. income for every household member) for outliers
           # Additional variables for reference
-      
+
       current_indiv_outlier_vars <- reactiveVal() # For storing current state of 'indiv_outlier_vars_select_var'
       current_group_outlier_vars <- reactiveVal() # For storing current state of 'group_outlier_vars_select_var'
       current_outlier_extra_vars <- reactiveVal() # For storing current state of 'outlier_extra_vars_select_var'
       current_outlier_method     <- reactiveVal() # For storing current state of 'outlier_method'
       current_outlier_multiplier <- reactiveVal() # For storing current state of 'outlier_multiplier'
-      
+
       # Bring outlier variables from uploaded parameter dataset
       observe({
-          indiv_outlier_vars_select_var_imported <- 
+          indiv_outlier_vars_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "indiv_outlier_vars_select_var", "Value"]
           if (!is.null(indiv_outlier_vars_select_var_imported)) {
               current_indiv_outlier_vars(indiv_outlier_vars_select_var_imported)
           }
-          
-          group_outlier_vars_select_var_imported <- 
+
+          group_outlier_vars_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "group_outlier_vars_select_var", "Value"]
           if (!is.null(group_outlier_vars_select_var_imported)) {
               current_group_outlier_vars(group_outlier_vars_select_var_imported)
               updateSelectizeInput(session, "group_outlier_vars_select_var", selected = group_outlier_vars_select_var_imported)
-              
+
           }
-          
-          
-          outlier_extra_vars_select_var_imported <- 
+
+
+          outlier_extra_vars_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_extra_vars_select_var", "Value"]
           if (!is.null(outlier_extra_vars_select_var_imported)) {
               current_outlier_extra_vars(outlier_extra_vars_select_var_imported)
           }
-          
-          outlier_method_imported <- 
+
+          outlier_method_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_method", "Value"]
           if (!is.null(outlier_method_imported)) {
               current_outlier_method(outlier_method_imported)
           }
-          
-          outlier_multiplier_imported <- 
+
+          outlier_multiplier_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "outlier_multiplier", "Value"]
           if (!is.null(outlier_multiplier_imported)) {
               current_outlier_multiplier(outlier_multiplier_imported)
           }
       })
-      
-      
+
+
       # Observe any change in 'indiv_outlier_vars_select_var' and update current_indiv_outlier_vars
       observe({
           current_indiv_outlier_vars(input$indiv_outlier_vars_select_var)
       })
-      
+
       # Observe any change in 'group_outlier_vars_select_var' and update current_group_outlier_vars
       observe({
           current_group_outlier_vars(input$group_outlier_vars_select_var)
       })
-      
-      
+
+
       # Observe any change in 'indiv_outlier_vars_select_var' and update current_outlier_id_var
       observe({
           current_outlier_extra_vars(input$outlier_extra_vars_select_var)
       })
-      
+
       # Observe any change in 'indiv_outlier_method' and update current_outlier_method
       observe({
           current_outlier_method(input$outlier_method)
       })
-      
+
       # Observe any change in 'indiv_outlier_multiplier' and update current_outlier_multiplier
       observe({
           current_outlier_multiplier(input$outlier_multiplier)
       })
-      
+
       output$indiv_outlier_vars_select <- renderUI({
           selectizeInput(
               "indiv_outlier_vars_select_var", label = NULL,
@@ -501,7 +491,7 @@
                       !any_of(indiv_outlier_vars()[indiv_outlier_vars() != ""])
                   ) %>%
                   select(where(is.numeric)) %>%
-                  names(), 
+                  names(),
               selected = current_indiv_outlier_vars(),
               multiple = TRUE,
               options = list(
@@ -509,9 +499,9 @@
               )
           )
       })
-      
-    
-      
+
+
+
       output$group_outlier_vars_select <- renderUI({
           selectizeInput(
               "group_outlier_vars_select_var", label = NULL,
@@ -534,7 +524,7 @@
                       filter(n() > 1) %>% # Only keep groups that have more than one variable, otherwise just use indiv
                   select(group) %>%
                   distinct() %>%
-                  pull()}, 
+                  pull()},
               selected = current_group_outlier_vars(),
               multiple = TRUE,
               options = list(
@@ -542,20 +532,20 @@
               )
           )
       })
-      
 
-     
-      
+
+
+
       output$outlier_extra_vars_select <- renderUI({
           selectizeInput(
               "outlier_extra_vars_select_var", label = NULL,
               choices = {
                   dataset <- hfc_dataset()
-                  
+
                   if (!is.null(selected_id_var()) && selected_id_var() != "") {
                       dataset <- dataset %>% select(-all_of(selected_id_var()))
                   }
-                  
+
                   dataset %>%
                   select(
                       -any_of(indiv_outlier_vars()),
@@ -573,13 +563,13 @@
               )
           )
       })
-      
+
       output$outlier_method <- renderUI({
-          default_method <- ifelse(is.null(current_outlier_method()) || current_outlier_method() == "", "sd", 
+          default_method <- ifelse(is.null(current_outlier_method()) || current_outlier_method() == "", "sd",
                                    current_outlier_method())
           selectizeInput(
-              "outlier_method", label = NULL, 
-              choices = c("iqr", "sd"), 
+              "outlier_method", label = NULL,
+              choices = c("iqr", "sd"),
               selected = default_method,
               multiple = FALSE,
               options = list(
@@ -587,13 +577,13 @@
               )
           )
       })
-      
+
       output$outlier_multiplier <- renderUI({
-          default_multiplier <- ifelse(is.null(current_outlier_multiplier()) || current_outlier_multiplier() == "", "3", 
+          default_multiplier <- ifelse(is.null(current_outlier_multiplier()) || current_outlier_multiplier() == "", "3",
                                        current_outlier_multiplier())
           selectizeInput(
-              "outlier_multiplier", label = NULL, 
-              choices = c("1.5", "3"), 
+              "outlier_multiplier", label = NULL,
+              choices = c("1.5", "3"),
               selected = default_multiplier,
               multiple = FALSE,
               options = list(
@@ -601,7 +591,7 @@
               )
           )
       })
-      
+
       output$outlier_setup <- renderUI({
           card(
               height = "auto", fill = FALSE,
@@ -614,13 +604,13 @@
                       ),
               downloadButton("outlier_r_exp",
                                label = NULL,
-                               shiny::img(src = "res/logo_r.png", height = "20px"),
+                               shiny::img(src = "www/logo_r.png", height = "20px"),
                                class = "btn-light",
                                style = "float: right; margin-left: 10px;",
                 ) %>% tooltip("Click to download R code", placement = "auto"),
                 downloadButton("outlier_s_exp",
                                label = NULL,
-                               shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                               shiny::img(src = "www/logo_stata.svg", height = "20px"),
                                class = "btn-light",
                                style = "float: right; margin-left: 10px;"
                 ) %>% tooltip("Click to download Stata code", placement = "auto")
@@ -629,13 +619,13 @@
                   fluidRow(
                       column(6,
                              span("Individual Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These need to be numeric variables. Use this if you have an individual variable you'd like to check for outliers", 
+                                 tooltip("These need to be numeric variables. Use this if you have an individual variable you'd like to check for outliers",
                                          placement = "right"),
                              uiOutput("indiv_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Grouped Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These need to be numeric variables. Use this if you have a set of variables you'd like to check for outliers together (e.g. inc_01, inc_02, etc.)", 
+                                 tooltip("These need to be numeric variables. Use this if you have a set of variables you'd like to check for outliers together (e.g. inc_01, inc_02, etc.)",
                                          placement = "right"),
                              uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -645,7 +635,7 @@
                   fluidRow(
                       column(6,
                              span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to display in the output table", 
+                                 tooltip("These are additional variables that you may want to display in the output table",
                                          placement = "right"),
                              uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -653,15 +643,15 @@
               ),
               card_body(
                   fluidRow(
-                      column(6, 
+                      column(6,
                              span("Method", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Select preferred method for outlier calculation", 
+                                 tooltip("Select preferred method for outlier calculation",
                                          placement = "right"),
                              uiOutput("outlier_method", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Multiplier", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Select the multiplier to be used for outlier calculation", 
+                                 tooltip("Select the multiplier to be used for outlier calculation",
                                          placement = "right"),
                              uiOutput("outlier_multiplier", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -669,84 +659,84 @@
               )
           )
       })
-      
+
         ### Enumerator Check Setup ----
-      
+
           # Enumerator data quality checks:
           # Number of surveys per enumerator
           # Average variable value per enumerator
           # Number of surveys per day per enumerator (requires submission date variable)
           # Average survey time per enumerator (requires survey duration)
           # Average time per module per enumerator (requires module time)
-      
+
       current_enumerator_var          <- reactiveVal() # For storing current state of 'enumerator_var_select_var'
       current_enumerator_ave_vars     <- reactiveVal() # For storing current state of 'enumerator_ave_vars_select_var'
       current_enumerator_date_var     <- reactiveVal() # For storing current state of 'enumerator_date_var_select_var'
       current_enumerator_complete_var <- reactiveVal() # For storing current state of 'enumerator_complete_var_select_var'
-      
+
       # Bring enumerator variables from uploaded parameter dataset
       observe({
-          enumerator_var_select_var_imported <- 
+          enumerator_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_var_select_var", "Value"]
           if (!is.null(enumerator_var_select_var_imported)) {
               current_enumerator_var(enumerator_var_select_var_imported)
           }
-          
-          enumerator_ave_vars_select_var_imported <- 
+
+          enumerator_ave_vars_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_ave_vars_select_var", "Value"]
           if (!is.null(enumerator_ave_vars_select_var_imported)) {
               current_enumerator_ave_vars(enumerator_ave_vars_select_var_imported)
           }
-          
-          enumerator_date_var_select_var_imported <- 
+
+          enumerator_date_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_date_var_select_var", "Value"]
           if (!is.null(enumerator_date_var_select_var_imported)) {
               current_enumerator_date_var(enumerator_date_var_select_var_imported)
           }
-          
-          enumerator_complete_var_select_var_imported <- 
+
+          enumerator_complete_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "enumerator_complete_var_select_var", "Value"]
           if (!is.null(enumerator_complete_var_select_var_imported)) {
               current_enumerator_complete_var(enumerator_complete_var_select_var_imported)
           }
       })
-      
+
       # Observe any change in 'enumerator_var_select_var' and update current_enumerator_var
       observe({
           current_enumerator_var(input$enumerator_var_select_var)
       })
-      
+
       # Observe any change in 'enumerator_ave_vars_select_var' and update current_enumerator_ave_vars
       observe({
           current_enumerator_ave_vars(input$enumerator_ave_vars_select_var)
       })
-      
+
       # Observe any change in 'enumerator_date_var_select_var' and update current_enumerator_date_var
       observe({
           current_enumerator_date_var(input$enumerator_date_var_select_var)
       })
-      
+
       # Observe any change in 'enumerator_complete_var_select_var' and update current_enumerator_complete_var
       observe({
           current_enumerator_complete_var(input$enumerator_complete_var_select_var)
       })
-      
+
       output$enumerator_var_select <- renderUI({
           selectizeInput(
-              "enumerator_var_select_var", label = NULL, 
+              "enumerator_var_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  names(), 
+                  names(),
               selected = current_enumerator_var(),
               options = list('dropdownParent' = 'body')
           )
       })
-      
+
       observe({
-          updateSelectizeInput(session, "enumerator_var_select_var", 
+          updateSelectizeInput(session, "enumerator_var_select_var",
                                choices = hfc_dataset() %>% names,
                                selected = current_enumerator_var())
       })
-      
+
       output$enumerator_ave_vars_select <- renderUI({
           selectizeInput(
               "enumerator_ave_vars_select_var", label = NULL,
@@ -759,7 +749,7 @@
                       !any_of(enumerator_ave_vars()[enumerator_ave_vars() != ""])
                   ) %>%
                   select(where(is.numeric)) %>%
-                  names(), 
+                  names(),
               selected = current_enumerator_ave_vars(),
               multiple = TRUE,
               options = list(
@@ -767,14 +757,14 @@
               )
           )
       })
-      
+
       output$enumerator_date_var_select <- renderUI({
           dataset <- hfc_dataset() %>%
-              select(-all_of(enumerator_var()[enumerator_var() != ""])) 
+              select(-all_of(enumerator_var()[enumerator_var() != ""]))
           valid_cols <- colnames(dataset)[sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
           selectizeInput(
-              "enumerator_date_var_select_var", 
-              label = NULL, 
+              "enumerator_date_var_select_var",
+              label = NULL,
               choices = c("", valid_cols),
               selected = current_enumerator_date_var(),
               options = list(
@@ -782,26 +772,26 @@
               )
           )
       })
-      
+
       output$enumerator_complete_var_select <- renderUI({
           selectizeInput(
-              "enumerator_complete_var_select_var", label = NULL, 
+              "enumerator_complete_var_select_var", label = NULL,
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
                           -all_of(enumerator_var()[enumerator_var() != ""])
                       ) %>%
-                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
+                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>%
                       names()
-              ), 
+              ),
               selected = current_enumerator_complete_var(),
               options = list(
                   'plugins' = list('remove_button')
               )
           )
       })
-      
+
       output$enumerator_setup <- renderUI({
           card(
               height = "auto", fill = FALSE,
@@ -814,13 +804,13 @@
                       ),
                   downloadButton("enumerator_r_exp",
                                  label = NULL,
-                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 shiny::img(src = "www/logo_r.png", height = "20px"),
                                  class = "btn-light",
                                  style = "float: right; margin-left: 10px;",
                   ) %>% tooltip("Click to download R code", placement = "auto"),
                   downloadButton("enumerator_s_exp",
                                  label = NULL,
-                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 shiny::img(src = "www/logo_stata.svg", height = "20px"),
                                  class = "btn-light",
                                  style = "float: right; margin-left: 10px;"
                   ) %>% tooltip("Click to download Stata code", placement = "auto")
@@ -829,13 +819,13 @@
                   fluidRow(
                       column(6,
                              span("Enumerator Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This is the variable that identifies the enumerator for each submission", 
+                                 tooltip("This is the variable that identifies the enumerator for each submission",
                                          placement = "right"),
                              uiOutput("enumerator_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Enumerator Average Value Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These need to be numeric variables. Variables for which you want the average value by enumerator", 
+                                 tooltip("These need to be numeric variables. Variables for which you want the average value by enumerator",
                                          placement = "right"),
                              uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -843,15 +833,15 @@
               ),
               card_body(
                   fluidRow(
-                      column(6, 
+                      column(6,
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.", 
+                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.",
                                          placement = "right"),
                              uiOutput("enumerator_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
-                      column(6, 
+                      column(6,
                              span("Submission Complete Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.", 
+                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.",
                                          placement = "right"),
                              uiOutput("enumerator_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -859,83 +849,83 @@
               )
           )
       })
-      
+
         ### Administrative Unit Check Setup ----
-      
+
       # Administrative-unit data quality checks:
       # Number of surveys per administrative unit
       # Number of surveys per day per administrative unit (requires submission date variable)
       # (Eventually) Progress (requires principal sample dataset)
-      
+
       current_admin_var          <- reactiveVal() # For storing current state of 'admin_var_select_var'
       current_admin_super_vars   <- reactiveVal() # For storing current state of 'admin_super_vars_select_var'
       current_admin_date_var     <- reactiveVal() # For storing current state of 'admin_date_var_select_var'
       current_admin_complete_var <- reactiveVal() # For storing current state of 'admin_complete_var_select_var'
-      
+
       # Bring admin variables from uploaded parameter dataset
       observe({
-          admin_var_select_var_imported <- 
+          admin_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "admin_var_select_var", "Value"]
           if (!is.null(admin_var_select_var_imported)) {
               current_admin_var(admin_var_select_var_imported)
           }
-          
-          admin_super_vars_select_var_imported <- 
+
+          admin_super_vars_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "admin_super_vars_select_var", "Value"]
           if (!is.null(admin_super_vars_select_var_imported)) {
               current_admin_super_vars(admin_super_vars_select_var_imported)
           }
-          
-          admin_date_var_select_var_imported <- 
+
+          admin_date_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "admin_date_var_select_var", "Value"]
           if (!is.null(admin_date_var_select_var_imported)) {
               current_admin_date_var(admin_date_var_select_var_imported)
           }
-          
-          admin_complete_var_select_var_imported <- 
+
+          admin_complete_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "admin_complete_var_select_var", "Value"]
           if (!is.null(admin_complete_var_select_var_imported)) {
               current_admin_complete_var(admin_complete_var_select_var_imported)
           }
       })
-      
-      
+
+
       # Observe any change in 'admin_var_select_var' and update current_admin_var
       observe({
           current_admin_var(input$admin_var_select_var)
       })
-      
+
       # Observe any change in 'admin_var_select_var' and update current_admin_var
       observe({
           current_admin_super_vars(input$admin_super_vars_select_var)
       })
-      
+
       # Observe any change in 'admin_date_var_select_var' and update current_admin_date_var
       observe({
           current_admin_date_var(input$admin_date_var_select_var)
       })
-      
+
       # Observe any change in 'admin_complete_var_select_var' and update current_admin_complete_var
       observe({
           current_admin_complete_var(input$admin_complete_var_select_var)
       })
-      
+
       output$admin_var_select <- renderUI({
           selectizeInput(
-              "admin_var_select_var", label = NULL, 
+              "admin_var_select_var", label = NULL,
               choices = hfc_dataset() %>%
-                  names(), 
+                  names(),
               selected = current_admin_var(),
               options = list('dropdownParent' = 'body')
           )
       })
-      
+
       observe({
-          updateSelectizeInput(session, "admin_var_select_var", 
+          updateSelectizeInput(session, "admin_var_select_var",
                                choices = hfc_dataset() %>% names,
                                selected = current_admin_var())
       })
-      
+
       output$admin_super_vars_select <- renderUI({
           selectizeInput(
               "admin_super_vars_select_var", label = NULL,
@@ -947,7 +937,7 @@
                       all_of(admin_super_vars()[admin_super_vars() != ""]),
                       !any_of(admin_super_vars()[admin_super_vars() != ""])
                   ) %>%
-                  names(), 
+                  names(),
               selected = current_admin_super_vars(),
               multiple = TRUE,
               options = list(
@@ -955,14 +945,14 @@
               )
           )
       })
-      
+
       output$admin_date_var_select <- renderUI({
           dataset <- hfc_dataset() %>%
               select(-all_of(admin_var()[admin_var() != ""]))
           valid_cols <- colnames(dataset)[
               sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
           selectizeInput(
-              "admin_date_var_select_var", label = NULL, 
+              "admin_date_var_select_var", label = NULL,
               choices = c("", valid_cols),
               selected = current_admin_date_var(),
               options = list(
@@ -970,26 +960,26 @@
               )
           )
       })
-      
+
       output$admin_complete_var_select <- renderUI({
           selectizeInput(
-              "admin_complete_var_select_var", label = NULL, 
+              "admin_complete_var_select_var", label = NULL,
               choices = c(
                   "", # Provides no option as a possibility
                   hfc_dataset() %>%
                       select(
                           -all_of(admin_var()[admin_var() != ""])) %>%
-                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>% 
-                      
+                      select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>%
+
                       names()
-              ), 
+              ),
               selected = current_admin_complete_var(),
               options = list(
                   'plugins' = list('remove_button')
               )
           )
       })
-      
+
       output$admin_setup <- renderUI({
           card(
               height = "auto", fill = FALSE,
@@ -1002,13 +992,13 @@
                       ),
                   downloadButton("admin_r_exp",
                                  label = NULL,
-                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 shiny::img(src = "www/logo_r.png", height = "20px"),
                                  class = "btn-light",
                                  style = "float: right; margin-left: 10px;",
                   ) %>% tooltip("Click to download R code", placement = "auto"),
                   downloadButton("admin_s_exp",
                                  label = NULL,
-                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 shiny::img(src = "www/logo_stata.svg", height = "20px"),
                                  class = "btn-light",
                                  style = "float: right; margin-left: 10px;"
                   ) %>% tooltip("Click to download Stata code", placement = "auto")
@@ -1017,13 +1007,13 @@
                   fluidRow(
                       column(6,
                              span("Administrative Unit Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This is the variable that identifies the administrative unit for each submission", 
+                                 tooltip("This is the variable that identifies the administrative unit for each submission",
                                          placement = "right"),
                              uiOutput("admin_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Higher-Level Administrative Unit Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These variables could serve to either locate or uniquely identify the administrative units of interest", 
+                                 tooltip("These variables could serve to either locate or uniquely identify the administrative units of interest",
                                          placement = "right"),
                              uiOutput("admin_super_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -1031,15 +1021,15 @@
               ),
               card_body(
                   fluidRow(
-                      column(6, 
+                      column(6,
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.", 
+                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.",
                                          placement = "right"),
                              uiOutput("admin_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
-                      column(6, 
+                      column(6,
                              span("Submission Complete Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.", 
+                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.",
                                          placement = "right"),
                              uiOutput("admin_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -1047,41 +1037,41 @@
               )
           )
       })
-      
+
         ### Unit of Observation Check Setup ----
-      
+
       # Unit of observation data quality checks:
       # This is more of a "tracking" service. Its purpose is more often to be able to check the
       # status of a specific unit of observation (e.g. household).
-      
+
       current_unit_var        <- reactiveVal() # For storing current state of 'unit_var_select_var'
       current_unit_extra_vars <- reactiveVal() # For storing current state of 'unit_extra_vars_select_var'
-      
+
       # Bring unit variables from uploaded parameter dataset
       observe({
-          unit_var_select_var_imported <- 
+          unit_var_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "unit_var_select_var", "Value"]
           if (!is.null(unit_var_select_var_imported)) {
               current_unit_var(unit_var_select_var_imported)
           }
-          
-          unit_extra_vars_select_var_imported <- 
+
+          unit_extra_vars_select_var_imported <-
               imported_para_dataset()[imported_para_dataset()$Parameter == "unit_extra_vars_select_var", "Value"]
           if (!is.null(unit_extra_vars_select_var_imported)) {
               current_unit_extra_vars(unit_extra_vars_select_var_imported)
           }
       })
-      
+
       # Observe any change in 'unit_var_select_var' and update current_unit_var
       observe({
           current_unit_var(input$unit_var_select_var)
       })
-      
+
       # Observe any change in 'unit_extra_vars_select_var' and update current_unit_extra_vars
       observe({
           current_unit_extra_vars(input$unit_extra_vars_select_var)
       })
-      
+
       output$unit_var_select <- renderUI({
           selectizeInput(
               "unit_var_select_var", label = NULL,
@@ -1093,25 +1083,25 @@
               )
           )
       })
-      
+
       observe({
-          updateSelectizeInput(session, "unit_var_select_var", 
+          updateSelectizeInput(session, "unit_var_select_var",
                                choices = hfc_dataset() %>% names,
                                selected = current_unit_var())
       })
-      
+
       output$unit_extra_vars_select <- renderUI({
           selectizeInput(
               "unit_extra_vars_select_var", label = NULL,
               choices = hfc_dataset() %>%
                   select(
-                      -all_of(unit_var()[unit_var() != ""]) 
+                      -all_of(unit_var()[unit_var() != ""])
                   ) %>%
                   select(
-                      all_of(unit_extra_vars()[unit_extra_vars() != ""]), 
-                      !any_of(unit_extra_vars()[unit_extra_vars() != ""]) 
+                      all_of(unit_extra_vars()[unit_extra_vars() != ""]),
+                      !any_of(unit_extra_vars()[unit_extra_vars() != ""])
                   ) %>%
-                  names(), 
+                  names(),
               selected = current_unit_extra_vars(),
               multiple = TRUE,
               options = list(
@@ -1119,8 +1109,8 @@
               )
           )
       })
-      
-      
+
+
       output$unit_setup <- renderUI({
           card(
               height = "auto", fill = FALSE,
@@ -1133,13 +1123,13 @@
                       ),
                   downloadButton("unit_r_exp",
                                  label = NULL,
-                                 shiny::img(src = "res/logo_r.png", height = "20px"),
+                                 shiny::img(src = "www/logo_r.png", height = "20px"),
                                  class = "btn-light",
                                  style = "float: right; margin-left: 10px;",
                   ) %>% tooltip("Click to download R code", placement = "auto"),
                   downloadButton("unit_s_exp",
                                  label = NULL,
-                                 shiny::img(src = "res/logo_stata.svg", height = "20px"),
+                                 shiny::img(src = "www/logo_stata.svg", height = "20px"),
                                  class = "btn-light",
                                  style = "float: right; margin-left: 10px;"
                   ) %>% tooltip("Click to download Stata code", placement = "auto")
@@ -1166,22 +1156,22 @@
               )
           )
       })
-      
+
         ### Survey Programming Check Setup ----
-      
+
       # output$programming_setup <- renderUI(
       #     card(
       #         card_header("Survey Programming Check Setup"),
       #         "Under construction!"
       #     )
       # )
-      # 
+      #
         ### Setup Tab Setup ----
-      
+
       output$setup_tab_nodata <- renderUI({
           "Please upload your data in the \"Upload Data\" Tab."
       })
-      
+
       setup_check_list <- reactive({
           if(length(selected_checks()) == 0) { # No checks selected
               "Please select the ID variable and the high-frequency check(s) you would like to perform from the list in the sidebar."
@@ -1192,7 +1182,7 @@
                   )
           }
       })
-      
+
       output$setup_tab_body <- renderUI({
           layout_column_wrap(
               height = "90vh",
@@ -1200,42 +1190,42 @@
               setup_check_list()
           )
       })
-      
 
-      
+
+
       output$setup_run_hfcs_button <- renderUI({
-          
+
           # Initialize a list for missing fields messages
           missing_fields <- list()
-          
+
           # Check required fields and add to missing_fields list if any are missing
           if (is.null(selected_id_var()) || selected_id_var() == "") {
               missing_fields <- c(missing_fields, "Please select an ID Variable.")
           }
-          
+
           if ("outlier" %in% input$check_select && is.null(input$indiv_outlier_vars_select_var) && is.null(input$group_outlier_vars_select_var)) {
               missing_fields <- c(missing_fields, "Please select Individual or Group Outlier Variables.")
           }
-          
+
           if ("enumerator" %in% input$check_select && is.null(input$enumerator_var_select_var)) {
               missing_fields <- c(missing_fields, "Please select an Enumerator Variable.")
           }
-          
+
           if ("admin" %in% input$check_select && is.null(input$admin_var_select_var)) {
               missing_fields <- c(missing_fields, "Please select an Admin Unit Variable.")
           }
-          
+
           if ("unit" %in% input$check_select && is.null(input$unit_var_select_var)) {
               missing_fields <- c(missing_fields, "Please select a Unit of Observation Variable.")
           }
-          
+
           # Determine if all conditions are met
           all_conditions_met <- length(missing_fields) == 0
-          
-          # Ensure all_conditions_met is defined and not NULL 
-          
-         
-          
+
+          # Ensure all_conditions_met is defined and not NULL
+
+
+
           # Render the action button, enabled or disabled based on conditions
           hfcbutton <- actionButton(
               "run_hfcs",
@@ -1244,7 +1234,7 @@
               disabled = !all_conditions_met,
               class = "btn btn-outline-primary btn-lg"
           )
-          
+
           tagList(
               tags$div(hfcbutton),
               if (!all_conditions_met) {
@@ -1254,8 +1244,8 @@
               }
           )
       })
-      
-      
+
+
       observe({
           if (!is.null(selected_id_var()) && selected_id_var() != "") {
               enable("run_hfcs")
@@ -1266,212 +1256,212 @@
 
 
 
-      
-      
-      
+
+
+
            ### Export parameters
-   
+
       parameter_dataset <- reactive({
           # Initialize an empty data frame
           combined_df <- data.frame(Parameter = character(0), Name = character(0), Value = character(0))
           current_datetime <- now()
-          
+
           # Check if each parameter is selected and add it to the combined data frame
-          
+
           ## ID Variable
-          
+
           if (!is.null(input$id_select_var)) {
               para2 <- data.frame(Check = "",
-                                  Parameter = "id_select_var", 
-                                  Name = "ID Variable", 
+                                  Parameter = "id_select_var",
+                                  Name = "ID Variable",
                                   Value = c(input$id_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <-
                   rbind(combined_df, para2)
           }
-          
+
           ## Duplicates
           # if (!is.null(input$duplicate_select_var)) {
           #     para1 <- data.frame(Check = "duplicate",
-          #                         Parameter = "duplicate_select_var", 
-          #                         Name = "Duplicates ID variable", 
+          #                         Parameter = "duplicate_select_var",
+          #                         Name = "Duplicates ID variable",
           #                         Value = c(input$duplicate_select_var),
           #                         Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
           #     combined_df <- rbind(combined_df, para1)
           # }
-          # 
+          #
           if (!is.null(input$duplicate_extra_vars_select_var)) {
               para2 <- data.frame(Check = "duplicate",
-                                  Parameter = "duplicate_extra_vars_select_var", 
-                                  Name = "Duplicates display variables", 
+                                  Parameter = "duplicate_extra_vars_select_var",
+                                  Name = "Duplicates display variables",
                                   Value = c(input$duplicate_extra_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para2)
           }
-          
+
           ## Outlier
           if (!is.null(input$indiv_outlier_vars_select_var)) {
               para3 <- data.frame(Check = "outlier",
-                                  Parameter = "indiv_outlier_vars_select_var", 
-                                  Name = "Individual outlier variables", 
+                                  Parameter = "indiv_outlier_vars_select_var",
+                                  Name = "Individual outlier variables",
                                   Value = c(input$indiv_outlier_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para3)
           }
-          
+
           if (!is.null(input$group_outlier_vars_select_var)) {
               para4 <- data.frame(Check = "outlier",
-                                  Parameter = "group_outlier_vars_select_var", 
-                                  Name = "Grouped outlier variables", 
+                                  Parameter = "group_outlier_vars_select_var",
+                                  Name = "Grouped outlier variables",
                                   Value = c(input$group_outlier_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para4)
           }
-          
-          
+
+
           if (!is.null(input$outlier_extra_vars_select_var)) {
               para5 <- data.frame(Check = "outlier",
-                                  Parameter = "outlier_extra_vars_select_var", 
-                                  Name = "Outlier additional variables", 
+                                  Parameter = "outlier_extra_vars_select_var",
+                                  Name = "Outlier additional variables",
                                   Value = c(input$outlier_extra_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para5)
           }
-          
+
           if (!is.null(input$outlier_method)) {
               para16 <- data.frame(Check = "outlier",
-                                  Parameter = "outlier_method", 
-                                  Name = "Outlier method", 
+                                  Parameter = "outlier_method",
+                                  Name = "Outlier method",
                                   Value = c(input$outlier_method),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para16)
           }
-          
+
           if (!is.null(input$outlier_multiplier)) {
               para17 <- data.frame(Check = "outlier",
-                                  Parameter = "outlier_multiplier", 
-                                  Name = "Outlier multiplier", 
+                                  Parameter = "outlier_multiplier",
+                                  Name = "Outlier multiplier",
                                   Value = c(input$outlier_multiplier),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para17)
           }
-          
+
           ## Enumerator level
           if (!is.null(input$enumerator_var_select_var)) {
               para6 <- data.frame(Check = "enumerator",
-                                  Parameter = "enumerator_var_select_var", 
-                                  Name = "Enumerator variable", 
+                                  Parameter = "enumerator_var_select_var",
+                                  Name = "Enumerator variable",
                                   Value = c(input$enumerator_var_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para6)
           }
-          
+
           if (!is.null(input$enumerator_ave_vars_select_var)) {
               para7 <- data.frame(Check = "enumerator",
-                                  Parameter = "enumerator_ave_vars_select_var", 
-                                  Name = "Enumerator Average Value Variables", 
+                                  Parameter = "enumerator_ave_vars_select_var",
+                                  Name = "Enumerator Average Value Variables",
                                   Value = c(input$enumerator_ave_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para7)
           }
-          
+
           if (!is.null(input$enumerator_date_var_select_var)) {
               para8 <- data.frame(Check = "enumerator",
-                                  Parameter = "enumerator_date_var_select_var", 
-                                  Name = "Submission Date Variable", 
+                                  Parameter = "enumerator_date_var_select_var",
+                                  Name = "Submission Date Variable",
                                   Value = c(input$enumerator_date_var_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para8)
           }
-          
+
           if (!is.null(input$enumerator_complete_var_select_var)) {
               para9 <- data.frame(Check = "enumerator",
-                                  Parameter = "enumerator_complete_var_select_var", 
-                                  Name = "Submission Complete Variable", 
+                                  Parameter = "enumerator_complete_var_select_var",
+                                  Name = "Submission Complete Variable",
                                   Value = c(input$enumerator_complete_var_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para9)
           }
-          
+
           ## Admin level
           if (!is.null(input$admin_var_select_var)) {
               para10 <- data.frame(Check = "admin",
-                                   Parameter = "admin_var_select_var", 
-                                  Name = "Administrative Unit Variable", 
+                                   Parameter = "admin_var_select_var",
+                                  Name = "Administrative Unit Variable",
                                   Value = c(input$admin_var_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para10)
           }
-          
+
           if (!is.null(input$admin_super_vars_select_var)) {
               para11 <- data.frame(Check = "admin",
-                                   Parameter = "admin_super_vars_select_var", 
-                                  Name = "Higher-Level Administrative Unit Variables", 
+                                   Parameter = "admin_super_vars_select_var",
+                                  Name = "Higher-Level Administrative Unit Variables",
                                   Value = c(input$admin_super_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para11)
           }
-          
+
           if (!is.null(input$admin_date_var_select_var)) {
               para12 <- data.frame(Check = "admin",
-                                   Parameter = "admin_date_var_select_var", 
-                                  Name = "Submission Date Variable", 
+                                   Parameter = "admin_date_var_select_var",
+                                  Name = "Submission Date Variable",
                                   Value = c(input$admin_date_var_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para12)
           }
-          
+
           if (!is.null(input$admin_complete_var_select_var)) {
               para13 <- data.frame(Check = "admin",
-                                   Parameter = "admin_complete_var_select_var", 
-                                  Name = "Submission Complete Variable", 
+                                   Parameter = "admin_complete_var_select_var",
+                                  Name = "Submission Complete Variable",
                                   Value = c(input$admin_complete_var_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para13)
           }
-          
+
           ## Unit of Observation
           if (!is.null(input$unit_var_select_var)) {
               para14 <- data.frame(Check = "unit",
-                                   Parameter = "unit_var_select_var", 
-                                   Name = "Unit of Observation", 
+                                   Parameter = "unit_var_select_var",
+                                   Name = "Unit of Observation",
                                    Value = c(input$unit_var_select_var),
                                    Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para14)
           }
-          
+
           if (!is.null(input$unit_extra_vars_select_var)) {
               para15 <- data.frame(Check = "unit",
-                                   Parameter = "unit_extra_vars_select_var", 
-                                   Name = "Unit Display Variables", 
+                                   Parameter = "unit_extra_vars_select_var",
+                                   Name = "Unit Display Variables",
                                    Value = c(input$unit_extra_vars_select_var),
                                    Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para15)
           }
-          
+
           return(combined_df)
       })
-      
-      
-      
+
+
+
       output$setup_exp_para <- downloadHandler(
           filename = "iehfc_parameters.csv",
           content = function(file) {
-              write.csv(parameter_dataset(), file, row.names = TRUE) 
+              write.csv(parameter_dataset(), file, row.names = TRUE)
           }
       )
-      
+
       output$setup_exp_para_button <- renderUI({
-          downloadButton("setup_exp_para", 
+          downloadButton("setup_exp_para",
                          label = "Download as csv",
                          icon("download"),
                          class = "btn btn-outline-primary btn-sm")
       })
-      
 
-      
+
+
       # take you to output tab
-      
+
       observeEvent(input$run_hfcs, {
           updateNavbarPage(session, "tabs", selected = "output_tab")
           Sys.sleep(1)
@@ -1482,10 +1472,10 @@
           )
       })
 
-      
-      
 
-      
+
+
+
       output$setup_tab_data <- renderUI({
           layout_sidebar(
               height = "90vh",
@@ -1493,7 +1483,7 @@
                   width = "30%",
                   card(
                       card_header(
-                          
+
                           span("Select Dataset ID", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
                                   "This is where you select the unique ID variable for your dataset obervations",
@@ -1504,12 +1494,12 @@
                   ),
                   card(
                       card_header(
-                
+
                           span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
-                                  "This is where you choose which data quality checks to run. 
-                                  For each check that you select, a corresponding box will appear on the right. 
-                                  Please make sure that the parameters within the box are correct before proceeding. 
+                                  "This is where you choose which data quality checks to run.
+                                  For each check that you select, a corresponding box will appear on the right.
+                                  Please make sure that the parameters within the box are correct before proceeding.
                                   Once you are done, click on the \"Run HFCs\" button below.",
                                   placement = "auto"
                               )
@@ -1531,7 +1521,7 @@
                                   "parameter_file",
                                   label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                                       tooltip(
-                                          "This is optional. If you've saved your parameters in a CSV file, or downloaded it above, 
+                                          "This is optional. If you've saved your parameters in a CSV file, or downloaded it above,
                                           you can upload the file here. Ensure that your file matches the required template (.csv)",
                                           placement = "auto"
                                       ),
@@ -1548,7 +1538,7 @@
               uiOutput("setup_tab_body")
           )
       })
-      
+
       output$setup_tab <- renderUI({
           if(is.null(hfc_dataset())) {
               return(uiOutput("setup_tab_nodata"))
@@ -1556,77 +1546,101 @@
               return(uiOutput("setup_tab_data"))
           }
       })
-      
+
     ## Output Tab ----
-      
+
         ### Duplicate Outputs ----
-      
+
 # See server_scripts/duplicates.R for details on outputs creation
-      
+
       output$duplicate_output <- renderUI({
           if("duplicate" %in% selected_checks()) {
-              card(
-                  DTOutput("duplicate_table"),
-                  uiOutput("duplicate_table_dl"),
-                  full_screen = TRUE
+              tagList(
+                  card(
+                      card_header("Duplicate Check Based on ID"),
+                      DTOutput("duplicate_table"),
+                      uiOutput("duplicate_table_dl"),
+                      full_screen = TRUE
+                  ),
+                  if (!is.null(input$duplicate_multi_vars_select_var) && length(input$duplicate_multi_vars_select_var) > 0) {
+                      card(
+                          card_header("Duplicate Check Across Selected Variables"),
+                          DTOutput("duplicate_multi_table"),
+                          uiOutput("duplicate_multi_table_dl"),
+                          full_screen = TRUE
+                      )
+                  }
               )
           } else {
               "If you would like to see Duplicate Checks, please select \"Duplicates\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
       })
-      
+
       output$duplicate_table_for_dl <- downloadHandler(
           filename = "duplicate_table.csv",
           content = function(file) {
               write.csv(duplicate_dataset(), file, row.names = FALSE)
           }
       )
-      
+
+    output$duplicate_multi_table_for_dl <- downloadHandler(
+          filename = "duplicate_multi_table.csv",
+          content = function(file) {
+              write.csv(duplicate_multi_dataset(), file, row.names = FALSE)
+          }
+      )
+
       output$duplicate_table_dl <- renderUI({
           downloadButton("duplicate_table_for_dl", label = "Download Table")
       })
-      
-        ### Outlier Outputs ----
-      
 
-      output$outlier_output <- renderUI({
-          if("outlier" %in% selected_checks()) {
-              tagList(
-                  card(
-                      DTOutput("outlier_table"),
-                      uiOutput("outlier_table_dl"),
-                      full_screen = TRUE
-                  ),
-                  card(
-                      uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
-                      full_screen = TRUE,
-                      style = "display: flex; flex-direction: column;padding: 50px;"
-                  ),
-                  card(
-                      uiOutput("group_boxplot_rendered"),  # Render all scatterplots
-                      full_screen = TRUE,
-                  )
-              )
-          } else {
-              "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
-          }
+    output$duplicate_multi_table_dl <- renderUI({
+          downloadButton("duplicate_multi_table_for_dl", label = "Download Table")
       })
-      
 
-      
+        ### Outlier Outputs ----
+
+
+    output$outlier_output <- renderUI({
+      if("outlier" %in% selected_checks()) {
+        tagList(
+          card(
+            DTOutput("outlier_table"),
+            uiOutput("outlier_table_dl"),
+            full_screen = TRUE
+          ),
+          if (!is.null(input$indiv_outlier_vars_select_var) && length(input$indiv_outlier_vars_select_var) > 0) {
+            card(
+              uiOutput("indiv_combined_histogram_rendered"),  # Render all histograms
+              full_screen = TRUE,
+              style = "display: flex; flex-direction: column;padding: 50px;"
+            )},
+          if (!is.null(input$group_outlier_vars_select_var) && length(input$group_outlier_vars_select_var) > 0) {
+            card(
+              uiOutput("group_boxplot_rendered"),  # Render all scatterplots
+              full_screen = TRUE,
+            )}
+        )
+      } else {
+        "If you would like to see Outlier Checks, please select \"Outliers\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
+      }
+    })
+
+
+
       output$outlier_table_for_dl <- downloadHandler(
           filename = "outlier_table.csv",
           content = function(file) {
               write.csv(outlier_dataset(), file, row.names = FALSE)
           }
       )
-      
+
       output$outlier_table_dl <- renderUI({
           downloadButton("outlier_table_for_dl", label = "Download Table")
       })
-      
+
         ### Enumerator Outputs ----
-      
+
       output$enumerator_subs_table_output <- renderUI({
           card(
               card_header(
@@ -1641,14 +1655,14 @@
               full_screen = TRUE
           )
       })
-      
+
       output$enumerator_subs_plot_output <- renderUI({
           card(
               card_header(
                   span("Cumulative Submissions by Enumerator", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "This graph tracks the total number of submissions made by each enumerator over the selected time period. 
-                          Each line represents an individual enumerator's cumulative submissions, allowing for a visual comparison of activity levels and workload distribution among the team. 
+                          "This graph tracks the total number of submissions made by each enumerator over the selected time period.
+                          Each line represents an individual enumerator's cumulative submissions, allowing for a visual comparison of activity levels and workload distribution among the team.
                           Use this graph to identify trends, outliers, or imbalances in data collection efforts.",
                           placement = "auto"
                       )
@@ -1665,7 +1679,7 @@
               full_screen = TRUE
           )
       })
-      
+
       output$enumerator_ave_vars_table_output <- renderUI({
           card(
               card_header(
@@ -1680,7 +1694,7 @@
               full_screen = TRUE
           )
       })
-      
+
       enumerator_output_components <- reactive({
           case_when(
               enumerator_date_var() != "" & length(enumerator_ave_vars()) > 0 ~ list(
@@ -1696,7 +1710,7 @@
           ) %>%
           unlist()
       })
-      
+
       output$enumerator_output <- renderUI({
           if("enumerator" %in% selected_checks()) {
               layout_column_wrap(
@@ -1711,22 +1725,22 @@
               "If you would like to see Enumerator-Level Checks, please select \"Enumerator-Level\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
       })
-      
+
       output$enumerator_subs_table_dl <- renderUI({
           downloadButton("enumerator_subs_table_for_dl", label = "Download Table")
       })
-      
+
       output$enumerator_subs_table_for_dl <- downloadHandler(
           filename = "enumerator_subs_table.csv",
           content = function(file) {
               write.csv(enumerator_subs_dataset(), file, row.names = FALSE)
           }
       )
-      
+
       output$enumerator_subs_plot_dl_html <- renderUI({
           downloadButton("enumerator_subs_plot_for_dl_html", label = "Download Plot (HTML)")
       })
-      
+
       output$enumerator_subs_plot_for_dl_html <- downloadHandler(
           filename = function() {
               paste0("enumerator_subs_plot-", Sys.Date(), ".html")
@@ -1736,22 +1750,22 @@
               htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
-     
-      
-      
+
+
+
       output$enumerator_ave_vars_table_for_dl <- downloadHandler(
           filename = "enumerator_ave_vars_table.csv",
           content = function(file) {
               write.csv(enumerator_ave_vars_dataset(), file, row.names = FALSE)
           }
       )
-      
+
       output$enumerator_ave_vars_table_dl <- renderUI({
           downloadButton("enumerator_ave_vars_table_for_dl", label = "Download Table")
       })
-      
+
         ### Administrative Unit-Level Outputs ----
-      
+
       output$admin_subs_table_output <- renderUI({
           card(
               card_header(
@@ -1766,7 +1780,7 @@
               full_screen = TRUE
           )
       })
-      
+
       output$admin_subs_plot_output <- renderUI({
           card(
               card_header(
@@ -1788,7 +1802,7 @@
               full_screen = TRUE
           )
       })
-      
+
       admin_output_components <- reactive({
           case_when(
               admin_date_var() != "" ~ list(
@@ -1798,7 +1812,7 @@
           ) %>%
           unlist()
       })
-      
+
       output$admin_output <- renderUI({
           if("admin" %in% selected_checks()) {
               layout_column_wrap(
@@ -1813,22 +1827,22 @@
               "If you would like to see Administrative Unit-Level Checks, please select \"Administrative Unit-Level\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
       })
-      
+
       output$admin_subs_table_for_dl <- downloadHandler(
           filename = "admin_subs_table.csv",
           content = function(file) {
               write.csv(admin_subs_dataset(), file, row.names = FALSE)
           }
       )
-      
+
       output$admin_subs_table_dl <- renderUI({
           downloadButton("admin_subs_table_for_dl", label = "Download Table")
       })
-      
+
       output$admin_subs_plot_dl_html <- renderUI({
           downloadButton("admin_subs_plot_for_dl_html", label = "Download Plot (HTML)")
       })
-      
+
       output$admin_subs_plot_for_dl_html <- downloadHandler(
           filename = function() {
               paste0("admin_subs_plot.html-", Sys.Date(), ".html")
@@ -1838,11 +1852,11 @@
               htmlwidgets::saveWidget(plot, file, selfcontained = TRUE)
           }
       )
-      
 
-      
+
+
         ### Unit of Observation-Level Outputs ----
-      
+
       output$unit_output <- renderUI({
           if("unit" %in% selected_checks()) {
               card(
@@ -1855,33 +1869,33 @@
               "If you would like to see Unit of Observation-Level Checks, please select \"Unit of Observation-Level\" in the left-hand sidebar of the \"Check Selection and Setup \" tab."
           }
       })
-      
+
       output$unit_table_for_dl <- downloadHandler(
           filename = "unit_table.csv",
           content = function(file) {
               write.csv(unit_dataset(), file, row.names = FALSE)
           }
       )
-      
+
       output$unit_table_dl <- renderUI({
           downloadButton("unit_table_for_dl", label = "Download Table")
       })
-      
+
         ### Output Tab Setup ----
-      
+
       output$output_tab_nodata <- renderUI({
           "Please upload your data in the \"Upload Data\" Tab."
       })
-      
+
       output$output_tab_nocheck <- renderUI({
           "Please complete the \"Check Selection and Setup\" tab and click on the \"Run HFCs\" button to display outputs."
       })
-      
+
       output$output_tab_norun <- renderUI({
           "Please click on the \"Run HFCs\" button in the \"Check Selection and Setup\" tab to display outputs."
       })
-      
-      
+
+
       output$output_tab <- renderUI({
           if (is.null(hfc_dataset())) {
               return(uiOutput("output_tab_nodata"))
@@ -1913,9 +1927,9 @@
               )
           }
       })
-     
-      
-      
+
+
+
         ### Download consolidated report ----
 
       output$full_report_dl <- downloadHandler(
@@ -1927,14 +1941,17 @@
               # 1. Check if 'duplicate' check is selected
               includeDuplicates <- "duplicate" %in% selected_checks()
               duplicatesData <- NULL
+              duplicatesMultiData <- NULL
               # Prepare the dataset only if duplicates check is selected
               if (includeDuplicates) {
                   # Use isolate to fetch the value of the reactive expression without triggering reactivity
                   duplicatesData <- isolate(duplicate_dataset())
+                  duplicatesMultiData <- isolate(duplicate_multi_dataset())
+
               }
               # 2. Check if 'outlier' check is selected
               includeOutliers <- "outlier" %in% selected_checks()
-              
+
               # Prepare the dataset only if outliers check is selected
               outliersData <- NULL
               outlierHist <- NULL
@@ -1946,61 +1963,63 @@
                   outlierWinHist <- export_outlier_win_histogram()
                   outlierBox <- export_outlier_boxplot()
               }
-              
+
               # 3. Check if 'enumerator' check is selected
               includeEnumerator <- "enumerator" %in% selected_checks()
-              enumeratorSubsData <- NULL 
-              enumeratorAveData <- NULL 
+              enumeratorSubsData <- NULL
+              enumeratorAveData <- NULL
               enumeratorDailySubsPlot <- NULL
-              
+
               if (includeEnumerator) {
                   enumeratorSubsData <- isolate(enumerator_subs_dataset())
                   enumeratorAveData <- isolate(enumerator_ave_vars_dataset())
                   enumeratorDailySubsPlot <-enumerator_daily_subs_plot()
               }
-              
+
               # 4. Check if 'admin' check is selected
               includeAdmin <- "admin" %in% selected_checks()
-              
+
               # Prepare the dataset only if enum check is selected
               adminData <- NULL
               adminDailySubsPlot <- NULL
               if (includeAdmin) {
                   adminData <- isolate(admin_subs_dataset())
-                  
+
                   adminDailySubsPlot <- if (includeAdmin) {
                       admin_daily_subs_plot()
                   }
               }
-              
+
               # 5. Check if 'unit' check is selected
               includeUnit <- "unit" %in% selected_checks()
-              
+
               # Prepare the dataset only if enum check is selected
               unitData <- NULL
               if (includeUnit) {
                   unitData <- isolate(unit_dataset())
               }
-              
-              
-              
+
+
+              rmd_path <- system.file("iehfc_app/server_scripts/template_report.Rmd", package = "iehfc")
+
               # Render the R Markdown file with parameters
-              rmarkdown::render("iehfc_app/server_scripts/template_report.Rmd", output_file = file,
+              rmarkdown::render(rmd_path, output_file = file,
                                 params = list(
                                     summaryData = summary_data,
                                     includeDuplicates = includeDuplicates,
                                     duplicatesData = duplicatesData,
+                                    duplicatesMultiData = duplicatesMultiData,
                                     includeOutliers = includeOutliers,
-                                    outliersData = outliersData, 
+                                    outliersData = outliersData,
                                     outlierHist = outlierHist,
                                     outlierWinHist = outlierWinHist,
                                     outlierBox = outlierBox,
-                                    includeEnumerator = includeEnumerator, 
-                                    enumeratorSubsData = enumeratorSubsData, 
-                                    enumeratorAveData = enumeratorAveData, 
+                                    includeEnumerator = includeEnumerator,
+                                    enumeratorSubsData = enumeratorSubsData,
+                                    enumeratorAveData = enumeratorAveData,
                                     enumeratorDailySubsPlot = enumeratorDailySubsPlot,
-                                    includeAdmin = includeAdmin, 
-                                    adminData = adminData, 
+                                    includeAdmin = includeAdmin,
+                                    adminData = adminData,
                                     adminDailySubsPlot = adminDailySubsPlot,
                                     includeUnit = includeUnit,
                                     unitData = unitData
@@ -2008,11 +2027,10 @@
                                 envir = new.env(parent = globalenv()))
           }
       )
-      
 
-     
-      
-      
+
+
+
+
   }
-  
-  iehfc_server
+

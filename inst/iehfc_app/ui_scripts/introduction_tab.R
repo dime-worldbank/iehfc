@@ -1,12 +1,12 @@
 ###############################################
   ############### INTRODUCTION TAB ###############
   ###############################################
-  
+
   library(shinydashboard)
-  
+
   introduction_tab <- shinydashboard::tabItem(
       tabName = "introduction",
-      
+
       fluidRow(
           column(
               width = 6,
@@ -19,14 +19,14 @@
           column(
               width = 6,
               style = "display: flex; justify-content: flex-end; align-items: flex-end;",
-              shiny::img(src = "res/Dime-Analytics_logo.png", style = "width:180px; margin-right: 20px;"),
-              
+              shiny::img(src = "www/Dime-Analytics_logo.png", style = "width:180px; margin-right: 20px;"),
+
           )
       ),
-      
+
       div(style = "margin: 10px 0;", hr()),
-      
-      
+
+
       fluidRow(
           column(
               width = 6,
@@ -49,7 +49,7 @@
                       )
                   )
               ),
-              shiny::img(src = "res/WB_logo.png", style = "width: 200px; margin-top: 20px;")
+              shiny::img(src = "www/WB_logo.png", style = "width:200px; margin-top: 20px;")
           ),
           column(
               width = 6,
