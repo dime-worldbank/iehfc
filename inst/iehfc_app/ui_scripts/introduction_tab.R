@@ -36,7 +36,7 @@
                   p("IEHFC arose from the need to standardize and simplify high-frequency data checks in international development research. It aims to bridge the gap between the established necessity of these checks and the complexity involved in implementing them."),
                   p(
                       "Developed by the team at",
-                      tags$a("DIME Analytics", href = "https://www.worldbank.org/en/research/dime/data-and-analytics"),
+                      tags$a("DIME Analytics", href = "https://www.worldbank.org/en/about/unit/unit-dec/impactevaluation/dime-analytics"),
                       ", IEHFC aims to be a one-stop solution for researchers, providing easy-to-create, customizable, and shareable high-frequency check outputs.",
                       "For more information about high-frequency checks you can consult", tags$a("our wiki resource.", href = "https://dimewiki.worldbank.org/High_Frequency_Checks")
                   ),
