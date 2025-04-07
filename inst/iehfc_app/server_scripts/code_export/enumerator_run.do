@@ -2,7 +2,7 @@
 
        * Check variables
             if !mi("`enumerator_complete_var'") {
-                qui ta `enumerator_complete_var'
+                capture assert `enumerator_complete_var' == 0 | `enumerator_complete_var' == 1
                 if r(r)>2 {
                     n di as err "Submission Complete Variable must be a 1/0 variable."
                     exit
@@ -70,8 +70,13 @@
             }
 
             if mi("`enumerator_date_var'") {
-                collapse (first) num_submissions=submissions `num_complete_submissions'=`complete', by(`enumerator_var')
-                order `enumerator_var' num_submissions `num_complete_submissions'
+				if !mi("`complete'") {
+					collapse (first) num_submissions=submissions `num_complete_submissions'=`complete', by(`enumerator_var')
+                }
+				if mi("`complete'") {
+					collapse (first) num_submissions=submissions, by(`enumerator_var')
+                }
+				order `enumerator_var' num_submissions `num_complete_submissions'
             }
 
             list, table  abbreviate(22)
