@@ -96,5 +96,5 @@ This package is distributed under the **MIT License**.
 
 - DIME Analytics Team
 
-For inquiries, visit [DIME Analytics](https://www.worldbank.org/en/research/dime/data-and-analytics).
+For inquiries, visit [DIME Analytics](https://www.worldbank.org/en/about/unit/unit-dec/impactevaluation/dime-analytics).
 
