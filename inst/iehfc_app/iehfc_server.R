@@ -284,7 +284,7 @@
           checkboxGroupInput(
               "check_select", "Select High-Frequency Checks",
               choiceNames = list(
-                  "Duplicates", "Outliers", "Enumerator-Level", "Administrative Unit-Level","Unit of Observation-Level"
+                  "Duplicates", "Outliers", "Enumerator Check and Progress", "Admin Level Progress","Unit of Observation-Level"
                   #"Unit of Observation-Level", "Survey Programming"
               ),
               choiceValues = list(
@@ -366,10 +366,10 @@
               height = "auto", fill = TRUE,
               full_screen = TRUE,
               card_header(
-                  span("Duplicate Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                  span("Duplicate Check Settings", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "The duplicate check checks the Dataset ID for duplicates. You can add any additional variable you want to include in the output table",
-                          placement = "auto"
+                        "Outputs observations with duplicate values in a single variable or across a set of variables",
+                        placement = "auto"
                       ),
               downloadButton("duplicate_r_exp",
                              label = NULL,
@@ -386,17 +386,21 @@
           ),
               card_body(
                   fluidRow(
-                      column(6,
-                             span("Display Variables for ID duplicate check", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to display in the output table",
-                                         placement = "right"),
-                             uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
-                      ),
-                      column(6,
-                             span("Observation-wide Duplicate Check", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Select multiple variables to check for duplicate observations",
-                                         placement = "right"),
-                             uiOutput("duplicate_multi_vars_select", style = "z-index: 1000;")
+                    column(6,
+                        span("Duplicate Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                        tooltip(
+                            "Select one or more variables to check for duplicates. If multiple variables are selected, observations where the combination of values across all selected variables is not unique will be outputted.",
+                            placement = "right"
+                        ),
+                        uiOutput("duplicate_multi_vars_select", style = "z-index: 1000;")
+                    ),
+                    column(6,
+                        span("Additional Display Variables (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                            tooltip(
+                            "These variables will be outputted in the results table, but will not be used to check for duplicates.",
+                            placement = "right"
+                        ),
+                        uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
                       )
                   )
               )
@@ -597,12 +601,12 @@
               height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
-                  span("Outlier Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                  span("Outlier Check Settings", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "The outlier check requires you to provide (1) individual variables or groups of variables you want to check for outliers and (2) an ID variable to identify the observations containing outliers. You may also add any additional variables you want to include in the output table",
+                          "This check outputs observations that are outliers in a single variable or across a set of variables",
                           placement = "auto"
                       ),
-              downloadButton("outlier_r_exp",
+                downloadButton("outlier_r_exp",
                                label = NULL,
                                shiny::img(src = "www/logo_r.png", height = "20px"),
                                class = "btn-light",
@@ -615,45 +619,55 @@
                                style = "float: right; margin-left: 10px;"
                 ) %>% tooltip("Click to download Stata code", placement = "auto")
             ),
-              card_body(
-                  fluidRow(
-                      column(6,
-                             span("Individual Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These need to be numeric variables. Use this if you have an individual variable you'd like to check for outliers",
-                                         placement = "right"),
-                             uiOutput("indiv_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                      ),
-                      column(6,
-                             span("Grouped Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These need to be numeric variables. Use this if you have a set of variables you'd like to check for outliers together (e.g. inc_01, inc_02, etc.)",
-                                         placement = "right"),
-                             uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                      )
-                  )
-              ),
-              card_body(
-                  fluidRow(
-                      column(6,
-                             span("Display Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These are additional variables that you may want to display in the output table",
-                                         placement = "right"),
-                             uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                      )
-                  )
-              ),
-              card_body(
-                  fluidRow(
-                      column(6,
-                             span("Method", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Select preferred method for outlier calculation",
-                                         placement = "right"),
-                             uiOutput("outlier_method", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
-                      ),
-                      column(6,
-                             span("Multiplier", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("Select the multiplier to be used for outlier calculation",
-                                         placement = "right"),
-                             uiOutput("outlier_multiplier", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+            card_body(
+                fluidRow(
+                    column(6,
+                        span("Individual Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                            tooltip(
+                            "List variables that will be tested for outliers on their own. Only numeric variables can be selected.",
+                            placement = "right"
+                        ),
+                        uiOutput("indiv_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                    ),
+                    column(6,
+                        span("Grouped Outlier Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                            tooltip(
+                                "The prefix of variables named in the format inc_01, inc_02, etc., may be selected here. Multiple prefixes may be selected. Variables with the same prefix will be tested for outliers as if they were a single variable. Only numeric variables can be selected.",
+                                placement = "right"
+                            ),   
+                        uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                    )
+                )
+            ),
+            card_body(
+                fluidRow(
+                    column(6,
+                        span("Additional Display Variables (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                            tooltip(
+                                "These variables will be outputted in the results table, but will not be used to check for outliers.",
+                                placement = "right"
+                            ),
+                        uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                    )
+                )
+            ),
+            card_body(
+                fluidRow(
+                    column(6,
+                        span("Method", bsicons::bs_icon("question-circle-fill")) %>%
+                        tooltip(
+                            "Select preferred method for outlier calculation",
+                            placement = "right"
+                        ),
+                        uiOutput("outlier_method", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                    ),
+                    column(6,
+                        span("Multiplier", bsicons::bs_icon("question-circle-fill")) %>%
+                        tooltip(
+                            "Select the multiplier to be used for outlier calculation",
+                            placement = "right"
+                        ),
+                        uiOutput("outlier_multiplier", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
                   )
               )
@@ -797,10 +811,9 @@
               height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
-                  span("Enumerator Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                  span("Enumerator Check and Progress Settings", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "The enumerator check requires you to provide (1) the variable that identifies enumerators and (2) variables for which you'd like to see average values for each enumerator. You can include a submission date variable and a \"submission completeness\" variable",
-                          placement = "auto"
+                        "The enumerator check helps you identify differences across enumerators in central variables.",      placement = "auto"
                       ),
                   downloadButton("enumerator_r_exp",
                                  label = NULL,
@@ -818,15 +831,18 @@
               card_body(
                   fluidRow(
                       column(6,
-                             span("Enumerator Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This is the variable that identifies the enumerator for each submission",
-                                         placement = "right"),
+                             span("Enumerator Identifier Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip(
+                                    "This is the variable that identifies the enumerator for each submission",
+                                    placement = "right"
+                            ),
                              uiOutput("enumerator_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
-                             span("Enumerator Average Value Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These need to be numeric variables. Variables for which you want the average value by enumerator",
-                                         placement = "right"),
+                             span("Average Value Variables", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip(
+                                    "Variables for which to calculate averages per enumerator. Only numeric variables can be selected.",
+                                    placement = "right"),
                              uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
                   )
@@ -835,13 +851,15 @@
                   fluidRow(
                       column(6,
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.",
-                                         placement = "right"),
+                                tooltip(
+                                    "By providing a submission date variable, a graph of cumaltive progress per enumerator over time will be generated.",
+                                    placement = "right"
+                                ),
                              uiOutput("enumerator_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Submission Complete Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.",
+                                 tooltip("By providing a completeness variable, the progress table will also display a column of the number of completed submissions. Only dummy variables (either 1/0 or Yes/No) can be selected.",
                                          placement = "right"),
                              uiOutput("enumerator_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
@@ -985,10 +1003,10 @@
               height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
-                  span("Administrative Unit-Level Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                  span("Progress By Admin Level Settings", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "The administrative unit-level check requires you to (1) provide the variable that identifies the administrative unit and (2) higher-level administrative units that would help either locate or uniquely identify the administrative level of choice. You can include a submission date variable and a \"submission completeness\" variable",
-                          placement = "auto"
+                        "This check displays progress by administrative unit. While intended for administrative units, it can be used for any categorical variable.",
+                        placement = "auto"
                       ),
                   downloadButton("admin_r_exp",
                                  label = NULL,
@@ -1006,15 +1024,15 @@
               card_body(
                   fluidRow(
                       column(6,
-                             span("Administrative Unit Variable", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This is the variable that identifies the administrative unit for each submission",
-                                         placement = "right"),
+                            span("Administrative Unit Variable", bsicons::bs_icon("question-circle-fill")) %>%
+                                tooltip("This variable identifies the administrative unit or other category that progress should be aggregated by",
+                                placement = "right"),
                              uiOutput("admin_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
-                             span("Higher-Level Administrative Unit Variables", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("These variables could serve to either locate or uniquely identify the administrative units of interest",
-                                         placement = "right"),
+                             span("Nested Administrative Unit Variables (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
+                                 tooltip("If the administrative unit variable is nested, you can select one or more additional variables to identify the nested units. For example, if the administrative unit is a district, you may want to select the province variable as well.",
+                                placement = "right"),
                              uiOutput("admin_super_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
                   )
@@ -1023,15 +1041,14 @@
                   fluidRow(
                       column(6,
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This could be the date at which the survey was completed, or the date at which the survey was submitted.",
+                                 tooltip("By providing a submission date variable, a graph of cumaltive progress per admin level over time will be generated.",
                                          placement = "right"),
                              uiOutput("admin_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
                       column(6,
                              span("Submission Complete Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("This should be a dummy variable (either 1/0 or Yes/No) that identifies whether a survey was completed—or successfully submitted—or not.",
-                                         placement = "right"),
-                             uiOutput("admin_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                                tooltip("By providing a completeness variable, the progress table will also display a column of the number of completed submissions. Only dummy variables (either 1/0 or Yes/No) can be selected.",
+                                    placement = "right"),      uiOutput("admin_complete_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       )
                   )
               )
@@ -1116,9 +1133,9 @@
               height = "auto", fill = FALSE,
               full_screen = TRUE,
               card_header(
-                  span("Unit of Observation Check Setup", bsicons::bs_icon("question-circle-fill")) %>%
+                  span("Unit of Observation Check Settings", bsicons::bs_icon("question-circle-fill")) %>%
                       tooltip(
-                          "The unit-of-observation-level check requires you to provide the variable that identifies the unit of observation.You can add any additional variable you want to include in the output table",
+                          "The unit-of-observation-level check requires you to provide the variable that identifies the unit of observation. You can add any additional variable you want to include in the output table",
                           placement = "auto"
                       ),
                   downloadButton("unit_r_exp",
@@ -1484,9 +1501,9 @@
                   card(
                       card_header(
 
-                          span("Select Dataset ID", bsicons::bs_icon("question-circle-fill")) %>%
+                          span("Select Main ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
-                                  "This is where you select the unique ID variable for your dataset obervations",
+                                  "This varaibles should identify each obervation in the dataset. It will be tested for duplicates in additon to be used as the identifier in all outputs.",
                                   placement = "auto"
                               )
                       ),
@@ -1495,13 +1512,9 @@
                   card(
                       card_header(
 
-                          span("Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
+                          span("Selecty Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
-                                  "This is where you choose which data quality checks to run.
-                                  For each check that you select, a corresponding box will appear on the right.
-                                  Please make sure that the parameters within the box are correct before proceeding.
-                                  Once you are done, click on the \"Run HFCs\" button below.",
-                                  placement = "auto"
+                                "Select which data quality checks to run. Then fill in the settings for each of them to the right. Once you are done, click on the \"Run HFCs\" button below.",      placement = "auto"
                               )
                       ),
                       uiOutput("check_select"),
@@ -1509,31 +1522,31 @@
                   card(span("Run Checks"),
                       uiOutput("setup_run_hfcs_button")
                   ),
-                  card(span("Download Parameters", bsicons::bs_icon("question-circle-fill")) %>%
-                           tooltip(
-                               "Click here to download the selected parameters as a CSV file or to obtain the required template.",
-                               placement = "auto"
-                           ),
+                  card(
+                    span("Export Settings", bsicons::bs_icon("question-circle-fill")) %>%
+                        tooltip(
+                            "This option allows you to export the current settings to a CSV file which you can import at a later time.",
+                            placement = "auto"
+                        ),
                        uiOutput("setup_exp_para_button")
                   ),
+                  # Import parameters
                   card(
-                              fileInput( # Import parameters
-                                  "parameter_file",
-                                  label = span("Import Parameters", bsicons::bs_icon("question-circle-fill")) %>%
-                                      tooltip(
-                                          "This is optional. If you've saved your parameters in a CSV file, or downloaded it above,
-                                          you can upload the file here. Ensure that your file matches the required template (.csv)",
-                                          placement = "auto"
-                                      ),
-                                  accept = ".csv",
-                                  placeholder = "No file selected",
-                                  buttonLabel = "Upload"
-                              ),
-                              span(
-                                  "(Optional) Upload the csv parameter file.",
-                                  style = "color: #593196; font-size: 12px;"
-                              )
-                          ),
+                    fileInput( "parameter_file",
+                        label = span("Import Settings", bsicons::bs_icon("question-circle-fill")) %>%
+                            tooltip(
+                                "This allows you to import a previously exported settings file. This will overwrite any current settings.",
+                                placement = "auto"
+                            ),
+                        accept = ".csv",
+                        placeholder = "No file selected",
+                        buttonLabel = "Upload"
+                    ),
+                    span(
+                        "(Optional) Upload the csv parameter file.",
+                        style = "color: #593196; font-size: 12px;"
+                    )
+                ),
               ),
               uiOutput("setup_tab_body")
           )
@@ -2027,10 +2040,5 @@
                                 envir = new.env(parent = globalenv()))
           }
       )
-
-
-
-
-
   }
 
