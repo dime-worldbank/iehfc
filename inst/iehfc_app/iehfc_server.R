@@ -384,7 +384,7 @@
               "duplicate_multi_vars_select_var",
               label = NULL,
               choices = names(dataset),
-              selected = NULL,  # Start with no selection
+              selected = current_duplicate_multi_vars(),  # Start with no selection
               multiple = TRUE,
               options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
           )
@@ -1321,12 +1321,12 @@
           # }
           #
           if (!is.null(input$duplicate_extra_vars_select_var)) {
-              para2 <- data.frame(Check = "duplicate",
+              para21 <- data.frame(Check = "duplicate",
                                   Parameter = "duplicate_extra_vars_select_var",
                                   Name = "Duplicates display variables",
                                   Value = c(input$duplicate_extra_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-              combined_df <- rbind(combined_df, para2)
+              combined_df <- rbind(combined_df, para21)
           }
 
           if (!is.null(input$duplicate_multi_vars_select_var)) {
