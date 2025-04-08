@@ -1226,7 +1226,7 @@
           )
       })
 
-      error_delay_trigger <- reactiveTimer(500)
+      error_delay_trigger <- reactiveTimer(1000)
 
 
       output$setup_run_hfcs_button <- renderUI({
