@@ -347,7 +347,7 @@
           imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_multi_vars_select_var", "Value"]
         if (!is.null(duplicate_multi_vars_imported)) {
           current_duplicate_multi_vars(duplicate_multi_vars_imported)
-          #updateSelectizeInput(session, "duplicate_multi_vars_select_var", selected = duplicate_multi_vars_imported)
+          updateSelectizeInput(session, "duplicate_multi_vars_select_var", selected = duplicate_multi_vars_imported)
         }
       })
 
@@ -1330,7 +1330,7 @@
           }
 
           if (!is.null(input$duplicate_multi_vars_select_var)) {
-            para2 <- data.frame(Check = "duplicate",
+            para20 <- data.frame(Check = "duplicate",
                                 Parameter = "duplicate_multi_vars_select_var",
                                 Name = "Duplicate variables",
                                 Value = c(input$duplicate_multi_vars_select_var),
