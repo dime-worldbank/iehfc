@@ -1226,13 +1226,8 @@
           )
       })
 
-      error_delay_trigger <- reactiveTimer(1000)
-
 
       output$setup_run_hfcs_button <- renderUI({
-
-          error_delay_trigger()
-
 
           # Initialize a list for missing fields messages
           missing_fields <- list()
