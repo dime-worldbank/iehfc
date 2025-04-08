@@ -218,10 +218,27 @@
 
       imported_para_dataset <- reactiveVal()
 
-      observeEvent(input$parameter_file, {
-          para_ds <- read.csv(parameter_file()$datapath)
-          imported_para_dataset(para_ds)
+      # observeEvent(input$parameter_file, {
+      #     para_ds <- read.csv(parameter_file()$datapath)
+      #     imported_para_dataset(para_ds)
+      # })
+
+      observeEvent(parameter_file(), {
+        req(parameter_file())
+        para_ds <- read.csv(parameter_file()$datapath, stringsAsFactors = FALSE)
+        imported_para_dataset(para_ds)
       })
+
+      observeEvent(input$use_test_parameters, {
+        test_file_path <- system.file("test_data", "test_parameters.csv", package = "iehfc")
+        if (file.exists(test_file_path)) {
+          para_ds <- read.csv(test_file_path, stringsAsFactors = FALSE)
+          imported_para_dataset(para_ds)
+        } else {
+          showNotification("Test parameter file not found in package.", type = "error")
+        }
+      })
+
 
       ### Select ID Variable ----
 
@@ -1480,6 +1497,15 @@
                          class = "btn btn-outline-primary btn-sm")
       })
 
+      output$setup_imp_para_button <- renderUI({
+        actionButton(
+          "use_test_parameters",
+          "Use Test Parameters",
+          icon = icon("upload"),
+          class = "btn btn-outline-secondary btn-sm",
+          width = "100%"
+        )
+      })
 
 
       # take you to output tab
@@ -1536,7 +1562,8 @@
                                "Click here to download the selected parameters as a CSV file or to obtain the required template.",
                                placement = "auto"
                            ),
-                       uiOutput("setup_exp_para_button")
+                       uiOutput("setup_exp_para_button"),
+                       uiOutput("setup_imp_para_button"),
                   ),
                   card(
                               fileInput( # Import parameters
