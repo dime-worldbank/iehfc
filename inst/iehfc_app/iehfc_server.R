@@ -41,6 +41,8 @@
           input$hfc_file
       })
 
+      test_data_loaded <- reactiveVal(FALSE)
+
       hfc_dataset <- reactiveVal()
 
       # observeEvent(input$hfc_file, {
@@ -63,6 +65,7 @@
       # })
 
       observeEvent(input$hfc_file, {
+          test_data_loaded(FALSE)
           req(input$hfc_file)
 
           file_path <- input$hfc_file$datapath
@@ -107,7 +110,9 @@
               }
           )
 
-          hfc_dataset(ds)
+          if (!is.null(ds)) {
+            hfc_dataset(ds)
+            test_data_loaded(TRUE) }
       })
 
 
@@ -218,9 +223,20 @@
 
       imported_para_dataset <- reactiveVal()
 
-      observeEvent(input$parameter_file, {
-          para_ds <- read.csv(parameter_file()$datapath)
+      observeEvent(parameter_file(), {
+        req(parameter_file())
+        para_ds <- read.csv(parameter_file()$datapath, stringsAsFactors = FALSE)
+        imported_para_dataset(para_ds)
+      })
+
+      observeEvent(input$use_test_parameters, {
+        test_file_path <- system.file("test_data", "test_parameters.csv", package = "iehfc")
+        if (file.exists(test_file_path)) {
+          para_ds <- read.csv(test_file_path, stringsAsFactors = FALSE)
           imported_para_dataset(para_ds)
+        } else {
+          showNotification("Test parameter file not found in package.", type = "error")
+        }
       })
 
       ### Select ID Variable ----
@@ -294,7 +310,7 @@
               selected = if (!is.null(imported_para_dataset())) {
                   selected_rows <- c(imported_para_dataset()$Check)
               } else {
-                  selected_rows <- c("duplicate")  # Default selection if dataset is not created
+                  selected_rows <- NULL  # Default selection if dataset is not created
               }
 
           )
@@ -313,7 +329,8 @@
           # Duplicate IDs
           # Additional variables for reference
 
-      current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
+      current_duplicate_extra_vars <- reactiveVal()
+      current_duplicate_multi_vars <- reactiveVal()
 
       # Bring duplicate variables from uploaded parameter dataset
       observe({
@@ -325,9 +342,22 @@
           }
       })
 
+      observe({
+        duplicate_multi_vars_imported <-
+          imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_multi_vars_select_var", "Value"]
+        if (!is.null(duplicate_multi_vars_imported)) {
+          current_duplicate_extra_vars(duplicate_multi_vars_imported)
+          updateSelectizeInput(session, "duplicate_multi_vars_select_var", selected = duplicate_multi_vars_imported)
+        }
+      })
+
       # Observe any change in 'duplicate_extra_vars_select_var' and update current_duplicate_extra_vars
       observe({
           current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
+      })
+
+      observe({
+        current_duplicate_multi_vars(input$duplicate_multi_vars_select_var)
       })
 
 
@@ -1299,6 +1329,15 @@
               combined_df <- rbind(combined_df, para2)
           }
 
+          if (!is.null(input$duplicate_multi_vars_select_var)) {
+            para2 <- data.frame(Check = "duplicate",
+                                Parameter = "duplicate_multi_vars_select_var",
+                                Name = "Duplicate variables",
+                                Value = c(input$duplicate_multi_vars_select_var),
+                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+            combined_df <- rbind(combined_df, para2)
+          }
+
           ## Outlier
           if (!is.null(input$indiv_outlier_vars_select_var)) {
               para3 <- data.frame(Check = "outlier",
@@ -1455,7 +1494,19 @@
           downloadButton("setup_exp_para",
                          label = "Download as csv",
                          icon("download"),
-                         class = "btn btn-outline-primary btn-sm")
+                         class = "btn btn-outline-primary btn-sm",
+                         width = "100%")
+      })
+
+
+      output$setup_imp_para_button <- renderUI({
+        actionButton(
+          "use_test_parameters",
+          "Use Test Parameters",
+          icon = icon("upload"),
+          class = "btn btn-outline-primary btn-sm",
+          width = "100%"
+        )
       })
 
 
@@ -1506,6 +1557,16 @@
                       ),
                       uiOutput("check_select"),
                   ),
+                  if (test_data_loaded()) {
+                    card(
+                      span("Use Test Parameters", bsicons::bs_icon("question-circle-fill")) %>%
+                        tooltip(
+                          "Click here to download the selected parameters as a CSV file or to obtain the required template.",
+                          placement = "auto"
+                        ),
+                      uiOutput("setup_imp_para_button")
+                    )
+                  },
                   card(span("Run Checks"),
                       uiOutput("setup_run_hfcs_button")
                   ),
