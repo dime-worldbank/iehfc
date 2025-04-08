@@ -313,7 +313,8 @@
           # Duplicate IDs
           # Additional variables for reference
 
-      current_duplicate_extra_vars <- reactiveVal() # For storing current state of 'duplicate_extra_vars_select_var'
+      current_duplicate_extra_vars <- reactiveVal()
+      current_duplicate_multi_vars <- reactiveVal()
 
       # Bring duplicate variables from uploaded parameter dataset
       observe({
@@ -325,11 +326,23 @@
           }
       })
 
+      observe({
+        duplicate_multi_vars_imported <-
+          imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_multi_vars_select_var", "Value"]
+        if (!is.null(duplicate_multi_vars_imported)) {
+          current_duplicate_extra_vars(duplicate_multi_vars_imported)
+          updateSelectizeInput(session, "duplicate_multi_vars_select_var", selected = duplicate_multi_vars_imported)
+        }
+      })
+
       # Observe any change in 'duplicate_extra_vars_select_var' and update current_duplicate_extra_vars
       observe({
           current_duplicate_extra_vars(input$duplicate_extra_vars_select_var)
       })
 
+      observe({
+        current_duplicate_multi_vars(input$duplicate_multi_vars_select_var)
+      })
 
 
       output$duplicate_extra_vars_select <- renderUI({
@@ -1297,6 +1310,15 @@
                                   Value = c(input$duplicate_extra_vars_select_var),
                                   Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
               combined_df <- rbind(combined_df, para2)
+          }
+
+          if (!is.null(input$duplicate_multi_vars_select_var)) {
+            para2 <- data.frame(Check = "duplicate",
+                                Parameter = "duplicate_multi_vars_select_var",
+                                Name = "Duplicate variables",
+                                Value = c(input$duplicate_multi_vars_select_var),
+                                Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
+            combined_df <- rbind(combined_df, para2)
           }
 
           ## Outlier
