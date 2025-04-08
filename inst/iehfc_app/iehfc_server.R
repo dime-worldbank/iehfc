@@ -172,7 +172,6 @@
       })
 
       output$use_test_data_button <- renderUI({
-        if (!test_data_loaded()) return(NULL)
           actionButton(
               "use_test_data",
               "Use Test Data",
@@ -1505,6 +1504,7 @@
       })
 
       output$setup_imp_para_button <- renderUI({
+        if (!test_data_loaded()) return(NULL)
         actionButton(
           "use_test_parameters",
           "Use Test Parameters",
