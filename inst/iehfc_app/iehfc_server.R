@@ -63,6 +63,7 @@
       # })
 
       observeEvent(input$hfc_file, {
+          test_data_loaded(FALSE)
           req(input$hfc_file)
 
           file_path <- input$hfc_file$datapath
@@ -107,7 +108,9 @@
               }
           )
 
-          hfc_dataset(ds)
+          if (!is.null(ds)) {
+            hfc_dataset(ds)
+            test_data_loaded(TRUE) }
       })
 
 
@@ -169,6 +172,7 @@
       })
 
       output$use_test_data_button <- renderUI({
+        if (!test_data_loaded()) return(NULL)
           actionButton(
               "use_test_data",
               "Use Test Data",
@@ -207,6 +211,7 @@
           )
       })
 
+      test_data_loaded <- reactiveVal(FALSE)
 
       ## Setup Tab ----
 
@@ -311,7 +316,8 @@
               selected = if (!is.null(imported_para_dataset())) {
                   selected_rows <- c(imported_para_dataset()$Check)
               } else {
-                  selected_rows <- c("duplicate")  # Default selection if dataset is not created
+                  #selected_rows <- c("duplicate")
+                selected_rows <- NULL
               }
 
           )
@@ -1494,7 +1500,8 @@
           downloadButton("setup_exp_para",
                          label = "Download as csv",
                          icon("download"),
-                         class = "btn btn-outline-primary btn-sm")
+                         class = "btn btn-outline-primary btn-sm",
+                         width = "100%")
       })
 
       output$setup_imp_para_button <- renderUI({
