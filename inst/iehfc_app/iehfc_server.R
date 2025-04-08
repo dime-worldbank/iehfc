@@ -1335,7 +1335,7 @@
                                 Name = "Duplicate variables",
                                 Value = c(input$duplicate_multi_vars_select_var),
                                 Timestamp = format(current_datetime, format = "%d-%b-%Y %I:%M %p"))
-            combined_df <- rbind(combined_df, para2)
+            combined_df <- rbind(combined_df, para20)
           }
 
           ## Outlier
