@@ -347,7 +347,7 @@
           imported_para_dataset()[imported_para_dataset()$Parameter == "duplicate_multi_vars_select_var", "Value"]
         if (!is.null(duplicate_multi_vars_imported)) {
           current_duplicate_multi_vars(duplicate_multi_vars_imported)
-          updateSelectizeInput(session, "duplicate_multi_vars_select_var", selected = duplicate_multi_vars_imported)
+          #updateSelectizeInput(session, "duplicate_multi_vars_select_var", selected = duplicate_multi_vars_imported)
         }
       })
 
