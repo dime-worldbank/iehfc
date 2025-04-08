@@ -1226,9 +1226,13 @@
           )
       })
 
+      error_delay_trigger <- reactiveTimer(500)
 
 
       output$setup_run_hfcs_button <- renderUI({
+
+          error_delay_trigger()
+
 
           # Initialize a list for missing fields messages
           missing_fields <- list()
@@ -1256,9 +1260,6 @@
 
           # Determine if all conditions are met
           all_conditions_met <- length(missing_fields) == 0
-
-          # Ensure all_conditions_met is defined and not NULL
-
 
 
           # Render the action button, enabled or disabled based on conditions
@@ -1505,11 +1506,10 @@
 
       output$setup_imp_para_button <- renderUI({
         if (!test_data_loaded()) return(NULL)
-        actionButton(
-          "use_test_parameters",
+        actionButton("use_test_parameters",
           "Use Test Parameters",
           icon = icon("upload"),
-          class = "btn btn-outline-secondary btn-sm",
+          class = "btn btn-outline-primary btn-sm",
           width = "100%"
         )
       })
