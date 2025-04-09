@@ -356,7 +356,9 @@
               choices = names(dataset),
               selected = NULL,  # Start with no selection
               multiple = TRUE,
-              options = list('dropdownParent' = 'body', 'onItemAdd' = I("function() { this.open(); }"))
+              options = list(
+                'plugins' = list('remove_button')
+              )
           )
       })
 
