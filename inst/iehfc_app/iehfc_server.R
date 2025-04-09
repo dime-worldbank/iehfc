@@ -389,7 +389,7 @@
                     column(6,
                         span("Duplicate Variables", bsicons::bs_icon("question-circle-fill")) %>%
                         tooltip(
-                            "Select one or more variables to check for duplicates. If multiple variables are selected, observations where the combination of values across all selected variables is not unique will be outputted.",
+                            "Select one or more variables to check for duplicate observations. If multiple variables are selected, observations where the combination of values across all selected variables is not unique will be output. If no variable is selected,observations where the id is duplicate will be output.",
                             placement = "right"
                         ),
                         uiOutput("duplicate_multi_vars_select", style = "z-index: 1000;")
@@ -397,7 +397,7 @@
                     column(6,
                         span("Additional Display Variables (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
                             tooltip(
-                            "These variables will be outputted in the results table, but will not be used to check for duplicates.",
+                            "These variables will be output in the results table, but will not be used to check for duplicates.",
                             placement = "right"
                         ),
                         uiOutput("duplicate_extra_vars_select", style = "z-index: 1000;")
@@ -634,7 +634,7 @@
                             tooltip(
                                 "The prefix of variables named in the format inc_01, inc_02, etc., may be selected here. Multiple prefixes may be selected. Variables with the same prefix will be tested for outliers as if they were a single variable. Only numeric variables can be selected.",
                                 placement = "right"
-                            ),   
+                            ),
                         uiOutput("group_outlier_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                     )
                 )
@@ -644,7 +644,7 @@
                     column(6,
                         span("Additional Display Variables (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
                             tooltip(
-                                "These variables will be outputted in the results table, but will not be used to check for outliers.",
+                                "These variables will be output in the results table, but will not be used to check for outliers.",
                                 placement = "right"
                             ),
                         uiOutput("outlier_extra_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
@@ -852,7 +852,7 @@
                       column(6,
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
                                 tooltip(
-                                    "By providing a submission date variable, a graph of cumaltive progress per enumerator over time will be generated.",
+                                    "By providing a submission date variable, a graph of cumulative progress per enumerator over time will be generated.",
                                     placement = "right"
                                 ),
                              uiOutput("enumerator_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
@@ -1041,7 +1041,7 @@
                   fluidRow(
                       column(6,
                              span("Submission Date Variable (Optional)", bsicons::bs_icon("question-circle-fill")) %>%
-                                 tooltip("By providing a submission date variable, a graph of cumaltive progress per admin level over time will be generated.",
+                                 tooltip("By providing a submission date variable, a graph of cumulative progress per admin level over time will be generated.",
                                          placement = "right"),
                              uiOutput("admin_date_var_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
                       ),
@@ -1503,7 +1503,7 @@
 
                           span("Select Main ID Variable", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
-                                  "This varaibles should identify each obervation in the dataset. It will be tested for duplicates in additon to be used as the identifier in all outputs.",
+                                  "This variables should identify each obervation in the dataset. It will be tested for duplicates in additon to be used as the identifier in all outputs.",
                                   placement = "auto"
                               )
                       ),
