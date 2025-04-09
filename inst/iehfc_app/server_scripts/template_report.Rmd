@@ -58,13 +58,14 @@ if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
   cat("## Duplicates (By ID)\n\n")
   cat("No duplicate data available.\n\n")
 }
+cat('</div>\n\n')
 
 if (!is.null(params$duplicatesMultiData) && nrow(params$duplicatesMultiData) > 0) {
   cat("## Duplicates (Across Variables)\n\n")
   cat('<div class="datatable-block">')
   DT::datatable(params$duplicatesMultiData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
-    cat('</div>\n\n')
+    cat('')
 }
 cat('</div>\n\n')
 ```
