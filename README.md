@@ -27,10 +27,10 @@ devtools::install_github("dime-worldbank/iehfc")
 
 ### ❗ Troubleshooting Installation Issues
 
-- If you encounter errors related to the `promises` package, restart your R session and reinstall `promises` manually:
-  ```r
-  install.packages("promises")
-  ```
+If you encounter errors related to the `promises` package, restart your R session and reinstall `promises` manually:
+```r
+install.packages("promises")
+```
 
 ## 🚀 Launching the IEHFC Application
 
