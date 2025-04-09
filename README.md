@@ -15,11 +15,11 @@ The **IEHFC** package, developed by **DIME Analytics**, is a Shiny-based applica
 
 ## 🛠️ Installation
 
-To install the package directly from GitHub, execute the following commands in R:
+To install the package directly from GitHub, open RStudio amd execute the following commands:
 
 ```r
 # Install devtools if not already installed
-if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+install.packages("devtools")
 
 # Install IEHFC from GitHub
 devtools::install_github("dime-worldbank/iehfc")
