@@ -63,7 +63,7 @@ if (!is.null(params$duplicatesMultiData) && nrow(params$duplicatesMultiData) > 0
   cat("## Duplicates (Across Variables)\n\n")
   cat('<div class="datatable-block">')
   DT::datatable(params$duplicatesMultiData, options = list(pageLength = 5, scrollX = TRUE))
-  
+  cat('</div>\n\n')
 } else {
     cat("")
 }
