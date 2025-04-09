@@ -1,4 +1,8 @@
     * ---- Identify duplicates based on id ----
+	
+	* Temporarily save the original data
+		tempfile ___maindata
+		save 	`___maindata'
 
     * Sort and identify duplicates
        duplicates tag `selected_id_var', gen(_dup)
@@ -18,6 +22,9 @@
 
     * ---- Identify duplicates based on multiple user-specified variables ----
     
+	* Initiate the temporarily saved the original data
+		u 	`___maindata'
+		
     * Sort and identify duplicates
         duplicates tag `duplicate_multi_vars', gen(_multi_dup)
         
