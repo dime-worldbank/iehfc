@@ -1,0 +1,26 @@
+,Check,Parameter,Name,Value,Timestamp
+1,,id_select_var,ID Variable,hhid,4/8/25 14:03
+2,duplicate,duplicate_extra_vars_select_var,Duplicates display variables,village,4/8/25 14:03
+3,duplicate,duplicate_extra_vars_select_var,Duplicates display variables,submissiondate,4/8/25 14:03
+4,duplicate,duplicate_multi_vars_select_var,Duplicate variables,device_id,4/8/25 14:03
+5,duplicate,duplicate_multi_vars_select_var,Duplicate variables,sim_number,4/8/25 14:03
+6,duplicate,duplicate_multi_vars_select_var,Duplicate variables,enumerator,4/8/25 14:03
+7,outlier,indiv_outlier_vars_select_var,Individual outlier variables,inc_11,4/8/25 14:03
+8,outlier,indiv_outlier_vars_select_var,Individual outlier variables,inc_12,4/8/25 14:03
+9,outlier,group_outlier_vars_select_var,Grouped outlier variables,exp_25,4/8/25 14:03
+10,outlier,group_outlier_vars_select_var,Grouped outlier variables,crp10a_c1_p,4/8/25 14:03
+11,outlier,outlier_extra_vars_select_var,Outlier additional variables,village,4/8/25 14:03
+12,outlier,outlier_method,Outlier method,sd,4/8/25 14:03
+13,outlier,outlier_multiplier,Outlier multiplier,3,4/8/25 14:03
+14,enumerator,enumerator_var_select_var,Enumerator variable,enumerator,4/8/25 14:03
+15,enumerator,enumerator_ave_vars_select_var,Enumerator Average Value Variables,inc_10,4/8/25 14:03
+16,enumerator,enumerator_date_var_select_var,Submission Date Variable,submissiondate,4/8/25 14:03
+17,enumerator,enumerator_complete_var_select_var,Submission Complete Variable,submission_complete,4/8/25 14:03
+18,admin,admin_var_select_var,Administrative Unit Variable,village,4/8/25 14:03
+19,admin,admin_super_vars_select_var,Higher-Level Administrative Unit Variables,province,4/8/25 14:03
+20,admin,admin_date_var_select_var,Submission Date Variable,submissiondate,4/8/25 14:03
+21,admin,admin_complete_var_select_var,Submission Complete Variable,submission_complete,4/8/25 14:03
+22,unit,unit_var_select_var,Unit of Observation,village,4/8/25 14:03
+23,unit,unit_extra_vars_select_var,Unit Display Variables,inc_10,4/8/25 14:03
+24,unit,unit_extra_vars_select_var,Unit Display Variables,inc_11,4/8/25 14:03
+25,unit,unit_extra_vars_select_var,Unit Display Variables,inc_12,4/8/25 14:03
