@@ -15,22 +15,27 @@ The **IEHFC** package, developed by **DIME Analytics**, is a Shiny-based applica
 
 ## 🛠️ Installation
 
-To install the package directly from GitHub, open RStudio amd execute the following commands:
+To install the package directly from GitHub, open RStudio and run the following commands:
 
-```r
-# Install devtools if not already installed
+````r
+# Install devtools if you don't have it yet
 install.packages("devtools")
 
-# Install IEHFC from GitHub
+# Install the IEHFC package from GitHub
 devtools::install_github("dime-worldbank/iehfc")
-```
+````
+
+> **Note**: You may see a warning that says:  
+> *"WARNING: Rtools is required to build R packages, but is not currently installed."*  
+> You can safely ignore this message. Rtools is **not** required to install and use the app.
 
 ### ❗ Troubleshooting Installation Issues
 
-If you encounter errors related to the `promises` package, restart your R session and reinstall `promises` manually:
-```r
+If you run into errors related to the `promises` package (or another package), try restarting your R session and installing the package manually:
+
+````r
 install.packages("promises")
-```
+````
 
 ## 🚀 Launching the IEHFC Application
 
