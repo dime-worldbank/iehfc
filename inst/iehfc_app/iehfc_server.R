@@ -1563,7 +1563,7 @@
                     card(
                       span("Use Test Parameters", bsicons::bs_icon("question-circle-fill")) %>%
                         tooltip(
-                          "Use this button to load our test parameters. This will automatically populate the setup fields on the right side.",
+                          "Click here to download the selected parameters as a CSV file or to obtain the required template.",
                           placement = "auto"
                         ),
                       uiOutput("setup_imp_para_button")
