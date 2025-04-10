@@ -1491,11 +1491,13 @@
       )
 
       output$setup_exp_para_button <- renderUI({
+        div(
+          style = "width: 100%;",
           downloadButton("setup_exp_para",
                          label = "Download as csv",
-                         icon("download"),
-                         class = "btn btn-outline-primary btn-sm",
-                         width = "100%")
+                         icon = icon("download"),
+                         class = "btn btn-outline-primary btn-sm")
+        )
       })
 
 
