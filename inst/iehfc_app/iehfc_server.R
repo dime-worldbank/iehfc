@@ -184,32 +184,63 @@
       })
 
       output$upload_tab <- renderUI({
-          layout_sidebar(
-              height = "88vh",
-              sidebar = sidebar(
-                  width = "30%",
-                  card(
-                      fileInput(
-                          "hfc_file",
-                          label = span("Upload HFC Data", bsicons::bs_icon("question-circle-fill")) %>%
-                              tooltip(
-                                  "This is where you upload the dataset on which you want to run data quality checks. In the next version of this application, there will be error checks at this point to make sure that the dataset is in the right format/encoding",
-                                  placement = "auto"
-                              ),
-                          accept = ".csv",
-                          placeholder = "mydata.csv"
-                      ),
-                      span(
-                          "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
-                          style = "color: #593196; font-size: 12px;"
-                      )
+        layout_sidebar(
+          height = "88vh",
+          sidebar = sidebar(
+            width = "30%",
+            uiOutput("dataset_buttons")
+          ),
+          uiOutput("upload_tab_body")
+        )
+      })
+
+      output$dataset_buttons <- renderUI({
+        if (is.null(hfc_dataset())) {
+          tagList(
+            card(
+              fileInput(
+                "hfc_file",
+                label = span("Upload HFC Data", bsicons::bs_icon("question-circle-fill")) %>%
+                  tooltip(
+                    "This is where you upload the dataset on which you want to run data quality checks. In the next version of this application, there will be error checks at this point to make sure that the dataset is in the right format/encoding",
+                    placement = "auto"
                   ),
-                  card(
-                      uiOutput("use_test_data_button")
-                  )
+                accept = ".csv",
+                placeholder = "mydata.csv"
               ),
-              uiOutput("upload_tab_body")
+              span(
+                "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
+                style = "color: #593196; font-size: 12px;"
+              )
+            ),
+            card(
+              uiOutput("use_test_data_button")
+            )
           )
+        } else {
+          card(
+            actionButton(
+              "clear_dataset",
+              "Restart with New Data",
+              icon = icon("repeat"),
+              class = "btn btn-outline-primary btn-lg",
+              width = "100%"
+            )
+          )
+        }
+      })
+
+
+
+      observeEvent(input$clear_dataset, {
+        runjs("reloadToTab('upload_tab');")
+      })
+
+      observe({
+        params <- parseQueryString(session$clientData$url_search)
+        if ("tab_index" %in% names(params)) {
+          updateNavbarPage(session, "tabs", selected = params$tab_index)
+        }
       })
 
 
