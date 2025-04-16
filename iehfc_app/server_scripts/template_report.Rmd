@@ -10,12 +10,12 @@ output:
      number_sections: true
      theme: flatly
      css: "styles.css"
-runtime: shiny
 params: 
   summaryData: TRUE
   authorEmail: NULL
   includeDuplicates: FALSE
   duplicatesData: NULL
+  duplicatesMultiData: NULL
   includeOutliers: FALSE
   outliersData: NULL
   outlierHist: NULL
@@ -48,7 +48,6 @@ if (!is.null(params$authorEmail)) {
 ```{r summary, echo = FALSE, results='asis'}
 # 0. summary
 cat("# Summary\n\n")
-
 summary <- params$summaryData
   cat("* **Total Responses:**", summary$total_responses, "\n")
   cat("* **Complete Responses:**", summary$total_complete_responses, "\n")
@@ -60,15 +59,25 @@ summary <- params$summaryData
 
 ```{r duplicates-table, eval=params$includeDuplicates}
 if (!is.null(params$duplicatesData) && nrow(params$duplicatesData) > 0) {
-    cat("# Duplicates\n\n")
-    cat('<div class="datatable-block">')
-    DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
-    
+  cat("# Duplicates\n\n")
+  cat("## Duplicates (By ID)\n\n")
+  cat('<div class="datatable-block">')
+  DT::datatable(params$duplicatesData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
-     cat("# Duplicates\n\n")
-    cat("No duplicate data available.")
+  cat("# Duplicates\n\n")
+  cat("## Duplicates (By ID)\n\n")
+  cat("No duplicate data available.\n\n")
 }
-cat('</div>')
+cat('</div>\n\n')
+
+if (!is.null(params$duplicatesMultiData) && nrow(params$duplicatesMultiData) > 0) {
+  cat("## Duplicates (Across Variables)\n\n")
+  cat('<div class="datatable-block">')
+  DT::datatable(params$duplicatesMultiData, options = list(pageLength = 5, scrollX = TRUE))
+} else {
+    cat('')
+}
+cat('</div>\n\n')
 ```
 
 
@@ -143,9 +152,7 @@ if (!is.null(params$enumeratorAveData) && nrow(params$enumeratorAveData) > 0) {
     cat('<div class="datatable-block">')
     DT::datatable(params$enumeratorAveData, options = list(pageLength = 5, scrollX = TRUE))
 } else {
-    cat("\n## Average by Enumerator\n\n")
-    cat('<div class="datatable-block">')
-    cat("No enumerator data available.")
+    cat("")
 }
 cat('</div>')
 ```
