@@ -54,27 +54,27 @@ indiv_outlier_dataset <- reactive({
                         matches(paste0("^", .x, "$")), ~ mean(.x, na.rm = TRUE), .names = "mean"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
-                        ~ if (method == "sd") sd(.x, na.rm = TRUE) else NaN, 
+                        matches(paste0("^", .x, "$")),
+                        ~ if (method == "sd") sd(.x, na.rm = TRUE) else NaN,
                         .names = "sd"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
-                        ~ if (method == "iqr") IQR(.x, na.rm = TRUE) else NaN, 
+                        matches(paste0("^", .x, "$")),
+                        ~ if (method == "iqr") IQR(.x, na.rm = TRUE) else NaN,
                         .names = "iqr"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
+                        matches(paste0("^", .x, "$")),
                         ~ if (method == "iqr") {
                             quantile(.x, probs = 0.25, na.rm = TRUE)
-                        } else NaN, 
+                        } else NaN,
                         .names = "p25"
                     ),
                     across(
-                        matches(paste0("^", .x, "$")), 
+                        matches(paste0("^", .x, "$")),
                         ~ if (method == "iqr") {
                             quantile(.x, probs = 0.75, na.rm = TRUE)
-                        } else NaN, 
+                        } else NaN,
                         .names = "p75"
                     ),
                     low_limit = if (method == "sd") {
@@ -182,6 +182,7 @@ custom_winsorize <- function(data, var) {
     
     return(data)
 }
+
 
 
 winsorized_hfc_dataset <- reactive({
@@ -379,16 +380,16 @@ export_outlier_win_histogram <- reactive({
 export_outlier_boxplot <- reactive({
     if (length(group_outlier_vars()) > 0) {
         plot_data <- hfc_dataset()
-        selected_groups <- group_outlier_vars()  
+        selected_groups <- group_outlier_vars()
         
         plot_data <- plot_data %>%
             select(matches(paste0("^", paste(selected_groups, collapse = "|"), "_{0,1}[0-9]*$"))) %>%
             pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value") %>%
-            mutate(group = sub("_.*", "", issue_var))  
+            mutate(group = sub("_.*", "", issue_var))
         
         
         ggplot_obj <- ggplot(plot_data, aes(x = issue_var, y = value)) +
-            geom_boxplot(fill = "#9e83cf", color = "black") + 
+            geom_boxplot(fill = "#9e83cf", color = "black") +
             theme_minimal() +
             theme(
                 axis.text.x = element_text(angle = 25, hjust = 1),
@@ -397,7 +398,7 @@ export_outlier_boxplot <- reactive({
             ) +
             labs(x = NULL, y = NULL) +
             scale_y_continuous(labels = scales::comma) +
-            facet_wrap(~ group, scales = "free", ncol = 1)  + 
+            facet_wrap(~ group, scales = "free", ncol = 1)  +
             theme(panel.spacing.x=unit(5, "lines"),panel.spacing.y=unit(5, "lines"))
         
         n_groups <- length(selected_groups)
@@ -407,7 +408,6 @@ export_outlier_boxplot <- reactive({
         return(NULL)  # No boxplot generated if conditions are not met
     }
 })
-
 
 
 # render_histogram_ui <- function() {
@@ -484,6 +484,9 @@ output$outlier_r_exp <- downloadHandler(
         writeLines(combined_content, file)
     }
 )
+
+
+
 
 
 

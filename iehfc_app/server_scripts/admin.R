@@ -1,179 +1,178 @@
 pacman::p_load(
     shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64
+    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64)
+    
+# Administrative Unit-Level Data Quality Checks -- Construction ----
+
+admin_var <- reactive({
+    input$admin_var_select_var
+})
+
+admin_super_vars <- reactive({
+    input$admin_super_vars_select_var
+})
+
+admin_date_var <- reactive({
+    input$admin_date_var_select_var
+})
+
+admin_complete_var <- reactive({
+    input$admin_complete_var_select_var
+})
+
+admin_total_subs_dataset <- reactive({
+    hfc_dataset() %>%
+        group_by(
+            across(any_of(admin_super_vars())), !!sym(admin_var())
+        ) %>%
+        summarize(
+            num_submissions = n()
+        ) %>%
+        ungroup()
+}) %>%
+    bindEvent(input$run_hfcs)
+
+admin_complete_subs_dataset <- reactive({
+    if(admin_complete_var() != "") {
+        hfc_dataset() %>%
+            group_by(
+                across(any_of(admin_super_vars())), !!sym(admin_var())
+            ) %>%
+            summarize(
+                num_complete_submissions = sum(
+                    across(admin_complete_var(), ~ .x == 1 | .x == "Yes"), na.rm = TRUE
+                )
+            ) %>%
+            ungroup()
+    } else {
+        tibble() %>% # So that it merges without error, but does not add information
+            mutate(
+                !!admin_var() := case_when(
+                    class(hfc_dataset()[[admin_var()]]) == "character" ~ list(NA_character_),
+                    class(hfc_dataset()[[admin_var()]]) == "integer"   ~ list(NA_integer_),
+                    class(hfc_dataset()[[admin_var()]]) == "numeric"   ~ list(NA_real_),
+                    TRUE                                               ~ list(NA)
+                ) %>%
+                    unlist()
+            )
+    }
+}) %>%
+    bindEvent(input$run_hfcs)
+
+admin_daily_subs_dataset <- reactive({
+    if (!is.null(admin_date_var()) && admin_date_var() != "") {
+        hfc_dataset() %>%
+            # Attempt to format date. This may need to be added to depending on reasonable formats to expect
+            mutate(
+                date_var_formatted = lubridate::parse_date_time(
+                    !!sym(admin_date_var()), c("Y-m-d", "m/d/Y", "d/m/Y")
+                ) %>%
+                    as.Date()
+            ) %>%
+            group_by(
+                across(any_of(admin_super_vars())), !!sym(admin_var()), date_var_formatted
+            ) %>%
+            summarize(
+                num_submissions = n()
+            ) %>%
+            ungroup() %>%
+            arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
+            pivot_wider(
+                names_from  = date_var_formatted,
+                values_from = num_submissions
+            )
+    } else {
+        tibble() %>% # So that it merges without error, but does not add information
+            mutate(
+                !!admin_var() := case_when(
+                    class(hfc_dataset()[[admin_var()]]) == "character" ~ list(NA_character_),
+                    class(hfc_dataset()[[admin_var()]]) == "integer"   ~ list(NA_integer_),
+                    class(hfc_dataset()[[admin_var()]]) == "numeric"   ~ list(NA_real_),
+                    TRUE                                               ~ list(NA)
+                ) %>%
+                    unlist()
+            )
+    }
+}) %>%
+    bindEvent(input$run_hfcs)
+
+admin_daily_subs_plot <- reactive({
+    if (!is.null(admin_date_var()) && admin_date_var() != "") {
+        plot_data <- hfc_dataset() %>%
+            # Attempt to format date. This may need to be added to depending on reasonable formats to expect
+            mutate(
+                date_var_formatted = lubridate::parse_date_time(
+                    !!sym(admin_date_var()), c("Y-m-d", "m/d/Y", "d/m/Y")
+                ) %>%
+                    as.Date()
+            ) %>%
+            group_by(
+                across(any_of(admin_super_vars())), !!sym(admin_var()), date_var_formatted
+            ) %>%
+            summarize(
+                num_submissions = n()
+            ) %>%
+            ungroup() %>%
+            group_by(
+                across(any_of(admin_super_vars())), !!sym(admin_var())
+            ) %>%
+            mutate(
+                cumul_submissions = cumsum(
+                    ifelse(is.na(num_submissions), 0, num_submissions) # Need to do this because cumsum() doesn't have an 'na.rm' argument
+                )
+            ) %>%
+            ungroup() %>%
+            arrange(date_var_formatted) # To ensure that the dates are in the right order
+        
+        # Set up highlighting individual admins
+        
+        admin_daily_subs_ggplot <- plot_data %>%
+            mutate(
+                !!admin_var() := factor(!!sym(admin_var()))
+            ) %>%
+            group_by(
+                !!sym(admin_var())
+            ) %>%
+            highlight_key(
+                as.formula(
+                    paste0("~", admin_var())
+                )
+            ) %>%
+            ggplot() +
+            geom_line(
+                aes(x = date_var_formatted, y = cumul_submissions, color = !!sym(admin_var()))
+            ) +
+            labs(
+                x = "Date",
+                y = "Cumulative # of Submissions"
+            ) +
+            theme_minimal() +
+            theme(
+                legend.position = "none"
+            )
+        
+        admin_daily_subs_ggplotly <- ggplotly(admin_daily_subs_ggplot, tooltip = c("color", "y"))
+        
+        highlight(admin_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
+    }
+})
+
+admin_subs_dataset <- reactive({
+    admin_total_subs_dataset() %>%
+        left_join(admin_complete_subs_dataset()) %>%  # Works because is empty tibble if not "complete" variable is selected
+        left_join(admin_daily_subs_dataset())
+}) %>%
+    bindEvent(input$run_hfcs)
+
+output$admin_subs_table <- renderDT(
+    admin_subs_dataset(), fillContainer = TRUE
 )
 
-# Administrative Unit-Level Data Quality Checks -- Construction ----
-  
-  admin_var <- reactive({
-      input$admin_var_select_var
-  })
-  
-  admin_super_vars <- reactive({
-      input$admin_super_vars_select_var
-  })
-  
-  admin_date_var <- reactive({
-      input$admin_date_var_select_var
-  })
-  
-  admin_complete_var <- reactive({
-      input$admin_complete_var_select_var
-  })
-  
-  admin_total_subs_dataset <- reactive({
-      hfc_dataset() %>%
-          group_by(
-              across(any_of(admin_super_vars())), !!sym(admin_var())
-          ) %>%
-          summarize(
-              num_submissions = n()
-          ) %>%
-          ungroup()
-  }) %>%
-  bindEvent(input$run_hfcs)
-  
-  admin_complete_subs_dataset <- reactive({
-      if(admin_complete_var() != "") {
-          hfc_dataset() %>%
-              group_by(
-                  across(any_of(admin_super_vars())), !!sym(admin_var())
-              ) %>%
-              summarize(
-                  num_complete_submissions = sum(
-                      across(admin_complete_var(), ~ .x == 1 | .x == "Yes"), na.rm = TRUE
-                  )
-              ) %>%
-              ungroup()
-      } else {
-          tibble() %>% # So that it merges without error, but does not add information
-              mutate(
-                  !!admin_var() := case_when(
-                      class(hfc_dataset()[[admin_var()]]) == "character" ~ list(NA_character_),
-                      class(hfc_dataset()[[admin_var()]]) == "integer"   ~ list(NA_integer_),
-                      class(hfc_dataset()[[admin_var()]]) == "numeric"   ~ list(NA_real_),
-                      TRUE                                               ~ list(NA)
-                  ) %>%
-                  unlist()
-              )
-      }
-  }) %>%
-  bindEvent(input$run_hfcs)
-  
-  admin_daily_subs_dataset <- reactive({
-      if (!is.null(admin_date_var()) && admin_date_var() != "") {
-          hfc_dataset() %>%
-              # Attempt to format date. This may need to be added to depending on reasonable formats to expect
-              mutate(
-                  date_var_formatted = lubridate::parse_date_time(
-                      !!sym(admin_date_var()), c("Y-m-d", "m/d/Y", "d/m/Y")
-                  ) %>%
-                  as.Date()
-              ) %>%
-              group_by(
-                  across(any_of(admin_super_vars())), !!sym(admin_var()), date_var_formatted
-              ) %>%
-              summarize(
-                  num_submissions = n()
-              ) %>%
-              ungroup() %>%
-              arrange(date_var_formatted) %>% # To ensure that the dates are in the right order
-              pivot_wider(
-                  names_from  = date_var_formatted,
-                  values_from = num_submissions
-              )
-      } else {
-          tibble() %>% # So that it merges without error, but does not add information
-              mutate(
-                  !!admin_var() := case_when(
-                      class(hfc_dataset()[[admin_var()]]) == "character" ~ list(NA_character_),
-                      class(hfc_dataset()[[admin_var()]]) == "integer"   ~ list(NA_integer_),
-                      class(hfc_dataset()[[admin_var()]]) == "numeric"   ~ list(NA_real_),
-                      TRUE                                               ~ list(NA)
-                  ) %>%
-                  unlist()
-              )
-      }
-  }) %>%
-  bindEvent(input$run_hfcs)
-  
-  admin_daily_subs_plot <- reactive({
-      if (!is.null(admin_date_var()) && admin_date_var() != "") {
-      plot_data <- hfc_dataset() %>%
-          # Attempt to format date. This may need to be added to depending on reasonable formats to expect
-          mutate(
-              date_var_formatted = lubridate::parse_date_time(
-                  !!sym(admin_date_var()), c("Y-m-d", "m/d/Y", "d/m/Y")
-              ) %>%
-              as.Date()
-          ) %>%
-          group_by(
-              across(any_of(admin_super_vars())), !!sym(admin_var()), date_var_formatted
-          ) %>%
-          summarize(
-              num_submissions = n()
-          ) %>%
-          ungroup() %>%
-          group_by(
-              across(any_of(admin_super_vars())), !!sym(admin_var())
-          ) %>%
-          mutate(
-              cumul_submissions = cumsum(
-                  ifelse(is.na(num_submissions), 0, num_submissions) # Need to do this because cumsum() doesn't have an 'na.rm' argument
-              )
-          ) %>%
-          ungroup() %>%
-          arrange(date_var_formatted) # To ensure that the dates are in the right order
-      
-      # Set up highlighting individual admins
-      
-      admin_daily_subs_ggplot <- plot_data %>%
-          mutate(
-              !!admin_var() := factor(!!sym(admin_var()))
-          ) %>%
-          group_by(
-              !!sym(admin_var())
-          ) %>%
-          highlight_key(
-              as.formula(
-                  paste0("~", admin_var())
-              )
-          ) %>%
-          ggplot() +
-          geom_line(
-              aes(x = date_var_formatted, y = cumul_submissions, color = !!sym(admin_var()))
-          ) +
-          labs(
-              x = "Date",
-              y = "Cumulative # of Submissions"
-          ) +
-          theme_minimal() +
-          theme(
-              legend.position = "none"
-          )
-      
-      admin_daily_subs_ggplotly <- ggplotly(admin_daily_subs_ggplot, tooltip = c("color", "y"))
-      
-      highlight(admin_daily_subs_ggplotly, on = "plotly_hover", off = "plotly_doubleclick")
-      }   
-  })
-  
-  admin_subs_dataset <- reactive({
-      admin_total_subs_dataset() %>%
-          left_join(admin_complete_subs_dataset()) %>%  # Works because is empty tibble if not "complete" variable is selected
-          left_join(admin_daily_subs_dataset())
-  }) %>%
-  bindEvent(input$run_hfcs)
-  
-  output$admin_subs_table <- renderDT(
-      admin_subs_dataset(), fillContainer = TRUE
-  )
-  
-  output$admin_daily_subs_plot_rendered <- renderPlotly(
-      admin_daily_subs_plot()
-  )
+output$admin_daily_subs_plot_rendered <- renderPlotly(
+    admin_daily_subs_plot()
+)
 
-  
+
   ##### Download admin codes ----
   output$admin_r_exp <- downloadHandler(
       filename = function() {
@@ -181,8 +180,8 @@ pacman::p_load(
       },
       content = function(file) {
           # Save the initial script to a temporary file
-          initial_script <- file.path(getwd(), "server_scripts", "code_export", "admin_run.R")
-          
+
+          initial_script <- system.file("iehfc_app/server_scripts/code_export/admin_run.R", package = "iehfc")
           # Read the initial script content
           initial_content <- readLines(initial_script)
           
@@ -215,19 +214,19 @@ pacman::p_load(
           writeLines(combined_content, file)
       }
   )
-  
-  
-  
-  
-  
-  output$admin_s_exp <- downloadHandler(
-      filename = function() {
-          "admin_run.do"
-      },
-      content = function(file) {
-          # Save the initial script to a temporary file
-          initial_script <- file.path(getwd(), "server_scripts", "code_export", "admin_run.do")
-          
+
+
+
+
+
+output$admin_s_exp <- downloadHandler(
+    filename = function() {
+        "admin_run.do"
+    },
+    content = function(file) {
+        # Save the initial script to a temporary file
+          initial_script <- system.file("iehfc_app/server_scripts/code_export/admin_run.do", package = "iehfc")
+
           # Read the initial script content
           initial_content <- readLines(initial_script)
           
@@ -252,6 +251,5 @@ pacman::p_load(
           
           # Write the combined content to the final file
           writeLines(combined_content, file)
-      }
-  )
-  
+    }
+)
