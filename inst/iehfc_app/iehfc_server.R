@@ -1605,9 +1605,9 @@
                   ),
                   if (test_data_loaded()) {
                     card(
-                      span("Use Test Parameters", bsicons::bs_icon("question-circle-fill")) %>%
+                      span("Use Test Data Settings", bsicons::bs_icon("question-circle-fill")) %>%
                         tooltip(
-                          "Use this button to load our test parameters. This will automatically populate the setup fields on the right side.",
+                          "Use this button to load test settings for the test data. This will automatically populate the setup fields on the right side.",
                           placement = "auto"
                         ),
                       uiOutput("setup_imp_para_button")
