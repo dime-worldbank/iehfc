@@ -99,7 +99,17 @@ This package is distributed under the **MIT License**.
 
 👥 **Authors:**
 
-- DIME Analytics Team
+## Authors and Contributors
+
+This app was developed by DIME Analytics team
+
+| Name                  | Role                     |
+|-----------------------|--------------------------|
+| Marc-Andrea Fiorina   | Author                   |
+| Maria Reyes Retana    | Author                   |
+| Marina Visintini      | Author                   |
+| Mehrab Ali            | Author                   |
+| Ankriti Singh         | Stata Code Reviewer      |
 
 For inquiries, visit [DIME Analytics](https://www.worldbank.org/en/about/unit/unit-dec/impactevaluation/dime-analytics).
 
