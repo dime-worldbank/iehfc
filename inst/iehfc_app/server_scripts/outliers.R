@@ -269,6 +269,7 @@ observe({
 ## Group Variables Boxplots -------------
 
 generate_boxplot <- function(dataset, group) {
+  req(hfc_dataset())
     variable_group <- dataset %>%
         select(matches(paste0("^", group, "_{0,1}[0-9]+$"))) %>%
         pivot_longer(cols = everything(), names_to = "issue_var", values_to = "value")
@@ -284,11 +285,13 @@ generate_boxplot <- function(dataset, group) {
 }
 
 group_boxplots <- function(group) {
+  req(hfc_dataset())
     boxplot <- generate_boxplot(hfc_dataset(), group)
     list(box = ggplotly(boxplot, tooltip = c("x", "y")))
 }
 
 render_boxplot_ui <- function(selected_groups) {
+  req(hfc_dataset())
     if (length(selected_groups) > 0) {
         fluidRow(
             lapply(1:length(selected_groups), function(i) {

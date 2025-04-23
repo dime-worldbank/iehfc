@@ -26,14 +26,7 @@
     source(file.path(system.file("iehfc_app/server_scripts", package = "iehfc"), "summary.R"), local = TRUE)
 
 
-      observeEvent(
-          input$gotoTab, {
-              # Use JavaScript to navigate to the selected tab
-              shinyjs::runjs(
-                  sprintf("$('.nav-item a:contains(%s)').tab('show')", input$gotoTab)
-              )
-          }
-      )
+
 
       ## Upload Tab ----
 
@@ -121,12 +114,14 @@
       )
 
       output$hfc_ds_names_types_display <- renderDT({
-          hfc_ds_names_types <- hfc_dataset() %>%
-              tibble::as_tibble() %>%
-              dplyr::summarise_all(class) %>%
-              tidyr::pivot_longer(cols = everything(), names_to = "Variable", values_to = "Type")
+        req(hfc_dataset())
 
-          datatable(hfc_ds_names_types, options = list(pageLength = 10, scrollX = TRUE))
+        hfc_ds_names_types <- hfc_dataset() %>%
+          tibble::as_tibble() %>%
+          dplyr::summarise_all(class) %>%
+          tidyr::pivot_longer(cols = everything(), names_to = "Variable", values_to = "Type")
+
+        datatable(hfc_ds_names_types, options = list(pageLength = 10, scrollX = TRUE))
       })
 
 
@@ -231,17 +226,13 @@
       })
 
 
-
       observeEvent(input$clear_dataset, {
-        runjs("reloadToTab('upload_tab');")
+        hfc_dataset(NULL)
+        test_data_loaded(FALSE)
+        updateTabsetPanel(session, "tabs", selected = "upload_tab")
       })
 
-      observe({
-        params <- parseQueryString(session$clientData$url_search)
-        if ("tab_index" %in% names(params)) {
-          updateNavbarPage(session, "tabs", selected = params$tab_index)
-        }
-      })
+
 
 
       ## Setup Tab ----
@@ -281,6 +272,7 @@
               updateSelectizeInput(session, "id_select_var", selected = id_var_imported)
           }
       })
+
 
       observe({
           selected_id_var(input$id_select_var)
