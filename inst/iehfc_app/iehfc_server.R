@@ -229,6 +229,8 @@
       observeEvent(input$clear_dataset, {
         hfc_dataset(NULL)
         test_data_loaded(FALSE)
+        imported_para_dataset(NULL)
+        selected_id_var(NULL)
         updateTabsetPanel(session, "tabs", selected = "upload_tab")
       })
 
@@ -255,6 +257,7 @@
         test_file_path <- system.file("test_data", "test_parameters.csv", package = "iehfc")
         if (file.exists(test_file_path)) {
           para_ds <- read.csv(test_file_path, stringsAsFactors = FALSE)
+          para_ds$._temp <- sample(1e6, size = nrow(para_ds), replace = TRUE)
           imported_para_dataset(para_ds)
         } else {
           showNotification("Test parameter file not found in package.", type = "error")
@@ -265,18 +268,19 @@
 
       selected_id_var <- reactiveVal()
 
+      observeEvent(input$id_select_var, {
+        selected_id_var(input$id_select_var)
+      })
+
       observe({
           id_var_imported <- imported_para_dataset()[imported_para_dataset()$Parameter == "id_select_var", "Value"]
-          if (!is.null(id_var_imported)) {
+          if (!is.null(id_var_imported) && id_var_imported != "")  {
               selected_id_var(id_var_imported)
               updateSelectizeInput(session, "id_select_var", selected = id_var_imported)
           }
       })
 
 
-      observe({
-          selected_id_var(input$id_select_var)
-      })
 
       output$id_select <- renderUI({
           selectizeInput(
@@ -293,7 +297,7 @@
       observe({
           updateSelectizeInput(session, "id_select_var",
                                choices = c("", hfc_dataset() %>% names()),
-                               selected = "")
+                               selected = selected_id_var())
       })
 
 
