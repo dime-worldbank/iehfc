@@ -76,6 +76,22 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 - **Administrative Unit Checks**: Monitor submissions across geographic areas (e.g., villages). Specify the main administrative unit variable and optionally higher-level geographic identifiers. You may also provide submission dates and completeness indicators. Outputs include:
   1. Submission counts per unit and per day (if applicable), and
   2. A cumulative submissions graph if a date is provided.
+  
+#### Check Configuration Summary
+
+The following table summarizes the available checks in IEHFC, including their outputs, required variables, and optional configuration fields
+Check | Output | Required Variables | Optional Variables
+Duplicate | Duplicate Check Based on ID Table | ID Variable | Additional Display Variables
+Duplicate | Duplicate Check Across Selected Variables | Duplicate Variables | Additional Display Variables
+Outlier | Outliers Table | Individual or Grouped Outlier Variables | Method, Multiplier, Additional Display Variables
+Outlier | Outlier Histograms | Individual Outlier Variables | Method, Multiplier
+Outlier | Grouped Outliers Boxplots | Grouped Outlier Variables | Method, Multiplier
+Enumerator | Submissions by Enumerator Table | Enumerator Identifier Variable | Submission Date Variable, Submission Complete Variable
+Enumerator | Cumulative Submissions by Enumerator Graph | Enumerator Identifier Variable, Date Variable | 
+Enumerator | Variables’ Average Value by Enumerator Table | Enumerator Identifier Variable | Average Value Variables
+Administrative Unit | Submissions by Administrative Unit Table | Admin Unit Variable | Nested Admin Variables, Submission Date, Submission Complete Variable
+Administrative Unit | Cumulative Submissions by Administrative Unit Graph | Admin Unit Variable, Submission Date Variable | 
+Unit of Observation Level (Tracking) | Unit of Observation Table | Unit of Observation | Display Variables
 
 ### 3️⃣ Review and Export Results
 
@@ -86,6 +102,12 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 
 - **Template Code Export**: You can download a template R or Stata script to replicate the checks programmatically. You’ll need to edit the variables to match your dataset.
 - **Parameter Upload**: After configuring checks, you can download your settings to reuse them later. Use "Upload Parameters" to automatically populate fields without needing to configure everything again.
+
+### Full suggested workflow
+
+A suggested workflow the IEHFC app is as follows:
+
+![IEHFC Workflow](inst/iehfc_app/www/iehfc_workflow.png)
 
 ## 🤝 Contributing
 
