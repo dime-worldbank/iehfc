@@ -80,18 +80,20 @@ Once the dashboard is open, follow these steps to conduct data quality checks:
 #### Check Configuration Summary
 
 The following table summarizes the available checks in IEHFC, including their outputs, required variables, and optional configuration fields
-Check | Output | Required Variables | Optional Variables
-Duplicate | Duplicate Check Based on ID Table | ID Variable | Additional Display Variables
-Duplicate | Duplicate Check Across Selected Variables | Duplicate Variables | Additional Display Variables
-Outlier | Outliers Table | Individual or Grouped Outlier Variables | Method, Multiplier, Additional Display Variables
-Outlier | Outlier Histograms | Individual Outlier Variables | Method, Multiplier
-Outlier | Grouped Outliers Boxplots | Grouped Outlier Variables | Method, Multiplier
-Enumerator | Submissions by Enumerator Table | Enumerator Identifier Variable | Submission Date Variable, Submission Complete Variable
-Enumerator | Cumulative Submissions by Enumerator Graph | Enumerator Identifier Variable, Date Variable | 
-Enumerator | Variables’ Average Value by Enumerator Table | Enumerator Identifier Variable | Average Value Variables
-Administrative Unit | Submissions by Administrative Unit Table | Admin Unit Variable | Nested Admin Variables, Submission Date, Submission Complete Variable
-Administrative Unit | Cumulative Submissions by Administrative Unit Graph | Admin Unit Variable, Submission Date Variable | 
-Unit of Observation Level (Tracking) | Unit of Observation Table | Unit of Observation | Display Variables
+
+| Check                                | Output                                           | Required Variables                          | Optional Variables                                                                  |
+|--------------------------------------|--------------------------------------------------|----------------------------------------------|--------------------------------------------------------------------------------------|
+| Duplicate                            | Duplicate Check Based on ID Table               | ID Variable                                 | Additional Display Variables                                                        |
+| Duplicate                            | Duplicate Check Across Selected Variables       | Duplicate Variables                         | Additional Display Variables                                                        |
+| Outlier                              | Outliers Table                                  | Individual or Grouped Outlier Variables     | Method, Multiplier, Additional Display Variables                                    |
+| Outlier                              | Outlier Histograms                              | Individual Outlier Variables                | Method, Multiplier                                                                  |
+| Outlier                              | Grouped Outliers Boxplots                       | Grouped Outlier Variables                   | Method, Multiplier                                                                  |
+| Enumerator                           | Submissions by Enumerator Table                 | Enumerator Identifier Variable              | Submission Date Variable, Submission Complete Variable                              |
+| Enumerator                           | Cumulative Submissions by Enumerator Graph      | Enumerator Identifier Variable, Date Variable |                                                                                      |
+| Enumerator                           | Variables’ Average Value by Enumerator Table    | Enumerator Identifier Variable              | Average Value Variables                                                             |
+| Administrative Unit                  | Submissions by Administrative Unit Table        | Admin Unit Variable                         | Nested Admin Variables, Submission Date, Submission Complete Variable                |
+| Administrative Unit                  | Cumulative Submissions by Admin Unit Graph      | Admin Unit Variable, Submission Date Variable |                                                                                      |
+| Unit of Observation Level (Tracking) | Unit of Observation Table                       | Unit of Observation                         | Display Variables                                                                    |
 
 ### 3️⃣ Review and Export Results
 
