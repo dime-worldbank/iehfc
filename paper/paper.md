@@ -30,19 +30,22 @@ IEHFC is a Shiny-based R package developed by DIME Analytics at the World Bank t
 
 ### Statement of Need
 
-Whether working with primary survey data or secondary datasets, researchers frequently encounter quality issues such as duplicate identifiers, missing values, inconsistent coding, and suspicious data patterns. These issues—if undetected—can undermine data integrity, which in turn affects the quality and validity of the research. Identifying problems in real time, or soon after data acquisition, dramatically improves the likelihood of diagnosing and correcting root causes such as programming errors, enumerator behavior, or integration mismatches.
+Whether working with primary survey data or secondary datasets, researchers frequently encounter quality issues such as duplicate identifiers, missing values, inconsistent coding, and suspicious data patterns. If left undetected, these issues can undermine data integrity, ultimately affecting the quality, validity, and credibility of research outputs. Identifying problems in real time—or soon after data acquisition—dramatically improves the ability to diagnose and correct root causes such as programming errors, enumerator behavior, or data integration mismatches.
 
-Despite their importance, real-time data quality checks are often deprioritized during fieldwork or data collection, especially given the time constraints and technical effort required to build custom scripts. A [2023 needs assessment survey](https://github.com/dime-worldbank/iesurveykit/tree/main/iehfc-needs-survey) conducted by DIME Analytics found that over 90% of researchers had experience conducting or reviewing HFCs, yet most relied on manually developed workflows in R or Stata. Key pain points included:
+Despite the importance of real-time data quality checks, they are often deprioritized during fieldwork or data onboarding, especially given the time constraints and technical effort required to build customized scripts. In 2023, DIME Analytics conducted a [Needs Assessment Survey](https://github.com/dime-worldbank/iesurveykit/tree/main/iehfc-needs-survey) to better understand the barriers researchers face in implementing high-frequency checks. The majority of respondents reported relying on custom scripts developed in Stata or R, rather than using existing tools.
+
+The survey also revealed several recurring challenges in running high-frequency checks, including:
 
 - Lack of accessible, open-source tools;
 - High setup costs for each project;
 - Limited user interfaces for collaboration and reporting; and
 - Inadequate customization options for diverse research contexts.
 
+
 IEHFC was designed to fill these gaps. Built in R with a Shiny interface, it addresses five core needs identified in our research:
 
 1. **Accessibility** – free, open-source, and usable without advanced coding;
-2. **Functionality** – includes the full recommended set of HFCs, from duplicates to enumerator and admin unit tracking;
+2. **Functionality** – includes the full recommended set of basic HFCs, from duplicates to enumerator and admin unit tracking;
 3. **Customizability** – users can configure variables, thresholds, and methods to fit their context;
 4. **Replicability** – parameter files and code templates make it easy to repeat checks across survey rounds or datasets;
 5. **Shareability** – intuitive outputs can be shared across global research teams.
@@ -53,7 +56,7 @@ IEHFC provides a unified, reusable solution for quality monitoring—empowering 
 
 ### App Overview
 
-#### Example Usage
+#### How to Use?
 
 The first step is to install the package. Open RStudio and run the following commands:
 
@@ -108,6 +111,8 @@ A suggested workflow the IEHFC app is as follows:
 
 #### Check Configuration Summary
 
+The set of checks, and their configurations, available in the IEHFC app is summarized in the table below.
+
 | Check                                | Output                                           | Required Variables                          | Optional Variables                                                                  |
 |--------------------------------------|--------------------------------------------------|----------------------------------------------|--------------------------------------------------------------------------------------|
 | Duplicate                            | Duplicate Check Based on ID Table               | ID Variable                                 | Additional Display Variables                                                        |
@@ -126,7 +131,7 @@ A suggested workflow the IEHFC app is as follows:
 
 #### Extra Features
 
-In addition to interactive data quality checks, IEHFC provides tools to enhance flexibility and reproducibility across data collection rounds:
+In addition to interactive data quality checks, IEHFC provides tools to enhance flexibility in running HFCs across data collection rounds:
 
 #### 1. Save and Upload Parameters
 
@@ -181,9 +186,9 @@ For more information on contributing, please refer to the contributing guideline
 
 ### References
 
-Jones, M., Reyes Retana, M., Fiorina, M.-A., Singh, A., & Khincha, R. (2023). Better Tools, Better Data: How to lower the costs of data quality checks. World Bank, DIME Analytics. 
+Jones, M., Reyes Retana, M., Fiorina, M.A., Singh, A., & Khincha, R. (2023). Better Tools, Better Data: How to lower the costs of data quality checks. World Bank, DIME Analytics. 
 
-Jones, M., Reyes Retana Torre, M., Fiorina, M.-A., Singh, A., & Visintini, M. (2024). High-Frequency Checks in Action: Introducing iehfc for Better Data Quality. World Bank, DIME Analytics. 
+Jones, M., Reyes Retana Torre, M., Fiorina, M.A., Singh, A., & Visintini, M. (2024). High-Frequency Checks in Action: Introducing iehfc for Better Data Quality. World Bank, DIME Analytics. 
 
 DIME Analytics. (n.d.). High-Frequency Checks. DIME Wiki, World Bank. Retrieved from https://dimewiki.worldbank.org/High_Frequency_Checks
 
