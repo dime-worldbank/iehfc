@@ -988,7 +988,7 @@ library(shiny)
                                     "Variables for which to calculate averages per enumerator. Only numeric variables can be selected.",
                                     placement = "right"),
                              uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;"),  # Set a high z-index to overlap other elements
-                             actionButton("open_ave_vars_limits_modal", "Set Min/Max for Selected Variables", icon = icon("sliders"), class = "btn btn-outline-secondary btn-sm", style = "margin-top:1px;")
+                             actionButton("open_ave_vars_limits_modal", "Set Min/Max for Selected Variables (Default: min=p25 and max=p75)", icon = icon("sliders"), class = "btn btn-outline-secondary btn-sm", style = "margin-top:1px;")
                       )
                   )
               ),
