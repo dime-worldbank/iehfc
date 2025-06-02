@@ -1,6 +1,4 @@
-
-
-  library(shiny)
+library(shiny)
   library(bslib)
   library(DT)
   library(bsicons)
@@ -287,16 +285,33 @@
       })
 
       output$id_select <- renderUI({
-          selectizeInput(
-              "id_select_var",
-              label = "ID Variable",
-              choices = c("", hfc_dataset() %>% names()),
-              selected = "",
-              options = list(
-                  'dropdownParent' = 'body'
-              )
-          )
-      })
+            tagList(
+                tags$span(
+                    id = "open_id_info",
+                    style = "cursor:pointer; color: #337ab7;",
+                    tagList(
+                        "ID Variable ",
+                        tags$sup(bsicons::bs_icon("globe2"))
+                    ),
+                    onclick = "Shiny.setInputValue('open_id_info', Math.random())"
+                ) %>%
+                tooltip(
+                    "Read more in Dimewiki about the ID variable properties",
+                    placement = "auto"
+                ),
+                selectizeInput(
+                "id_select_var",
+                label = NULL,
+                choices = c("", hfc_dataset() %>% names()),
+                selected = "",
+                options = list('dropdownParent' = 'body')
+                )
+            )
+        })
+
+        observeEvent(input$open_id_info, {
+            browseURL("https://dimewiki.worldbank.org/ID_Variable_Properties")
+        })
 
       observe({
           updateSelectizeInput(session, "id_select_var",
@@ -331,8 +346,71 @@
           checkboxGroupInput(
               "check_select", "Select High-Frequency Checks",
               choiceNames = list(
-                  "Duplicates", "Outliers", "Enumerator Check and Progress", "Admin Level Progress","Unit of Observation-Level"
-                  #"Unit of Observation-Level", "Survey Programming"
+                  tagList(
+                      "Duplicates",
+                      tags$a(
+                          id = "duplicate_check_info",
+                          onclick = "event.stopPropagation(); Shiny.setInputValue('duplicate_check_info', Math.random())",
+                          style = "cursor:pointer; color: #337ab7;",
+                          tags$sup(bsicons::bs_icon("globe"))
+                      ) %>%
+                          tooltip(
+                              "Read more in Dimewiki about checking duplicates",
+                              placement = "auto"
+                          )
+                  ),
+                  tagList(
+                      "Outliers",
+                      tags$a(
+                          id = "outlier_check_info",
+                          onclick = "event.stopPropagation(); Shiny.setInputValue('outlier_check_info', Math.random())",
+                          style = "cursor:pointer; color: #337ab7;",
+                          tags$sup(bsicons::bs_icon("globe"))
+                      ) %>%
+                            tooltip(
+                                "Read more in Dimewiki about addressing outliers",
+                                placement = "auto"
+                            )
+                  ),
+                  tagList(
+                      "Enumerator Check and Progress",
+                      tags$a(
+                          id = "enumerator_check_info",
+                          onclick = "event.stopPropagation(); Shiny.setInputValue('enumerator_check_info', Math.random())",
+                          style = "cursor:pointer; color: #337ab7;",
+                          tags$sup(bsicons::bs_icon("globe"))
+                      ) %>%
+                            tooltip(
+                                "Read more in Dimewiki about enumerator training",
+                                placement = "auto"
+                            )
+                  ),
+                  tagList(
+                      "Admin Level Progress",
+                      tags$a(
+                          id = "admin_check_info",
+                          onclick = "event.stopPropagation(); Shiny.setInputValue('admin_check_info', Math.random())",
+                          style = "cursor:pointer; color: #337ab7;",
+                          tags$sup(bsicons::bs_icon("globe"))
+                      ) %>%
+                            tooltip(
+                                "Read more in Dimewiki about monitoring survey progress",
+                                placement = "auto"
+                            )
+                  ),
+                  tagList(
+                      "Unit of Observation-Level",
+                      tags$a(
+                          id = "unit_check_info",
+                          onclick = "event.stopPropagation(); Shiny.setInputValue('unit_check_info', Math.random())",
+                          style = "cursor:pointer; color: #337ab7;",
+                          tags$sup(bsicons::bs_icon("globe"))
+                      ) %>%
+                            tooltip(
+                                "Read more in Dimewiki about checking for illogical values",
+                                placement = "auto"
+                            )
+                  )
               ),
               choiceValues = list(
                   "duplicate", "outlier", "enumerator", "admin", "unit"
@@ -343,10 +421,24 @@
               } else {
                   selected_rows <- NULL  # Default selection if dataset is not created
               }
-
           )
       })
 
+        observeEvent(input$duplicate_check_info, {
+            browseURL("https://dimewiki.worldbank.org/Duplicates_and_Survey_Logs")
+        })
+        observeEvent(input$outlier_check_info, {
+            browseURL("https://dimewiki.worldbank.org/Variable_Construction#Addressing_outliers")
+        })
+        observeEvent(input$enumerator_check_info, {
+            browseURL("https://dimewiki.worldbank.org/Enumerator_Training")
+        })
+        observeEvent(input$admin_check_info, {
+            browseURL("https://dimewiki.worldbank.org/Monitoring_Data_Quality#Monitoring:_Survey_progress")
+        })
+        observeEvent(input$unit_check_info, {
+            browseURL("https://dimewiki.worldbank.org/Data_Cleaning#Illogical_Values")
+        })
 
       selected_checks <- reactive({
           input$check_select
@@ -1988,11 +2080,14 @@
           downloadButton("unit_table_for_dl", label = "Download Table")
       })
 
+       
         ### Output Tab Setup ----
 
       output$output_tab_nodata <- renderUI({
           "Please upload your data in the \"Upload Data\" Tab."
       })
+
+
 
       output$output_tab_nocheck <- renderUI({
           "Please complete the \"Check Selection and Setup\" tab and click on the \"Run HFCs\" button to display outputs."
@@ -2018,8 +2113,10 @@
                       if ("outlier" %in% selected_checks()) {
                           nav_panel("Outliers", uiOutput("outlier_output"))
                       },
+                     
                       if ("enumerator" %in% selected_checks()) {
                           nav_panel("Enumerator", uiOutput("enumerator_output"))
+
                       },
                       if ("admin" %in% selected_checks()) {
                           nav_panel("Admin Level", uiOutput("admin_output"))
