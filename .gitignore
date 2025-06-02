@@ -110,3 +110,4 @@ passwords/
 !/**/Output/**/*.xml
 !/**/Output/**/*.eps
 !/**/Output/**/*.svg
+inst/iehfc_app/global.R

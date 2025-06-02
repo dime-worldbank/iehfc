@@ -1,6 +1,4 @@
-
-
-  library(shiny)
+library(shiny)
   library(bslib)
   library(DT)
   library(bsicons)
@@ -835,13 +833,96 @@
           )
       })
 
+      # Add a reactiveValues object to store min/max for each variable
+      enumerator_ave_vars_limits <- reactiveValues()
+
+      # Add this observer to automatically set default min/max when variables are selected
+      observe({
+        vars <- input$enumerator_ave_vars_select_var
+        dataset <- hfc_dataset()
+        if (!is.null(vars) && !is.null(dataset)) {
+          for (var in vars) {
+            var_data <- dataset[[var]]
+            p25 <- suppressWarnings(as.numeric(stats::quantile(var_data, 0.25, na.rm = TRUE)))
+            p75 <- suppressWarnings(as.numeric(stats::quantile(var_data, 0.75, na.rm = TRUE)))
+            # Only set if not already set (i.e., user hasn't changed)
+            if (is.null(enumerator_ave_vars_limits[[var]]$min)) {
+              enumerator_ave_vars_limits[[var]] <- list(
+                min = p25,
+                max = if (is.null(enumerator_ave_vars_limits[[var]]$max)) p75 else enumerator_ave_vars_limits[[var]]$max
+              )
+            }
+            if (is.null(enumerator_ave_vars_limits[[var]]$max)) {
+              enumerator_ave_vars_limits[[var]] <- list(
+                min = enumerator_ave_vars_limits[[var]]$min,
+                max = p75
+              )
+            }
+          }
+        }
+      })
+
+      # UI for the modal dialog
+      output$enumerator_ave_vars_limits_modal <- renderUI({
+        req(input$enumerator_ave_vars_select_var)
+        vars <- input$enumerator_ave_vars_select_var
+        if (is.null(vars) || length(vars) == 0) return(NULL)
+        dataset <- hfc_dataset()
+        tagList(
+          lapply(vars, function(var) {
+            # Use already set values (from observer above)
+            min_val <- enumerator_ave_vars_limits[[var]]$min
+            max_val <- enumerator_ave_vars_limits[[var]]$max
+            fluidRow(
+              column(4, strong(var)),
+              column(4, numericInput(
+                inputId = paste0("min_", var),
+                label = "Min",
+                value = min_val
+              )),
+              column(4, numericInput(
+                inputId = paste0("max_", var),
+                label = "Max",
+                value = max_val
+              ))
+            )
+          })
+        )
+      })
+
+      # Observe modal open button
+      observeEvent(input$open_ave_vars_limits_modal, {
+        showModal(modalDialog(
+          title = "Set Min/Max for Average Value Variables",
+          uiOutput("enumerator_ave_vars_limits_modal"),
+          footer = tagList(
+            modalButton("Cancel"),
+            actionButton("save_ave_vars_limits", "Save")
+          ),
+          size = "l",
+          easyClose = TRUE
+        ))
+      })
+
+      # Save values from modal
+      observeEvent(input$save_ave_vars_limits, {
+        vars <- input$enumerator_ave_vars_select_var
+        if (!is.null(vars)) {
+          for (var in vars) {
+            min_val <- input[[paste0("min_", var)]]
+            max_val <- input[[paste0("max_", var)]]
+            enumerator_ave_vars_limits[[var]] <- list(min = min_val, max = max_val)
+          }
+        }
+        removeModal()
+      })
+
       output$enumerator_date_var_select <- renderUI({
-          dataset <- hfc_dataset() %>%
-              select(-all_of(enumerator_var()[enumerator_var() != ""]))
-          valid_cols <- colnames(dataset)[sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
+          dataset <- hfc_dataset()
+          valid_cols <- colnames(dataset)[
+              sapply(dataset, lubridate::is.Date) | grepl("(?i)date", colnames(dataset), perl = TRUE)]
           selectizeInput(
-              "enumerator_date_var_select_var",
-              label = NULL,
+              "enumerator_date_var_select_var", label = NULL,
               choices = c("", valid_cols),
               selected = current_enumerator_date_var(),
               options = list(
@@ -851,14 +932,14 @@
       })
 
       output$enumerator_complete_var_select <- renderUI({
+          dataset <- hfc_dataset()
           selectizeInput(
               "enumerator_complete_var_select_var", label = NULL,
               choices = c(
-                  "", # Provides no option as a possibility
-                  hfc_dataset() %>%
+                  "",
+                  dataset %>%
                       select(
-                          -all_of(enumerator_var()[enumerator_var() != ""])
-                      ) %>%
+                          -all_of(enumerator_var()[enumerator_var() != ""])) %>%
                       select_if(~ all(.x %in% c(1, 0, "Yes", "No", "yes", "no", "Y", "N"), na.rm = TRUE)) %>%
                       names()
               ),
@@ -906,7 +987,8 @@
                                  tooltip(
                                     "Variables for which to calculate averages per enumerator. Only numeric variables can be selected.",
                                     placement = "right"),
-                             uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;")  # Set a high z-index to overlap other elements
+                             uiOutput("enumerator_ave_vars_select", style = "z-index: 1000;"),  # Set a high z-index to overlap other elements
+                             actionButton("open_ave_vars_limits_modal", "Set Min/Max for Selected Variables", icon = icon("sliders"), class = "btn btn-outline-secondary btn-sm", style = "margin-top:1px;")
                       )
                   )
               ),

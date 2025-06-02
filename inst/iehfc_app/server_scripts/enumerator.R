@@ -165,15 +165,63 @@ enumerator_ave_vars_dataset <- reactive({
     return(NULL)
   }
 
-  data %>%
-    group_by(!!sym(enum_var)) %>%
-    summarize(
-      across(
-        all_of(vars),
-        ~ round(mean(.x, na.rm = TRUE), digits = 2)
+  avg_list <- list()
+  out_range_list <- list()
+  for (var in vars) {
+    avg_col <- data %>%
+      group_by(!!sym(enum_var)) %>%
+      summarize(
+        "{var}_avg" := round(mean(.data[[var]], na.rm = TRUE), digits = 2),
+        .groups = "drop"
       )
-    ) %>%
-    ungroup()
+    avg_list[[var]] <- avg_col
+
+    limits <- enumerator_ave_vars_limits[[var]]
+    min_val <- suppressWarnings(as.numeric(limits$min))
+    max_val <- suppressWarnings(as.numeric(limits$max))
+
+    if (is.na(min_val)) {
+      min_val <- suppressWarnings(suppressMessages(min(data[[var]], na.rm = TRUE)))
+    }
+    if (is.na(max_val)) {
+      max_val <- suppressWarnings(suppressMessages(max(data[[var]], na.rm = TRUE)))
+    }
+
+    # Change: column name now includes (%) and value is numeric
+    col_name <- paste0(var, "_out_of_range (%)")
+    if (!is.na(min_val) && !is.na(max_val)) {
+      out_col <- data %>%
+        group_by(!!sym(enum_var)) %>%
+        summarize(
+          n_total = sum(!is.na(.data[[var]])),
+          n_out = sum((.data[[var]] < min_val | .data[[var]] > max_val) & !is.na(.data[[var]])),
+          .groups = "drop"
+        ) %>%
+        mutate(
+          "{col_name}" := ifelse(n_total > 0, round(100 * n_out / n_total, 2), NA_real_)
+        ) %>%
+        select(-n_total, -n_out)
+    } else {
+      out_col <- data %>%
+        group_by(!!sym(enum_var)) %>%
+        summarize(
+          "{col_name}" := NA_real_,
+          .groups = "drop"
+        )
+    }
+    out_range_list[[var]] <- out_col
+  }
+
+  final_df <- data %>%
+    distinct(!!sym(enum_var)) 
+
+  for (var in vars) {
+    final_df <- final_df %>%
+      left_join(avg_list[[var]], by = enum_var) %>%
+      left_join(out_range_list[[var]], by = enum_var)
+  }
+
+  final_df
 }) %>%
   bindEvent(input$run_hfcs)
 
@@ -187,9 +235,43 @@ output$enumerator_daily_subs_plot_rendered <- renderPlotly(
   enumerator_daily_subs_plot()
 )
 
-output$enumerator_ave_vars_table <- renderDT(
-  enumerator_ave_vars_dataset(), fillContainer = TRUE
-)
+output$enumerator_ave_vars_table <- renderDT({
+  df <- enumerator_ave_vars_dataset()
+  if (is.null(df)) return(NULL)
+
+  # Identify out_of_range columns (now with (%) in name)
+  out_of_range_cols <- grep("_out_of_range \\(\\%\\)$", names(df), value = TRUE)
+
+  dt <- datatable(
+    df,
+    fillContainer = TRUE,
+    options = list(scrollX = TRUE),
+    class = "custom-dt"
+  )
+
+  # Color ramp for 0-100%
+  color_ramp <- colorRampPalette(c("#ffffff", "#ffffb2", "#fecc5c", "#fd8d3c", "#d7301f"))(101)
+
+  for (col in out_of_range_cols) {
+    dt <- dt %>% formatStyle(
+      columns = col,
+      backgroundColor = styleInterval(
+        seq(0, 100, length.out = 101)[-1], # 0-100 breaks
+        color_ramp
+      )
+    )
+  }
+
+  shiny::tags$head(
+    shiny::tags$style(HTML("
+      table.dataTable.custom-dt td {
+        background-color: inherit !important;
+      }
+    "))
+  )
+
+  dt
+})
 
 
 
@@ -222,7 +304,19 @@ output$enumerator_r_exp <- downloadHandler(
       "enumerator_ave_vars <- c(", paste0("\"", input$enumerator_ave_vars_select_var, "\"", collapse = ", "), ")\n",
       "enumerator_date_var <- ", paste0("\"", input$enumerator_date_var_select_var, "\"", collapse = " "), "\n",
       "enumerator_complete_var <- ", paste0("\"", input$enumerator_complete_var_select_var, "\"", collapse = " "), "\n",
-      "\n",
+      "# Add min/max value variables for each enumerator_ave_var\n",
+      paste0(
+        "enumerator_ave_vars_limits <- list(\n",
+        paste(
+          sapply(input$enumerator_ave_vars_select_var, function(var) {
+            min_val <- enumerator_ave_vars_limits[[var]]$min
+            max_val <- enumerator_ave_vars_limits[[var]]$max
+            paste0("  ", var, " = list(min = ", min_val, ", max = ", max_val, ")")
+          }),
+          collapse = ",\n"
+        ),
+        "\n)\n"
+      ),
       sep = ""
     )
 
@@ -260,6 +354,19 @@ output$enumerator_s_exp <- downloadHandler(
       "       local enumerator_date_var ", paste0(input$enumerator_date_var_select_var, collapse = " "), "\n",
       "       local enumerator_complete_var ", paste0(input$enumerator_complete_var_select_var, collapse = " "), "\n",
       "\n",
+      "    * Add min/max value locals for each enumerator_ave_var\n",
+      paste0(
+        paste(
+          sapply(input$enumerator_ave_vars_select_var, function(var) {
+            min_val <- enumerator_ave_vars_limits[[var]]$min
+            max_val <- enumerator_ave_vars_limits[[var]]$max
+            paste0("       local min_", var, " = ", min_val, "\n",
+                   "       local max_", var, " = ", max_val)
+          }),
+          collapse = "\n"
+        ),
+        if (length(input$enumerator_ave_vars_select_var) > 0) "\n" else ""
+      ),
       sep = ""
     )
 
@@ -270,3 +377,4 @@ output$enumerator_s_exp <- downloadHandler(
     writeLines(combined_content, file)
   }
 )
+

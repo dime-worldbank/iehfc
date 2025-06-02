@@ -131,13 +131,76 @@ enumerator_subs_dataset <- enumerator_total_subs_dataset %>%
     left_join(enumerator_daily_subs_dataset)
 
 
-enumerator_ave_vars_dataset <- hfc_dataset %>%
-    group_by(!!sym(enumerator_var)) %>%
-    summarize(
-        across(
-            all_of(enumerator_ave_vars),
-            ~ round(mean(.x, na.rm = TRUE), digits = 2)
-        )
-    ) %>%
-    ungroup()
+# Calculate mean and % out-of-range for each variable in enumerator_ave_vars
+enumerator_ave_vars_dataset <- {
+  data <- hfc_dataset
+  vars <- enumerator_ave_vars
+  enum_var <- enumerator_var
 
+  # If any required input is missing or invalid, return NULL
+  if (is.null(vars) || length(vars) == 0 || !all(vars %in% names(data)) || !(enum_var %in% names(data))) {
+    return(NULL)
+  }
+
+  avg_list <- list()
+  out_range_list <- list()
+  for (var in vars) {
+    # Average
+    avg_col <- data %>%
+      group_by(!!sym(enum_var)) %>%
+      summarize(
+        "{var}_avg" := round(mean(.data[[var]], na.rm = TRUE), digits = 2),
+        .groups = "drop"
+      )
+    avg_list[[var]] <- avg_col
+
+    # Out-of-range percentage
+    limits <- enumerator_ave_vars_limits[[var]]
+    min_val <- suppressWarnings(as.numeric(limits$min))
+    max_val <- suppressWarnings(as.numeric(limits$max))
+
+    # Use dataset min/max if missing
+    if (is.na(min_val)) {
+      min_val <- suppressWarnings(suppressMessages(min(data[[var]], na.rm = TRUE)))
+    }
+    if (is.na(max_val)) {
+      max_val <- suppressWarnings(suppressMessages(max(data[[var]], na.rm = TRUE)))
+    }
+
+    col_name <- paste0(var, "_out_of_range")
+    if (!is.na(min_val) && !is.na(max_val)) {
+      out_col <- data %>%
+        group_by(!!sym(enum_var)) %>%
+        summarize(
+          n_total = sum(!is.na(.data[[var]])),
+          n_out = sum((.data[[var]] < min_val | .data[[var]] > max_val) & !is.na(.data[[var]])),
+          .groups = "drop"
+        ) %>%
+        mutate(
+          "{col_name}" := ifelse(n_total > 0, paste0(round(100 * n_out / n_total), "%"), NA_character_)
+        ) %>%
+        select(-n_total, -n_out)
+    } else {
+      out_col <- data %>%
+        group_by(!!sym(enum_var)) %>%
+        summarize(
+          "{col_name}" := NA_character_,
+          .groups = "drop"
+        )
+    }
+    out_range_list[[var]] <- out_col
+  }
+
+  # Start with unique enumerator values
+  final_df <- data %>%
+    distinct(!!sym(enum_var))
+
+  # Interleave avg and out_of_range columns for each variable
+  for (var in vars) {
+    final_df <- final_df %>%
+      left_join(avg_list[[var]], by = enum_var) %>%
+      left_join(out_range_list[[var]], by = enum_var)
+  }
+
+  final_df
+}

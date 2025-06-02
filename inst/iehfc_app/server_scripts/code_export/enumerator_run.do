@@ -88,8 +88,17 @@
 
     * Variables' Average Value by Enumerator
         preserve 
-            collapse (mean) `enumerator_ave_vars', by(`enumerator_var')
-
+            foreach var of local enumerator_ave_vars {
+                if !mi(`max_`var'') & !mi(`min_`var'')  gen `var'__f = (`var' < `min_`var'' | `var' > `max_`var'') & !mi(`var'), after(`var')
+                if  mi(`max_`var'') & !mi(`min_`var'')  gen `var'__f = (`var' < `min_`var'') & !mi(`var'), after(`var')
+                if !mi(`max_`var'') &  mi(`min_`var'')  gen `var'__f = (`var' > `max_`var'') & !mi(`var'), after(`var')
+            }
+            collapse (mean) `enumerator_ave_vars' *__f, by(`enumerator_var')
+            
+            tostring *__f, replace  force
+            foreach fvar of varlist *__f {
+                replace `fvar' = string(round(100 * real(`fvar'), 1)) + "%"
+            }
             list, table  abbreviate(22)
 
             * Export to CSV
