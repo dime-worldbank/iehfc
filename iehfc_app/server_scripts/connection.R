@@ -1,0 +1,28 @@
+
+# Run the consolidated Python file to define the credential_provider and fetch_dataset functions
+reticulate::py_run_file("server_scripts/databricks_utils.py")
+
+# Import the Python functions into R
+fetch_dataset <- reticulate::py_eval("fetch_dataset", convert = FALSE)
+
+
+
+databricks_connect_and_read <- function(catalog, schema, table) {
+  if (!requireNamespace("reticulate", quietly = TRUE)) stop("reticulate package is required.")
+
+  tryCatch({
+    data <- fetch_dataset(
+      catalog = "prd_mega",
+      schema = "sboost4",
+      table = "demo_fu1_bronze"
+  )
+
+    # Convert the Python pandas DataFrame to an R data frame
+    r_dataframe <- reticulate::py_to_r(data)
+
+    # Return the converted data
+    return(r_dataframe)
+  }, error = function(e) {
+    print(paste("Error connecting to Databricks via fetch_dataset:", e$message))
+  })
+}

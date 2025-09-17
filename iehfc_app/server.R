@@ -1,20 +1,22 @@
 pacman::p_load(
     shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64, rsconnect, shinycssloaders, httr,jsonlite
+    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64, rsconnect, shinycssloaders, httr, jsonlite, pysparklyr,reticulate,sparklyr,dbplyr
 )
 
   # Increase maximum file upload size
   
   options(shiny.maxRequestSize = 100 * (1024^2))
-
+  
   iehfc_server <- function(input, output, session) {
       
-      source(file.path(getwd(),  "server_scripts", "duplicates.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "outliers.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "enumerator.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "admin.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "unit.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "summary.R"), local = TRUE)
+    source("server_scripts/duplicates.R", local = TRUE)
+    source("server_scripts/outliers.R", local = TRUE)
+    source("server_scripts/enumerator.R", local = TRUE)
+    source("server_scripts/admin.R", local = TRUE)
+    source("server_scripts/unit.R", local = TRUE)
+    source("server_scripts/summary.R", local = TRUE)
+    source("server_scripts/connection.R", local = TRUE)
+
       
 
       observeEvent(
@@ -185,40 +187,82 @@ pacman::p_load(
       })
 
       output$dataset_buttons <- renderUI({
-        if (is.null(hfc_dataset())) {
-          tagList(
-            card(
-              fileInput(
-                "hfc_file",
-                label = span("Upload HFC Data", bsicons::bs_icon("question-circle-fill")) %>%
-                  tooltip(
-                    "This is where you upload the dataset on which you want to run data quality checks. In the next version of this application, there will be error checks at this point to make sure that the dataset is in the right format/encoding",
-                    placement = "auto"
-                  ),
-                accept = ".csv",
-                placeholder = "mydata.csv"
-              ),
-              span(
-                "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
-                style = "color: #593196; font-size: 12px;"
-              )
-            ),
-            card(
-              uiOutput("use_test_data_button")
+                if (is.null(hfc_dataset())) {
+                    tagList(
+                        card(
+                            fileInput(
+                                "hfc_file",
+                                label = span("Upload HFC Data", bsicons::bs_icon("question-circle-fill")) %>%
+                                    tooltip(
+                                        "This is where you upload the dataset on which you want to run data quality checks. In the next version of this application, there will be error checks at this point to make sure that the dataset is in the right format/encoding",
+                                        placement = "auto"
+                                    ),
+                                accept = ".csv",
+                                placeholder = "mydata.csv"
+                            ),
+                            span(
+                                "Currently, this application only accepts .csv files. Please make sure your file is in the .csv format before uploading.",
+                                style = "color: #593196; font-size: 12px;"
+                            )
+                        ),
+                        card(
+                            uiOutput("use_test_data_button")
+                        ),
+                        card(
+                            actionButton("show_databricks_modal", "Connect to Database", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%")
+                        )
+                    )
+                } else {
+                    card(
+                        actionButton(
+                            "clear_dataset",
+                            "Restart with New Data",
+                            icon = icon("repeat"),
+                            class = "btn btn-outline-primary btn-lg",
+                            width = "100%"
+                        )
+                    )
+                }
+            })
+# Databricks Connect Modal ----
+    observeEvent(input$show_databricks_modal, {
+        showModal(
+            modalDialog(
+                title = "Connect to Database table",
+                selectInput("database_type", "Database Type", choices = c("Databricks"), selected = "Databricks", width = "100%"),
+                textInput("dbc_catalog", "Catalog (Database)", value = "prd_mega", width = "100%"),
+                textInput("dbc_schema", "Schema", value = "sboost4", width = "100%"),
+                textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "demo_fu1_bronze", width = "100%"),
+                helpText("Enter only the table name, e.g. demo_fu2_silver"),
+                actionButton("connect_databricks_connect", "Load from Databricks (Python)", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%"),
+                easyClose = TRUE,
+                footer = NULL,
+                size = "l"
             )
-          )
-        } else {
-          card(
-            actionButton(
-              "clear_dataset",
-              "Restart with New Data",
-              icon = icon("repeat"),
-              class = "btn btn-outline-primary btn-lg",
-              width = "100%"
-            )
-          )
-        }
-      })
+        )
+    })
+
+# Databricks Connect (Python-based, no Java) connection logic
+observeEvent(input$connect_databricks_connect, {
+    req(input$dbc_catalog, input$dbc_schema, input$dbc_table)
+    test_data_loaded(FALSE)
+
+
+    removeModal() # Close modal immediately
+    hfc_dataset(NULL) # Clear dataset to trigger spinner (optional, can remove if not needed)
+
+    tryCatch({
+        ds <- databricks_connect_and_read(
+                catalog = "prd_mega",
+                schema = "sboost4",
+                table = "demo_fu1_bronze"
+        )
+        hfc_dataset(ds)
+        showNotification("Data loaded from Databricks via Databricks Connect!", type = "message")
+    }, error = function(e) {
+        showNotification(paste("Error connecting to Databricks via Databricks Connect:", e$message), type = "error")
+    })
+})
 
 
 
@@ -2139,9 +2183,6 @@ pacman::p_load(
           content = function(file) {
               showModal(modalDialog(
                   title = "Generating Report",
-                  tags$div(style = "text-align: center;",
-                           shinycssloaders::withSpinner(tags$p("Please wait, your report is being generated..."))
-                  ),
                   footer = NULL,
                   easyClose = FALSE
               ))

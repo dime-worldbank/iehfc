@@ -59,7 +59,7 @@
 !/**/*.ipynb
 # Still ignore .ipynb files in checkpoint folders
 .ipynb_checkpoints
-
+venv/
 # Matlab
 !/**/*.m
 
