@@ -15,7 +15,3 @@ LaTeX: pdfLaTeX
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
-
-PythonType: virtualenv
-PythonVersion: 3.9.6
-PythonPath: venv/bin/python
