@@ -232,9 +232,9 @@ pacman::p_load(
                 selectInput("database_type", "Database Type", choices = c("Databricks"), selected = "Databricks", width = "100%"),
                 textInput("dbc_catalog", "Catalog (Database)", value = "prd_mega", width = "100%"),
                 textInput("dbc_schema", "Schema", value = "sboost4", width = "100%"),
-                textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "demo_fu1_bronze", width = "100%"),
+                textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "demo_baseline_bronze", width = "100%"),
                 helpText("Enter only the table name, e.g. demo_fu2_silver"),
-                actionButton("connect_databricks_connect", "Load from Databricks (Python)", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%"),
+                actionButton("connect_databricks_connect", "Load from Databricks", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%"),
                 easyClose = TRUE,
                 footer = NULL,
                 size = "l"
@@ -242,7 +242,6 @@ pacman::p_load(
         )
     })
 
-# Databricks Connect (Python-based, no Java) connection logic
 observeEvent(input$connect_databricks_connect, {
     req(input$dbc_catalog, input$dbc_schema, input$dbc_table)
     test_data_loaded(FALSE)
@@ -253,14 +252,14 @@ observeEvent(input$connect_databricks_connect, {
 
     tryCatch({
         ds <- databricks_connect_and_read(
-                catalog = "prd_mega",
-                schema = "sboost4",
-                table = "demo_fu1_bronze"
+                catalog = input$dbc_catalog,
+                schema = input$dbc_schema,
+                table = input$dbc_table
         )
         hfc_dataset(ds)
         showNotification("Data loaded from Databricks via Databricks Connect!", type = "message")
     }, error = function(e) {
-        showNotification(paste("Error connecting to Databricks via Databricks Connect:", e$message), type = "error")
+        showNotification("Connection error: Unable to connect to Databricks.", type = "error")
     })
 })
 

@@ -23,21 +23,17 @@ fetch_dataset <- reticulate::py_eval("fetch_dataset", convert = FALSE)
 databricks_connect_and_read <- function(catalog, schema, table) {
   if (!requireNamespace("reticulate", quietly = TRUE)) stop("reticulate package is required.")
 
-  tryCatch({
-    data <- fetch_dataset(
-      catalog = catalog,
-      schema = schema,
-      table = table,
-      server_hostname = server_hostname,
-      http_path = http_path
-    )
+  data <- fetch_dataset(
+    catalog = catalog,
+    schema = schema,
+    table = table,
+    server_hostname = server_hostname,
+    http_path = http_path
+  )
 
-    # Convert the Python pandas DataFrame to an R data frame
-    r_dataframe <- reticulate::py_to_r(data)
+  # Convert the Python pandas DataFrame to an R data frame
+  r_dataframe <- reticulate::py_to_r(data)
 
-    # Return the converted data
-    return(r_dataframe)
-  }, error = function(e) {
-    print(paste("Error connecting to Databricks via fetch_dataset:", e$message))
-  })
+  # Return the converted data
+  return(r_dataframe)
 }
