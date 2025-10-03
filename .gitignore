@@ -101,3 +101,5 @@ passwords.*
 password/
 passwords/
 .Rproj.user
+
+!.Renviron.example
