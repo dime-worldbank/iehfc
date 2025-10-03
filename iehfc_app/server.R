@@ -230,9 +230,9 @@ pacman::p_load(
             modalDialog(
                 title = "Connect to Database table",
                 selectInput("database_type", "Database Type", choices = c("Databricks"), selected = "Databricks", width = "100%"),
-                textInput("dbc_catalog", "Catalog (Database)", value = "prd_mega", width = "100%"),
-                textInput("dbc_schema", "Schema", value = "sboost4", width = "100%"),
-                textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "demo_baseline_bronze", width = "100%"),
+                textInput("dbc_catalog", "Catalog (Database)", value = "", width = "100%"),
+                textInput("dbc_schema", "Schema", value = "", width = "100%"),
+                textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "", width = "100%"),
                 tags$div(
                   style = "margin-top: 10px;",
                   actionLink("toggle_advanced_db", "Show Advanced Options", icon = icon("chevron-down")),
