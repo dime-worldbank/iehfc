@@ -1,18 +1,16 @@
 # Retrieve environment variables
 server_hostname <- Sys.getenv("DATABRICKS_SERVER_HOSTNAME")
 http_path <- Sys.getenv("DATABRICKS_HTTP_PATH")
-client_id <- Sys.getenv("DATABRICKS_CLIENT_ID")
-client_secret <- Sys.getenv("DATABRICKS_CLIENT_SECRET")
 
 # Pass environment variables to Python
 reticulate::py_run_string(
   paste0(
     "server_hostname = '", server_hostname, "'\n",
-    "http_path = '", http_path, "'\n",
-    "client_id = '", client_id, "'\n",
-    "client_secret = '", client_secret, "'\n"
+    "http_path = '", http_path, "'\n"
   )
 )
+
+print(server_hostname)
 
 # Run the consolidated Python file to define the credential_provider and fetch_dataset functions
 reticulate::py_run_file("server_scripts/databricks_utils.py")
@@ -31,9 +29,7 @@ databricks_connect_and_read <- function(catalog, schema, table) {
       schema = schema,
       table = table,
       server_hostname = server_hostname,
-      http_path = http_path,
-      client_id = client_id,
-      client_secret = client_secret
+      http_path = http_path
     )
 
     # Convert the Python pandas DataFrame to an R data frame

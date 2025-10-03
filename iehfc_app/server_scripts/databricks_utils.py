@@ -3,21 +3,15 @@ from databricks import sql
 import pandas as pd
 
 
-def fetch_dataset(catalog, schema, table, server_hostname, http_path, client_id, client_secret):
-    def credentials_provider():
-        config = Config(
-            host=f"https://{server_hostname}",
-            client_id=client_id,
-            client_secret=client_secret
-        )
-        return oauth_service_principal(config)
+def fetch_dataset(catalog, schema, table, server_hostname, http_path):
+
 
     try:
         # Replace hardcoded values with function arguments
         conn = sql.connect(
             server_hostname=server_hostname,
             http_path=http_path,
-            credentials_provider=credentials_provider
+            auth_type="databricks-oauth"
         )
 
         query = f"SELECT * FROM {catalog}.{schema}.{table}"
