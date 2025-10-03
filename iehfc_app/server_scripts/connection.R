@@ -1,16 +1,3 @@
-# Retrieve environment variables
-server_hostname <- Sys.getenv("DATABRICKS_SERVER_HOSTNAME")
-http_path <- Sys.getenv("DATABRICKS_HTTP_PATH")
-
-# Pass environment variables to Python
-reticulate::py_run_string(
-  paste0(
-    "server_hostname = '", server_hostname, "'\n",
-    "http_path = '", http_path, "'\n"
-  )
-)
-
-print(server_hostname)
 
 # Run the consolidated Python file to define the credential_provider and fetch_dataset functions
 reticulate::py_run_file("server_scripts/databricks_utils.py")
@@ -20,7 +7,7 @@ fetch_dataset <- reticulate::py_eval("fetch_dataset", convert = FALSE)
 
 
 
-databricks_connect_and_read <- function(catalog, schema, table) {
+databricks_connect_and_read <- function(catalog, schema, table, server_hostname, http_path) {
   if (!requireNamespace("reticulate", quietly = TRUE)) stop("reticulate package is required.")
 
   data <- fetch_dataset(

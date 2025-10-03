@@ -233,7 +233,18 @@ pacman::p_load(
                 textInput("dbc_catalog", "Catalog (Database)", value = "prd_mega", width = "100%"),
                 textInput("dbc_schema", "Schema", value = "sboost4", width = "100%"),
                 textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "demo_baseline_bronze", width = "100%"),
-                helpText("Enter only the table name, e.g. demo_fu2_silver"),
+                tags$div(
+                  style = "margin-top: 10px;",
+                  actionLink("toggle_advanced_db", "Show Advanced Options", icon = icon("chevron-down")),
+                  conditionalPanel(
+                    condition = "input.toggle_advanced_db % 2 == 1",
+                    tags$div(
+                      style = "margin-top: 10px; border: 1px solid #eee; padding: 10px; border-radius: 5px; background: #fafafa;",
+                      textInput("dbc_server_hostname", "Server Hostname", value = "", width = "100%"),
+                      textInput("dbc_http_path", "HTTP Path", value = "", width = "100%")
+                    )
+                  )
+                ),
                 actionButton("connect_databricks_connect", "Load from Databricks", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%"),
                 easyClose = TRUE,
                 footer = NULL,
@@ -246,6 +257,9 @@ observeEvent(input$connect_databricks_connect, {
     req(input$dbc_catalog, input$dbc_schema, input$dbc_table)
     test_data_loaded(FALSE)
 
+    # Use advanced options if provided, otherwise use defaults
+    server_hostname <- if (!is.null(input$dbc_server_hostname) && input$dbc_server_hostname != "") input$dbc_server_hostname else Sys.getenv("DATABRICKS_SERVER_HOSTNAME")
+    http_path <- if (!is.null(input$dbc_http_path) && input$dbc_http_path != "") input$dbc_http_path else Sys.getenv("DATABRICKS_HTTP_PATH")
 
     removeModal() # Close modal immediately
     hfc_dataset(NULL) # Clear dataset to trigger spinner (optional, can remove if not needed)
@@ -254,11 +268,14 @@ observeEvent(input$connect_databricks_connect, {
         ds <- databricks_connect_and_read(
                 catalog = input$dbc_catalog,
                 schema = input$dbc_schema,
-                table = input$dbc_table
+                table = input$dbc_table,
+                server_hostname = server_hostname,
+                http_path = http_path
         )
         hfc_dataset(ds)
         showNotification("Data loaded from Databricks via Databricks Connect!", type = "message")
     }, error = function(e) {
+        print(paste("Error connecting to Databricks via fetch_dataset:", e$message))
         showNotification("Connection error: Unable to connect to Databricks.", type = "error")
     })
 })
