@@ -103,3 +103,4 @@ passwords/
 .Rproj.user
 
 !.Renviron.example
+!requirements.txt
