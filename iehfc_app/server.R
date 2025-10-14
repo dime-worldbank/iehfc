@@ -224,15 +224,17 @@ pacman::p_load(
                     )
                 }
             })
+            
+DATABRICKS_SERVER_HOSTNAME <- Sys.getenv("DATABRICKS_SERVER_HOSTNAME")
+DATABRICKS_HTTP_PATH <- Sys.getenv("DATABRICKS_HTTP_PATH")
+
 # Databricks Connect Modal ----
     observeEvent(input$show_databricks_modal, {
         showModal(
             modalDialog(
-                title = "Connect to Database table",
-                selectInput("database_type", "Database Type", choices = c("Databricks"), selected = "Databricks", width = "100%"),
-                textInput("dbc_catalog", "Catalog (Database)", value = "", width = "100%"),
-                textInput("dbc_schema", "Schema", value = "", width = "100%"),
-                textInput("dbc_table", "Table Name (do not include catalog or schema)", value = "", width = "100%"),
+                title = "Connect to Databricks Database",
+                textInput("dbc_schema", "Schema", value = "", placeholder = "sboost4", width = "100%"),
+                textInput("dbc_table", "Table Name", placeholder = "boost_gold", value = "", width = "100%"),
                 tags$div(
                   style = "margin-top: 10px;",
                   actionLink("toggle_advanced_db", "Show Advanced Options", icon = icon("chevron-down")),
@@ -240,8 +242,9 @@ pacman::p_load(
                     condition = "input.toggle_advanced_db % 2 == 1",
                     tags$div(
                       style = "margin-top: 10px; border: 1px solid #eee; padding: 10px; border-radius: 5px; background: #fafafa;",
-                      textInput("dbc_server_hostname", "Server Hostname", value = "", width = "100%"),
-                      textInput("dbc_http_path", "HTTP Path", value = "", width = "100%")
+                      textInput("dbc_catalog", "Catalog (Database)", value = "prd_csc_mega", width = "100%"),
+                      textInput("dbc_server_hostname", "Server Hostname", value = DATABRICKS_SERVER_HOSTNAME, width = "100%"),
+                      textInput("dbc_http_path", "HTTP Path", value = DATABRICKS_HTTP_PATH, width = "100%")
                     )
                   )
                 ),
