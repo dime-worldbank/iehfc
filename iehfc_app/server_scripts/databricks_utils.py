@@ -15,14 +15,13 @@ def fetch_dataset(catalog, schema, table, server_hostname, http_path):
     cursor = conn.cursor()
     cursor.execute(query)
     data = cursor.fetchall()
-    columns = [desc[0] for desc in cursor.description]  # Get column names from cursor
-    data = pd.DataFrame(data, columns=columns)  # Convert to pandas DataFrame
+    data = pd.DataFrame(data)  # Convert to pandas DataFrame
     cursor.close()
     conn.close()
 
     # Ensure data is always a pandas DataFrame
     if data.empty:
         print("Query returned no results. Returning an empty DataFrame.")
-        data = pd.DataFrame(columns=columns)  # Return an empty DataFrame with column names
+        data = pd.DataFrame()  # Return an empty DataFrame with column names
 
     return data
