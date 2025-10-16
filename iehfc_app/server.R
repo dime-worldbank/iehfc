@@ -279,7 +279,17 @@ observeEvent(input$connect_databricks_connect, {
         showNotification("Data loaded from Databricks via Databricks Connect!", type = "message")
     }, error = function(e) {
         print(paste("Error connecting to Databricks via fetch_dataset:", e$message))
-        showNotification("Connection error: Unable to connect to Databricks.", type = "error")
+        
+        # Show different error message based on error type
+        if (grepl("TABLE_OR_VIEW_NOT_FOUND", e$message, ignore.case = TRUE)) {
+            showNotification(paste("Table not found: Please check catalog, schema, and table name."), type = "error")
+        } else if (grepl("INSUFFICIENT_PERMISSIONS", e$message, ignore.case = TRUE)) {
+            showNotification("Access denied: You don't have permission to access this table. Please contact your administrator.", type = "error")
+        } else if (grepl("Table too large", e$message, ignore.case = TRUE)) {
+            showNotification("Table too large: This table has too many rows to load safely.", type = "error")
+        } else {
+            showNotification("Connection error: Unable to connect to Databricks.", type = "error")
+        }
     })
 })
 
@@ -2202,6 +2212,9 @@ observeEvent(input$connect_databricks_connect, {
           content = function(file) {
               showModal(modalDialog(
                   title = "Generating Report",
+                  tags$div(style = "text-align: center;",
+                           shinycssloaders::withSpinner(tags$p("Please wait, your report is being generated..."))
+                  ),
                   footer = NULL,
                   easyClose = FALSE
               ))

@@ -21,6 +21,7 @@ NOTE — Work still needs to be done to create a fully independent set of script
 
 ### For Databricks Connection 
 We will be running Python in the background to connect to Databricks. 
+Note: We are using Python Databricks functions to connect to the Databricks SQL Warehouse. While both Python (via `databricks-sql-connector`) and R (via ODBC drivers) can connect to Databricks, we chose Python because it provides a more streamlined native connector and because the ODBC driver setup is not currently available on our Posit server environment. 
 1. Create a Python virtual environment:
    ```bash
    python3 -m venv venv
