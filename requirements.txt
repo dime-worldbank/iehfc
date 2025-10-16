@@ -1,0 +1,6 @@
+# Essential Python packages for Databricks connection
+databricks-sdk>=0.65.0
+databricks-sql-connector>=4.1.3
+databricks
+pandas>=2.2.3
+

@@ -59,7 +59,7 @@
 !/**/*.ipynb
 # Still ignore .ipynb files in checkpoint folders
 .ipynb_checkpoints
-
+venv/
 # Matlab
 !/**/*.m
 
@@ -101,3 +101,6 @@ passwords.*
 password/
 passwords/
 .Rproj.user
+
+!.Renviron.example
+!requirements.txt

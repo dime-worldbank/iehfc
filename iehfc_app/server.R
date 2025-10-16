@@ -1,20 +1,22 @@
 pacman::p_load(
     shiny, dplyr, tidyr, stringr, lubridate, purrr, ggplot2, janitor, data.table, DT, remotes, bsicons,
-    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64, rsconnect, shinycssloaders, httr,jsonlite
+    shinydashboard, shinyjs, markdown, htmlwidgets, webshot, plotly, bslib, kableExtra, here, bit64, rsconnect, shinycssloaders, httr, jsonlite, pysparklyr,reticulate,sparklyr,dbplyr
 )
 
   # Increase maximum file upload size
   
   options(shiny.maxRequestSize = 100 * (1024^2))
-
+  
   iehfc_server <- function(input, output, session) {
       
-      source(file.path(getwd(),  "server_scripts", "duplicates.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "outliers.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "enumerator.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "admin.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "unit.R"), local = TRUE)
-      source(file.path(getwd(),  "server_scripts", "summary.R"), local = TRUE)
+    source("server_scripts/duplicates.R", local = TRUE)
+    source("server_scripts/outliers.R", local = TRUE)
+    source("server_scripts/enumerator.R", local = TRUE)
+    source("server_scripts/admin.R", local = TRUE)
+    source("server_scripts/unit.R", local = TRUE)
+    source("server_scripts/summary.R", local = TRUE)
+    source("server_scripts/connection.R", local = TRUE)
+
       
 
       observeEvent(
@@ -205,6 +207,9 @@ pacman::p_load(
             ),
             card(
               uiOutput("use_test_data_button")
+            ),
+            card(
+             actionButton("show_databricks_modal", "Connect to Database", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%")
             )
           )
         } else {
@@ -219,6 +224,74 @@ pacman::p_load(
           )
         }
       })
+        
+DATABRICKS_SERVER_HOSTNAME <- Sys.getenv("DATABRICKS_SERVER_HOSTNAME")
+DATABRICKS_HTTP_PATH <- Sys.getenv("DATABRICKS_HTTP_PATH")
+
+# Databricks Connect Modal ----
+    observeEvent(input$show_databricks_modal, {
+        showModal(
+            modalDialog(
+                title = "Connect to Databricks Database",
+                textInput("dbc_schema", "Schema", value = "", placeholder = "sboost4", width = "100%"),
+                textInput("dbc_table", "Table Name", placeholder = "boost_gold", value = "", width = "100%"),
+                tags$div(
+                  style = "margin-top: 10px;",
+                  actionLink("toggle_advanced_db", "Show Advanced Options", icon = icon("chevron-down")),
+                  conditionalPanel(
+                    condition = "input.toggle_advanced_db % 2 == 1",
+                    tags$div(
+                      style = "margin-top: 10px; border: 1px solid #eee; padding: 10px; border-radius: 5px; background: #fafafa;",
+                      textInput("dbc_catalog", "Catalog (Database)", value = "prd_csc_mega", width = "100%"),
+                      textInput("dbc_server_hostname", "Server Hostname", value = DATABRICKS_SERVER_HOSTNAME, width = "100%"),
+                      textInput("dbc_http_path", "HTTP Path", value = DATABRICKS_HTTP_PATH, width = "100%")
+                    )
+                  )
+                ),
+                actionButton("connect_databricks_connect", "Load from Databricks", icon = icon("database"), class = "btn btn-outline-success btn-lg", width = "100%"),
+                easyClose = TRUE,
+                footer = NULL,
+                size = "l"
+            )
+        )
+    })
+
+observeEvent(input$connect_databricks_connect, {
+    req(input$dbc_catalog, input$dbc_schema, input$dbc_table)
+    test_data_loaded(FALSE)
+
+    # Use advanced options if provided, otherwise use defaults
+    server_hostname <- if (!is.null(input$dbc_server_hostname) && input$dbc_server_hostname != "") input$dbc_server_hostname else Sys.getenv("DATABRICKS_SERVER_HOSTNAME")
+    http_path <- if (!is.null(input$dbc_http_path) && input$dbc_http_path != "") input$dbc_http_path else Sys.getenv("DATABRICKS_HTTP_PATH")
+
+    removeModal() # Close modal immediately
+    hfc_dataset(NULL) # Clear dataset to trigger spinner (optional, can remove if not needed)
+
+    tryCatch({
+        ds <- databricks_connect_and_read(
+                catalog = input$dbc_catalog,
+                schema = input$dbc_schema,
+                table = input$dbc_table,
+                server_hostname = server_hostname,
+                http_path = http_path
+        )
+        hfc_dataset(ds)
+        showNotification("Data loaded from Databricks via Databricks Connect!", type = "message")
+    }, error = function(e) {
+        print(paste("Error connecting to Databricks via fetch_dataset:", e$message))
+        
+        # Show different error message based on error type
+        if (grepl("TABLE_OR_VIEW_NOT_FOUND", e$message, ignore.case = TRUE)) {
+            showNotification(paste("Table not found: Please check catalog, schema, and table name."), type = "error")
+        } else if (grepl("INSUFFICIENT_PERMISSIONS", e$message, ignore.case = TRUE)) {
+            showNotification("Access denied: You don't have permission to access this table. Please contact your administrator.", type = "error")
+        } else if (grepl("Table too large", e$message, ignore.case = TRUE)) {
+            showNotification("Table too large: This table has too many rows to load safely.", type = "error")
+        } else {
+            showNotification("Connection error: Unable to connect to Databricks.", type = "error")
+        }
+    })
+})
 
 
 

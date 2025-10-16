@@ -19,6 +19,27 @@ NOTE — Work still needs to be done to create a fully independent set of script
 2. Open `iehfc.Rproj`
 3. Run `iehfc_app/global.R`. This should install the required packages and launch the `iehfc` application. If at any point you want to relaunch the `iehfc` application after closing it, you can run `iehfc_app()` in the console.
 
+### For Databricks Connection 
+We will be running Python in the background to connect to Databricks. 
+Note: We are using Python Databricks functions to connect to the Databricks SQL Warehouse. While both Python (via `databricks-sql-connector`) and R (via ODBC drivers) can connect to Databricks, we chose Python because it provides a more streamlined native connector and because the ODBC driver setup is not currently available on our Posit server environment. 
+1. Create a Python virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On macOS/Linux
+   # or
+   venv\Scripts\activate     # On Windows
+   ```
+2. Install the required Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Copy `.Renviron.example` to `.Renviron` and edit it to specify your Python environment path and Databricks connection configuration. For example:
+   ```
+   RETICULATE_PYTHON=../venv/bin/python3
+   DATABRICKS_SERVER_HOSTNAME="your-databricks-workspace.cloud.databricks.com"
+   DATABRICKS_HTTP_PATH="/sql/1.0/warehouses/your-warehouse-id"
+   ```
+
 ## iehfc Platform — Quick Guide
 
 Once you have managed to open the `iehfc` Shiny Dashboard, you can follow the steps below to obtain your data quality check outputs. The `iehfc` Platform is composed of three principal tabs.
