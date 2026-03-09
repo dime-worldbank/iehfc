@@ -113,17 +113,15 @@ A suggested workflow the IEHFC app is as follows:
 
 ## 🤝 Contributing
 
-We welcome contributions! If you have feature requests or encounter issues, please open an issue on [GitHub](https://github.com/dime-worldbank/iehfc/issues).
+We welcome your contributions to this project! Please read our [Contributing Guide](https://github.com/worldbank/.github/blob/main/CONTRIBUTING.md) for details on our [Code of Conduct](https://github.com/worldbank/.github/blob/main/CODE_OF_CONDUCT.md) and the process for submitting pull requests.
 
-## 📝 License
+If you have feature requests or encounter issues, please open an issue on [GitHub](https://github.com/dime-worldbank/iehfc/issues).
 
-This package is distributed under the **MIT License**.
+## License
 
----
+This project is licensed under the MIT License together with the [World Bank IGO Rider](https://github.com/worldbank/.github/blob/main/WB-IGO-RIDER.md). The Rider is purely procedural: it reserves all privileges and immunities enjoyed by the World Bank, without adding restrictions to the MIT permissions. Please review both files before using, distributing or contributing.
 
-👥 **Authors:**
-
-## Authors and Contributors
+## 👥 Authors and Contributors
 
 This app was developed by DIME Analytics team
 
@@ -135,5 +133,11 @@ This app was developed by DIME Analytics team
 | Mehrab Ali            | Author                   |
 | Ankriti Singh         | Stata Code Reviewer      |
 
-For inquiries, visit [DIME Analytics](https://www.worldbank.org/en/about/unit/unit-dec/impactevaluation/dime-analytics).
+## Citation
+
+Please use the citation suggested in [CITATION.cff](CITATION.cff). Find the `APA` and `BIBTeX` formats in the right hand side menu of the [landing page](https://github.com/worldbank/iehfc) of this project's repository.
+
+### Contact
+
+DIME Analytics ([dimeanalytics@worldbank.org](mailto:dimeanalytics@worldbank.org))
 

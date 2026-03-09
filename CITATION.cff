@@ -1,0 +1,21 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: IEHFC
+message: Shiny-based application designed to facilitate high-frequency data quality assessments in survey datasets.
+type: software
+authors:
+  - name: 'DIME Analytics, The World Bank'
+    address: 1818 H St NW
+    city: 'Washington, DC'
+    country: US
+    post-code: '20433'
+    email: dimeanalytics@worldbank.org
+repository-code: 'https://github.com/worldbank/iehfc'
+keywords:
+  - hfc
+  - shiny
+  - data-quality
+  - survey-data
+license: MIT
