@@ -4,7 +4,7 @@
 
 The **IEHFC** package, developed by **DIME Analytics**, is a Shiny-based application designed to facilitate high-frequency data quality assessments in survey datasets. This tool provides an interactive dashboard to detect data inconsistencies, duplicate records, outliers, and other integrity issues, ensuring robust data quality control.
 
-**Note**: This package is in Beta version; expect updates. 
+**Note**: This package is in Beta version; expect updates.
 
 ### ✨ Key Features
 
@@ -51,7 +51,6 @@ This will open the application in your default web browser, enabling interactive
 > 🖼️ The app looks like this:
 >
 > <img src="https://github.com/dime-worldbank/iehfc/raw/main/inst/iehfc_app/www/iehfc_app.png" width="50%" />
-
 
 ## 🧭 Quick Guide
 
@@ -133,11 +132,10 @@ This app was developed by DIME Analytics team
 | Mehrab Ali            | Author                   |
 | Ankriti Singh         | Stata Code Reviewer      |
 
-## Citation
+### Citation
 
 Please use the citation suggested in [CITATION.cff](CITATION.cff). Find the `APA` and `BIBTeX` formats in the right hand side menu of the [landing page](https://github.com/worldbank/iehfc) of this project's repository.
 
 ### Contact
 
 DIME Analytics ([dimeanalytics@worldbank.org](mailto:dimeanalytics@worldbank.org))
-
