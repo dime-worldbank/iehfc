@@ -1596,7 +1596,7 @@
                   card(
                       card_header(
 
-                          span("Selecty Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
+                          span("Select Data Quality Checks", bsicons::bs_icon("question-circle-fill")) %>%
                               tooltip(
                                 "Select which data quality checks to run. Then fill in the settings for each of them to the right. Once you are done, click on the \"Run HFCs\" button below.",      placement = "auto"
                               )
